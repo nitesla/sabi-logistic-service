@@ -131,6 +131,18 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>com.sabi.framework</groupId>
+			<artifactId>sabi-framework</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sabilogistics.core</groupId>
+			<artifactId>sabi-logistic-core</artifactId>
+			<version>1.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
