@@ -8,6 +8,7 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabilogistics.service.helper.Validations;
 import com.sabilogistics.service.repositories.LGARepository;
 import com.sabilogistics.service.repositories.StateRepository;
 import com.sabilogisticscore.dto.request.LGADto;
@@ -32,14 +33,15 @@ public class LGAService {
     private StateRepository stateRepository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
-//    private final Validations validations;
+    private final Validations validations;
 
-    public LGAService(LGARepository lgaRepository,StateRepository stateRepository, ModelMapper mapper, ObjectMapper objectMapper) {
+    public LGAService(LGARepository lgaRepository,StateRepository stateRepository, ModelMapper mapper, ObjectMapper objectMapper,
+                      Validations validations) {
         this.lgaRepository = lgaRepository;
         this.stateRepository = stateRepository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
-//        this.validations = validations;
+        this.validations = validations;
     }
 
 
@@ -50,7 +52,7 @@ public class LGAService {
      */
 
     public LGAResponseDto createLga(LGADto request) {
-//        validations.validateLGA(request);
+        validations.validateLGA(request);
         LGA lga = mapper.map(request,LGA.class);
         LGA lgaExist = lgaRepository.findByName(request.getName());
         if(lgaExist !=null){
@@ -72,7 +74,7 @@ public class LGAService {
      */
 
     public LGAResponseDto updateLga(LGADto request) {
-//        validations.validateLGA(request);
+        validations.validateLGA(request);
         LGA lga = lgaRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested State Id does not exist!"));

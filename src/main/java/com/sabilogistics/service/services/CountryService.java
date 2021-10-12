@@ -8,6 +8,7 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabilogistics.service.helper.Validations;
 import com.sabilogistics.service.repositories.CountryRepository;
 import com.sabilogisticscore.dto.request.CountryDto;
 import com.sabilogisticscore.dto.response.CountryResponseDto;
@@ -28,13 +29,13 @@ public class CountryService {
     private CountryRepository countryRepository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
-//    private final Validations validations;
+    private final Validations validations;
 
-    public CountryService(CountryRepository countryRepository, ModelMapper mapper, ObjectMapper objectMapper) {
+    public CountryService(CountryRepository countryRepository, ModelMapper mapper, ObjectMapper objectMapper,Validations validations) {
         this.countryRepository = countryRepository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
-//        this.validations = validations;
+        this.validations = validations;
     }
 
 
@@ -46,7 +47,7 @@ public class CountryService {
      */
 
     public CountryResponseDto createCountry(CountryDto request) {
-//        validations.validateCountry(request);
+        validations.validateCountry(request);
         Country country = mapper.map(request,Country.class);
         Country countryExist = countryRepository.findByName(request.getName());
         if(countryExist !=null){
@@ -68,7 +69,7 @@ public class CountryService {
      */
 
     public CountryResponseDto updateCountry(CountryDto request) {
-//        validations.validateCountry(request);
+        validations.validateCountry(request);
         Country country = countryRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Country Id does not exist!"));

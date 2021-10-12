@@ -7,6 +7,7 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabilogistics.service.helper.Validations;
 import com.sabilogistics.service.repositories.AssetTypePropertiesRepository;
 import com.sabilogistics.service.repositories.CountryRepository;
 import com.sabilogisticscore.dto.request.AssetTypePropertiesDto;
@@ -31,18 +32,19 @@ public class AssetTypePropertiesService {
     private AssetTypePropertiesRepository repository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
-//    private final Validations validations;
+    private final Validations validations;
 
-    public AssetTypePropertiesService(AssetTypePropertiesRepository repository, ModelMapper mapper, ObjectMapper objectMapper) {
+    public AssetTypePropertiesService(AssetTypePropertiesRepository repository, ModelMapper mapper,
+                                      ObjectMapper objectMapper,Validations validations) {
         this.repository = repository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
-//        this.validations = validations;
+        this.validations = validations;
     }
 
 
     public AssetTypePropertiesResponseDto createAssetTypeProperties(AssetTypePropertiesDto request) {
-//        validations.validateCountry(request);
+        validations.validateAssetTypeProperties(request);
         AssetTypeProperties assetTypeProperties = mapper.map(request,AssetTypeProperties.class);
         AssetTypeProperties exist = repository.findByName(request.getName());
         if(exist !=null){
@@ -58,7 +60,7 @@ public class AssetTypePropertiesService {
 
 
     public AssetTypePropertiesResponseDto updateAssetTypeProperties(AssetTypePropertiesDto request) {
-//        validations.validateCountry(request);
+        validations.validateAssetTypeProperties(request);
         AssetTypeProperties assetTypeProperties = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested asset type Id does not exist!"));

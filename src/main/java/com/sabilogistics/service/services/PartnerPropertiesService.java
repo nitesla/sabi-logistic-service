@@ -6,6 +6,7 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabilogistics.service.helper.Validations;
 import com.sabilogistics.service.repositories.AssetTypePropertiesRepository;
 import com.sabilogistics.service.repositories.PartnerPropertiesRepository;
 import com.sabilogisticscore.dto.request.AssetTypePropertiesDto;
@@ -29,18 +30,19 @@ public class PartnerPropertiesService {
     private PartnerPropertiesRepository repository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
-//    private final Validations validations;
+    private final Validations validations;
 
-    public PartnerPropertiesService(PartnerPropertiesRepository repository, ModelMapper mapper, ObjectMapper objectMapper) {
+    public PartnerPropertiesService(PartnerPropertiesRepository repository, ModelMapper mapper, ObjectMapper objectMapper,
+                                    Validations validations) {
         this.repository = repository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
-//        this.validations = validations;
+        this.validations = validations;
     }
 
 
     public PartnerPropertiesResponseDto createPartnerProperties(PartnerPropertiesDto request) {
-//        validations.validateCountry(request);
+        validations.validatePartnerProperties(request);
         PartnerProperties partnerProperties = mapper.map(request,PartnerProperties.class);
         PartnerProperties exist = repository.findByName(request.getName());
         if(exist !=null){
@@ -55,7 +57,7 @@ public class PartnerPropertiesService {
 
 
     public PartnerPropertiesResponseDto updatePartnerProperties(PartnerPropertiesDto request) {
-//        validations.validateCountry(request);
+        validations.validatePartnerProperties(request);
         PartnerProperties partnerProperties = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner properties Id does not exist!"));

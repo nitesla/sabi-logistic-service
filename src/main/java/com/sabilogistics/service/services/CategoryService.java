@@ -7,6 +7,7 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabilogistics.service.helper.Validations;
 import com.sabilogistics.service.repositories.CategoryRepository;
 import com.sabilogisticscore.dto.request.CategoryDto;
 import com.sabilogisticscore.dto.request.CountryDto;
@@ -29,20 +30,20 @@ public class CategoryService {
     private CategoryRepository categoryRepository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
-//    private final Validations validations;
+    private final Validations validations;
 
-    public CategoryService(CategoryRepository categoryRepository, ModelMapper mapper, ObjectMapper objectMapper) {
+    public CategoryService(CategoryRepository categoryRepository, ModelMapper mapper, ObjectMapper objectMapper,Validations validations) {
         this.categoryRepository = categoryRepository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
-//        this.validations = validations;
+        this.validations = validations;
     }
 
 
 
 
     public CategoryResponseDto createCategory(CategoryDto request) {
-//        validations.validateCountry(request);
+        validations.validateCategory(request);
         Category category = mapper.map(request,Category.class);
         Category categoryExist = categoryRepository.findByName(request.getName());
         if(categoryExist !=null){
@@ -56,7 +57,7 @@ public class CategoryService {
     }
 
     public CategoryResponseDto updateCategory(CategoryDto request) {
-//        validations.validateCountry(request);
+        validations.validateCategory(request);
         Category category = categoryRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested category Id does not exist!"));

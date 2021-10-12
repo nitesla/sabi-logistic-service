@@ -7,6 +7,7 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabilogistics.service.helper.Validations;
 import com.sabilogistics.service.repositories.StateRepository;
 import com.sabilogisticscore.dto.request.StateDto;
 import com.sabilogisticscore.dto.response.StateResponseDto;
@@ -35,12 +36,13 @@ public class StateService {
     private StateRepository stateRepository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
-//    private final Validations validations;
+    private final Validations validations;
 
-    public StateService(StateRepository stateRepository, ModelMapper mapper, ObjectMapper objectMapper) {
+    public StateService(StateRepository stateRepository, ModelMapper mapper, ObjectMapper objectMapper,Validations validations) {
         this.stateRepository = stateRepository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
+        this.validations = validations;
 
     }
 
@@ -51,7 +53,7 @@ public class StateService {
       */
 
     public StateResponseDto createState(StateDto request) {
-//        validations.validateState(request);
+        validations.validateState(request);
         State state = mapper.map(request,State.class);
         State stateExist = stateRepository.findByName(request.getName());
         if(stateExist !=null){
@@ -72,7 +74,7 @@ public class StateService {
      */
 
     public StateResponseDto updateState(StateDto request) {
-//        validations.validateState(request);
+        validations.validateState(request);
         State state = stateRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested State Id does not exist!"));
