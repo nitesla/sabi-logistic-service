@@ -1,4 +1,4 @@
-package com.sabilogistics.service.services;
+package com.sabi.logistics.service.services;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,36 +7,36 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.utils.CustomResponseCode;
-import com.sabilogistics.service.helper.Validations;
-import com.sabilogistics.service.repositories.AssetTypePropertiesRepository;
-import com.sabilogistics.service.repositories.CountryRepository;
-import com.sabilogisticscore.dto.request.AssetTypePropertiesDto;
-import com.sabilogisticscore.dto.request.CountryDto;
-import com.sabilogisticscore.dto.response.AssetTypePropertiesResponseDto;
-import com.sabilogisticscore.dto.response.CountryResponseDto;
-import com.sabilogisticscore.models.AssetTypeProperties;
-import com.sabilogisticscore.models.Country;
+import com.sabi.logistics.core.dto.request.AssetTypePropertiesDto;
+import com.sabi.logistics.core.dto.response.AssetTypePropertiesResponseDto;
+import com.sabi.logistics.core.models.AssetTypeProperties;
+import com.sabi.logistics.service.helper.Validations;
+
+import com.sabi.logistics.service.repositories.AssetTypePropertiesRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+
 @Slf4j
 @Service
 public class AssetTypePropertiesService {
 
 
+    @Autowired
     private AssetTypePropertiesRepository repository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
     private final Validations validations;
 
-    public AssetTypePropertiesService(AssetTypePropertiesRepository repository, ModelMapper mapper,
+    public AssetTypePropertiesService( ModelMapper mapper,
                                       ObjectMapper objectMapper,Validations validations) {
-        this.repository = repository;
+//        this.repository = repository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
         this.validations = validations;
@@ -81,7 +81,7 @@ public class AssetTypePropertiesService {
 
 
 
-    public Page<AssetTypeProperties> findAll(String name,  PageRequest pageRequest ){
+    public Page<AssetTypeProperties> findAll(String name, PageRequest pageRequest ){
         Page<AssetTypeProperties> assetTypeProperties = repository.findAssets(name,pageRequest);
         if(assetTypeProperties == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");

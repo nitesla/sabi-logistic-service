@@ -1,4 +1,4 @@
-package com.sabilogistics.service.services;
+package com.sabi.logistics.service.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -6,10 +6,11 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.utils.CustomResponseCode;
-import com.sabilogistics.service.repositories.ClientRepository;
-import com.sabilogisticscore.dto.request.ClientDto;
-import com.sabilogisticscore.dto.response.ClientResponseDto;
-import com.sabilogisticscore.models.Client;
+import com.sabi.logistics.core.dto.request.ClientDto;
+import com.sabi.logistics.core.dto.response.ClientResponseDto;
+
+import com.sabi.logistics.core.models.Client;
+import com.sabi.logistics.service.repositories.ClientRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -68,14 +69,14 @@ public class ClientService {
         return mapper.map(savedClient,ClientResponseDto.class);
     }
 
-    public ClientResponseDto findByUserId(Long userId){
-        Client savedPartnerCategories  = repository.findByUserId(userId);
-        if (savedPartnerCategories == null){
-            new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                    "Requested client does not exist!");
-        }
-        return mapper.map(savedPartnerCategories,ClientResponseDto.class);
-    }
+//    public ClientResponseDto findByUserId(Long userId){
+//        Client savedPartnerCategories  = repository.findByUserId(userId);
+//        if (savedPartnerCategories == null){
+//            new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                    "Requested client does not exist!");
+//        }
+//        return mapper.map(savedPartnerCategories,ClientResponseDto.class);
+//    }
 
     public Page<Client> findAll(Long id, PageRequest pageRequest ){
         Page<Client> savedClient = repository.findAllClients(id,pageRequest);

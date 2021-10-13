@@ -1,4 +1,4 @@
-package com.sabilogistics.service.services;
+package com.sabi.logistics.service.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -6,10 +6,11 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.utils.CustomResponseCode;
-import com.sabilogistics.service.repositories.BlockTypeRepository;
-import com.sabilogisticscore.dto.request.BlockTypeDto;
-import com.sabilogisticscore.dto.response.BlockTypeResponseDto;
-import com.sabilogisticscore.models.BlockType;
+import com.sabi.logistics.core.dto.request.BlockTypeDto;
+import com.sabi.logistics.core.dto.response.BlockTypeResponseDto;
+import com.sabi.logistics.core.models.BlockType;
+import com.sabi.logistics.service.repositories.BlockTypeRepository;
+
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;

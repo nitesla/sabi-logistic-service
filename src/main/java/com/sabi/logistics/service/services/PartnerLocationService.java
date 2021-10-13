@@ -1,14 +1,13 @@
-package com.sabilogistics.service.services;
+package com.sabi.logistics.service.services;
 
 import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
-import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.utils.CustomResponseCode;
-import com.sabilogistics.service.repositories.PartnerLocationRepository;
-import com.sabilogisticscore.dto.request.PartnerLocationDto;
-import com.sabilogisticscore.dto.response.PartnerLocationResponseDto;
-import com.sabilogisticscore.models.PartnerLocation;
+import com.sabi.logistics.core.dto.request.PartnerLocationDto;
+import com.sabi.logistics.core.dto.response.PartnerLocationResponseDto;
+import com.sabi.logistics.core.models.PartnerLocation;
+import com.sabi.logistics.service.repositories.PartnerLocationRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -59,22 +58,22 @@ public class PartnerLocationService {
         return mapper.map(partnerProperties, PartnerLocationResponseDto.class);
     }
 
-    public PartnerLocationResponseDto findByPartnerLocationId(Long partnerId){
-        PartnerLocation savedPartnerCategories  = repository.findByPartnerId(partnerId);
-        if (savedPartnerCategories == null){
-            new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                    "Requested partner location does not exist!");
-        }
-        return mapper.map(savedPartnerCategories,PartnerLocationResponseDto.class);
-    }
+//    public PartnerLocationResponseDto findByPartnerLocationId(Long partnerId){
+//        PartnerLocation savedPartnerCategories  = repository.findByPartnerId(partnerId);
+//        if (savedPartnerCategories == null){
+//            new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                    "Requested partner location does not exist!");
+//        }
+//        return mapper.map(savedPartnerCategories,PartnerLocationResponseDto.class);
+//    }
 
-    public Page<PartnerLocation> findAll(Long partnerId, Long categoryId, PageRequest pageRequest ){
-        Page<PartnerLocation> savedPartnerCategories = repository.findPartnerLocation(partnerId,categoryId,pageRequest);
-        if(savedPartnerCategories == null){
-            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
-        }
-        return savedPartnerCategories;
-    }
+//    public Page<PartnerLocation> findAll(Long partnerId, Long categoryId, PageRequest pageRequest ){
+//        Page<PartnerLocation> savedPartnerCategories = repository.findPartnerLocation(partnerId,categoryId,pageRequest);
+//        if(savedPartnerCategories == null){
+//            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
+//        }
+//        return savedPartnerCategories;
+//    }
 
     public void enableDisEnable (EnableDisEnableDto request){
         PartnerLocation savedPartnerCategories  = repository.findById(request.getId())

@@ -9,7 +9,7 @@
 		<version>2.1.6.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.sabilogistics.service</groupId>
+	<groupId>com.sabi.service</groupId>
 	<artifactId>sabi-logistic-service</artifactId>
 	<version>1.0</version>
 	<name>sabi-logistic-service</name>
@@ -115,17 +115,8 @@
 			<version>2.3.2</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.sabi.framework</groupId>
-			<artifactId>sabi-framework</artifactId>
-			<version>1.0</version>
-		</dependency>
 
-		<dependency>
-			<groupId>com.sabi.core</groupId>
-			<artifactId>sabi-agent-core</artifactId>
-			<version>1.0</version>
-		</dependency>
+
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -139,7 +130,7 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.sabilogistics.core</groupId>
+			<groupId>com.sabi.core</groupId>
 			<artifactId>sabi-logistic-core</artifactId>
 			<version>1.0</version>
 		</dependency>

@@ -1,4 +1,4 @@
-package com.sabilogistics.service.services;
+package com.sabi.logistics.service.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -6,10 +6,10 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.utils.CustomResponseCode;
-import com.sabilogistics.service.repositories.PartnerCategoriesRepository;
-import com.sabilogisticscore.dto.request.PartnerCategoriesDto;
-import com.sabilogisticscore.dto.response.PartnerCategoriesResponseDto;
-import com.sabilogisticscore.models.PartnerCategories;
+import com.sabi.logistics.core.dto.request.PartnerCategoriesDto;
+import com.sabi.logistics.core.dto.response.PartnerCategoriesResponseDto;
+import com.sabi.logistics.core.models.PartnerCategories;
+import com.sabi.logistics.service.repositories.PartnerCategoriesRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -68,14 +68,14 @@ public class PartnerCategoriesService {
         return mapper.map(partnerCategories,PartnerCategoriesResponseDto.class);
     }
 
-    public PartnerCategoriesResponseDto findByCategoryId(Long categoryId){
-        PartnerCategories savedPartnerCategories  = repository.findByCategoryIdId(categoryId);
-                if (savedPartnerCategories == null){
-        new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        "Requested partner Category does not exist!");
-                }
-        return mapper.map(savedPartnerCategories,PartnerCategoriesResponseDto.class);
-    }
+//    public PartnerCategoriesResponseDto findByCategoryId(Long categoryId){
+//        PartnerCategories savedPartnerCategories  = repository.findByCategoryIdId(categoryId);
+//                if (savedPartnerCategories == null){
+//        new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                        "Requested partner Category does not exist!");
+//                }
+//        return mapper.map(savedPartnerCategories,PartnerCategoriesResponseDto.class);
+//    }
 
     public PartnerCategoriesResponseDto findByPartnerId(Long partnerId){
         PartnerCategories savedPartnerCategories  = repository.findByPartnerId(partnerId);

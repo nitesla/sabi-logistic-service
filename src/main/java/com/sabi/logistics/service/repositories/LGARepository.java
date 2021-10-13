@@ -1,8 +1,9 @@
-package com.sabilogistics.service.repositories;
+package com.sabi.logistics.service.repositories;
 
 
 
-import com.sabilogisticscore.models.LGA;
+
+import com.sabi.logistics.core.models.LGA;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

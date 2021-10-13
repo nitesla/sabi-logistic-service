@@ -1,7 +1,7 @@
-package com.sabilogistics.service.repositories;
+package com.sabi.logistics.service.repositories;
 
-import com.sabilogisticscore.models.AssetTypeProperties;
-import com.sabilogisticscore.models.PartnerProperties;
+
+import com.sabi.logistics.core.models.PartnerProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

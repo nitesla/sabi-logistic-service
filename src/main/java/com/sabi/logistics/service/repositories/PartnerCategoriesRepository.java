@@ -1,6 +1,7 @@
-package com.sabilogistics.service.repositories;
+package com.sabi.logistics.service.repositories;
 
-import com.sabilogisticscore.models.PartnerCategories;
+
+import com.sabi.logistics.core.models.PartnerCategories;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,7 +15,7 @@ import java.util.List;
 public interface PartnerCategoriesRepository extends JpaRepository<PartnerCategories, Long> {
 
     PartnerCategories findByPartnerId(Long partnerId);
-    PartnerCategories findByCategoryIdId(Long categoryId);
+//    PartnerCategories findByCategoryIdId(Long categoryId);
     List<PartnerCategories> findByIsActive(Boolean isActive);
 
     @Query("SELECT c FROM PartnerCategories c WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND c.partnerId = :partnerId))" +

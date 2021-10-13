@@ -1,6 +1,7 @@
-package com.sabilogistics.service.repositories;
+package com.sabi.logistics.service.repositories;
 
-import com.sabilogisticscore.models.Client;
+
+import com.sabi.logistics.core.models.Client;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,7 +14,7 @@ import java.util.List;
 @Repository
 public interface ClientRepository extends JpaRepository<Client, Long> {
 
-    Client findByUserId(Long userId);
+//    Client findByUserId(Long userId);
     List<Client> findByIsActive(Boolean isActive);
 
     @Query("SELECT s FROM State s WHERE ((:id IS NULL) OR (:id IS NOT NULL AND s.id = :id))")

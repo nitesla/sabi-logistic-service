@@ -1,4 +1,4 @@
-package com.sabilogistics.service.services;
+package com.sabi.logistics.service.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -6,15 +6,11 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.utils.CustomResponseCode;
-import com.sabilogistics.service.helper.Validations;
-import com.sabilogistics.service.repositories.AssetTypePropertiesRepository;
-import com.sabilogistics.service.repositories.PartnerPropertiesRepository;
-import com.sabilogisticscore.dto.request.AssetTypePropertiesDto;
-import com.sabilogisticscore.dto.request.PartnerPropertiesDto;
-import com.sabilogisticscore.dto.response.AssetTypePropertiesResponseDto;
-import com.sabilogisticscore.dto.response.PartnerPropertiesResponseDto;
-import com.sabilogisticscore.models.AssetTypeProperties;
-import com.sabilogisticscore.models.PartnerProperties;
+import com.sabi.logistics.core.dto.request.PartnerPropertiesDto;
+import com.sabi.logistics.core.dto.response.PartnerPropertiesResponseDto;
+import com.sabi.logistics.core.models.PartnerProperties;
+import com.sabi.logistics.service.helper.Validations;
+import com.sabi.logistics.service.repositories.PartnerPropertiesRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;

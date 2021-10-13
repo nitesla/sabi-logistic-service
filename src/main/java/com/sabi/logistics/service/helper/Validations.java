@@ -1,15 +1,15 @@
-package com.sabilogistics.service.helper;
+package com.sabi.logistics.service.helper;
 
 
 
 import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.utils.CustomResponseCode;
-import com.sabilogistics.service.repositories.LGARepository;
-import com.sabilogistics.service.repositories.StateRepository;
-import com.sabilogisticscore.dto.request.*;
-import com.sabilogisticscore.models.LGA;
-import com.sabilogisticscore.models.State;
+import com.sabi.logistics.core.dto.request.*;
+import com.sabi.logistics.core.models.LGA;
+import com.sabi.logistics.core.models.State;
+import com.sabi.logistics.service.repositories.LGARepository;
+import com.sabi.logistics.service.repositories.StateRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class Validations {
+
 
 
     private StateRepository stateRepository;
