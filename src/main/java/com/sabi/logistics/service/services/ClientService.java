@@ -5,6 +5,8 @@ import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
+import com.sabi.framework.models.User;
+import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.ClientDto;
 import com.sabi.logistics.core.dto.response.ClientResponseDto;
@@ -25,23 +27,30 @@ public class ClientService {
 
 
     private ClientRepository repository;
+    private UserRepository userRepository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
 
-    public ClientService(ClientRepository repository, ModelMapper mapper, ObjectMapper objectMapper) {
+    public ClientService(ClientRepository repository, UserRepository userRepository, ModelMapper mapper, ObjectMapper objectMapper) {
         this.repository = repository;
+        this.userRepository = userRepository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
     }
+
 
     public ClientResponseDto createClient(ClientDto request) {
 //        validations.validateCountry(request);
         Client savedClient = mapper.map(request,Client.class);
         Client exist = repository.findClientById(request.getId());
-//                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-//                        "Requested client id does not exist!"));
+        User savedUser = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                "Requested user id does not exist!"));
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " client already exist");
+        }
+        if(savedUser ==null){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " user record not found! ");
         }
         savedClient.setCreatedBy(0l);
         savedClient.setActive(true);
