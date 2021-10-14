@@ -72,10 +72,6 @@ public class PartnerPropertiesService {
         return mapper.map(partnerProperties,PartnerPropertiesResponseDto.class);
     }
 
-
-
-
-
     public Page<PartnerProperties> findAll(String name, PageRequest pageRequest ){
         Page<PartnerProperties> partnerProperties = repository.findPartnersProperties(name,pageRequest);
         if(partnerProperties == null){

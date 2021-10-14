@@ -17,6 +17,8 @@ public interface PartnerPropertiesRepository extends JpaRepository<PartnerProper
 
     PartnerProperties findByName(String name);
 
+    PartnerProperties findPartnerPropertiesById(Long id);
+
     PartnerProperties findByPhone(String phone);
 
     List<PartnerProperties> findByIsActive(Boolean isActive);

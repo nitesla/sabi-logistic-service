@@ -36,9 +36,9 @@ public class BlockTypeService {
     public BlockTypeResponseDto createBlockType(BlockTypeDto request) {
 //        validations.validateCountry(request);
         BlockType partnerCategories = mapper.map(request,BlockType.class);
-        BlockType exist = repository.findById(request.getId())
-                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        "Requested block type id does not exist!"));
+        BlockType exist = repository.findByName(request.getName());
+//                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                        "Requested block type id does not exist!"));
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " block type already exist");
         }
@@ -77,8 +77,8 @@ public class BlockTypeService {
         return mapper.map(savedBlockType,BlockTypeResponseDto.class);
     }
 
-    public Page<BlockType> findAll(String name, double length, double width, double heigth, double price,  PageRequest pageRequest ){
-        Page<BlockType> savedBlockType = repository.findAllBlockType(name, length, width,heigth,price,pageRequest);
+    public Page<BlockType> findAll(String name, PageRequest pageRequest ){
+        Page<BlockType> savedBlockType = repository.findAllBlockType(name,pageRequest);
         if(savedBlockType == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

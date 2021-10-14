@@ -37,9 +37,9 @@ public class ClientService {
     public ClientResponseDto createClient(ClientDto request) {
 //        validations.validateCountry(request);
         Client savedClient = mapper.map(request,Client.class);
-        Client exist = repository.findById(request.getId())
-                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        "Requested client id does not exist!"));
+        Client exist = repository.findClientById(request.getId());
+//                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                        "Requested client id does not exist!"));
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " client already exist");
         }
@@ -52,10 +52,10 @@ public class ClientService {
 
     public ClientResponseDto updateClient(ClientDto request) {
 //        validations.validateCountry(request);
-        Client savedClient = repository.findById(request.getId())
-                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        "Requested client id does not exist!"));
-        mapper.map(request, savedClient);
+        Client savedClient = repository.findClientById(request.getId());
+//                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                        "Requested client id does not exist!"));
+//        mapper.map(request, savedClient);
         savedClient.setUpdatedBy(0l);
         repository.save(savedClient);
         log.debug("client record updated - {}"+ new Gson().toJson(savedClient));
