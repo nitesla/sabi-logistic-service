@@ -37,15 +37,12 @@ public class PartnerLocationService {
 //        validations.validateCountry(request);
         PartnerLocation partnerProperties = mapper.map(request,PartnerLocation.class);
         PartnerLocation exist = repository.findPartnerLocationById(request.getId());
-//                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-//                        "Requested partner location id does not exist!"));
         if (exist != null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Partner location already exist");
         }
         partnerProperties.setCreatedBy(0l);
         partnerProperties.setActive(true);
         partnerProperties = repository.save(partnerProperties);
-//        log.debug("Create new partner location - {}"+ new Gson().toJson(partnerProperties));
         return mapper.map(partnerProperties, PartnerLocationResponseDto.class);
     }
 
@@ -65,7 +62,7 @@ public class PartnerLocationService {
     public PartnerLocationResponseDto findByPartnerLocationId(Long partnerId){
         PartnerLocation savedPartnerCategories  = repository.findPartnerLocationById(partnerId);
         if (savedPartnerCategories == null){
-            new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                     "Requested partner location does not exist!");
         }
         return mapper.map(savedPartnerCategories,PartnerLocationResponseDto.class);

@@ -53,9 +53,6 @@ public class ClientService {
     public ClientResponseDto updateClient(ClientDto request) {
 //        validations.validateCountry(request);
         Client savedClient = repository.findClientById(request.getId());
-//                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-//                        "Requested client id does not exist!"));
-//        mapper.map(request, savedClient);
         savedClient.setUpdatedBy(0l);
         repository.save(savedClient);
         log.debug("client record updated - {}"+ new Gson().toJson(savedClient));
@@ -69,14 +66,6 @@ public class ClientService {
         return mapper.map(savedClient,ClientResponseDto.class);
     }
 
-//    public ClientResponseDto findByUserId(Long userId){
-//        Client savedPartnerCategories  = repository.findByUserId(userId);
-//        if (savedPartnerCategories == null){
-//            new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-//                    "Requested client does not exist!");
-//        }
-//        return mapper.map(savedPartnerCategories,ClientResponseDto.class);
-//    }
 
     public Page<Client> findAll(Long id, PageRequest pageRequest ){
         Page<Client> savedClient = repository.findAllClients(id,pageRequest);
