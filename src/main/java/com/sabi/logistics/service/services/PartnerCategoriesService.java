@@ -29,38 +29,26 @@ import java.util.List;
 public class PartnerCategoriesService {
 
     private PartnerCategoriesRepository repository;
-    private CategoryRepository categoryRepository;
     @Autowired
     private PartnerPropertiesRepository partnerPropertiesRepository;
     private final ModelMapper mapper;
     private final Validations validations;
 
 
-    public PartnerCategoriesService(PartnerCategoriesRepository repository, ModelMapper mapper, ObjectMapper objectMapper, CategoryRepository categoryRepository, Validations validations) {
+    public PartnerCategoriesService(PartnerCategoriesRepository repository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
         this.repository = repository;
         this.mapper = mapper;
-        this.categoryRepository = categoryRepository;
         this.validations = validations;
-//        this.objectMapper = objectMapper;
     }
 
 
     public PartnerCategoriesResponseDto createPartnerCategory(PartnerCategoriesDto request) {
-//        validations.validatePartnerCategories(request);
+        validations.validatePartnerCategories(request);
         PartnerCategories partnerCategories = mapper.map(request,PartnerCategories.class);
         PartnerCategories exist = repository.findPartnerCategoriesById(request.getId());
-        Category savedCategory = categoryRepository.findCategoriesById(request.getCategoryId());
-        PartnerProperties savePartner = partnerPropertiesRepository.findPartnerPropertiesById(request.getPartnerId());
 
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Partner Category already exist");
-        }
-        if (savedCategory == null){
-            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
-        }
-
-        if (savePartner == null){
-            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
         partnerCategories.setCreatedBy(0l);
         partnerCategories.setActive(true);
@@ -70,7 +58,7 @@ public class PartnerCategoriesService {
     }
 
     public PartnerCategoriesResponseDto updatePartnerCategory(PartnerCategoriesDto request) {
-//        validations.validateCountry(request);
+        validations.validatePartnerCategories(request);
         PartnerCategories partnerCategories = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner category id does not exist!"));

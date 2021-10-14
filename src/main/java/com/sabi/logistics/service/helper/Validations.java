@@ -4,11 +4,14 @@ package com.sabi.logistics.service.helper;
 
 import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.NotFoundException;
+import com.sabi.framework.models.User;
+import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.*;
-import com.sabi.logistics.core.models.LGA;
-import com.sabi.logistics.core.models.State;
+import com.sabi.logistics.core.models.*;
+import com.sabi.logistics.service.repositories.CategoryRepository;
 import com.sabi.logistics.service.repositories.LGARepository;
+import com.sabi.logistics.service.repositories.PartnerPropertiesRepository;
 import com.sabi.logistics.service.repositories.StateRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,13 +25,18 @@ public class Validations {
 
     private StateRepository stateRepository;
     private LGARepository lgaRepository;
+    private UserRepository userRepository;
+    private PartnerPropertiesRepository partnerPropertiesRepository;
+    private CategoryRepository categoryRepository;
 
-    public Validations(StateRepository stateRepository,LGARepository lgaRepository) {
+
+    public Validations(StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository, PartnerPropertiesRepository partnerPropertiesRepository, CategoryRepository categoryRepository) {
         this.stateRepository = stateRepository;
         this.lgaRepository = lgaRepository;
-
+        this.userRepository = userRepository;
+        this.partnerPropertiesRepository = partnerPropertiesRepository;
+        this.categoryRepository = categoryRepository;
     }
-
 
     public void validateState(StateDto stateDto) {
         if (stateDto.getName() == null || stateDto.getName().isEmpty())
@@ -86,4 +94,45 @@ public class Validations {
 //            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Employee count cannot be empty");
 
     }
+
+    public void validateBlockType(BlockTypeDto blockTypeDto) {
+        if (blockTypeDto.getName() == null || blockTypeDto.getName().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+        if (blockTypeDto.getLength() <= 0.0)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Length cannot be empty");
+        if (blockTypeDto.getHeight() <= 0.0)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Heigth cannot be empty");
+        if (blockTypeDto.getWidth() <= 0.0)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Width cannot be empty");
+        if(blockTypeDto.getPrice() <= 0.0)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "price cannot be empty");
+    }
+
+    public void validateClient(ClientDto clientDto) {
+        User user = userRepository.findById(clientDto.getUserId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid user id!"));
+    }
+
+    public void validatePartnerCategories(PartnerCategoriesDto partnerCategoriesDto) {
+        PartnerProperties partnerProperties = partnerPropertiesRepository.findById(partnerCategoriesDto.getPartnerId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid partner id!"));
+        Category category = categoryRepository.findById(partnerCategoriesDto.getCategoryId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid category id!"));
+    }
+
+    public void validatePartnerLocation(PartnerLocationDto partnerLocationDto) {
+        PartnerProperties partnerProperties = partnerPropertiesRepository.findById(partnerLocationDto.getPartnerId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid partner id!"));
+        State state = stateRepository.findById(partnerLocationDto.getStateId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid state id!"));
+        if(partnerLocationDto.getWareHouses() < 0)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter a valid ware house figure!");
+    }
 }
+
+

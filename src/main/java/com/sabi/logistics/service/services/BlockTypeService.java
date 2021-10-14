@@ -9,6 +9,7 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.BlockTypeDto;
 import com.sabi.logistics.core.dto.response.BlockTypeResponseDto;
 import com.sabi.logistics.core.models.BlockType;
+import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.BlockTypeRepository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -26,19 +27,19 @@ public class BlockTypeService {
     private BlockTypeRepository repository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
+    private final Validations validations;
 
-    public BlockTypeService(BlockTypeRepository repository, ModelMapper mapper, ObjectMapper objectMapper) {
+    public BlockTypeService(BlockTypeRepository repository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
         this.repository = repository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
+        this.validations = validations;
     }
 
     public BlockTypeResponseDto createBlockType(BlockTypeDto request) {
-//        validations.validateCountry(request);
+        validations.validateBlockType(request);
         BlockType partnerCategories = mapper.map(request,BlockType.class);
         BlockType exist = repository.findByName(request.getName());
-//                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-//                        "Requested block type id does not exist!"));
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " block type already exist");
         }
@@ -50,7 +51,7 @@ public class BlockTypeService {
     }
 
     public BlockTypeResponseDto updateBlockType(BlockTypeDto request) {
-//        validations.validateCountry(request);
+        validations.validateBlockType(request);
         BlockType savedBlockType = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested block type id does not exist!"));

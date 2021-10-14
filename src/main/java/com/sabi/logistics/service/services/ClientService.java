@@ -12,6 +12,7 @@ import com.sabi.logistics.core.dto.request.ClientDto;
 import com.sabi.logistics.core.dto.response.ClientResponseDto;
 
 import com.sabi.logistics.core.models.Client;
+import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.ClientRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -27,30 +28,24 @@ public class ClientService {
 
 
     private ClientRepository repository;
-    private UserRepository userRepository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
+    private final Validations validations;
 
-    public ClientService(ClientRepository repository, UserRepository userRepository, ModelMapper mapper, ObjectMapper objectMapper) {
+    public ClientService(ClientRepository repository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
         this.repository = repository;
-        this.userRepository = userRepository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
+        this.validations = validations;
     }
 
 
     public ClientResponseDto createClient(ClientDto request) {
-//        validations.validateCountry(request);
+        validations.validateClient(request);
         Client savedClient = mapper.map(request,Client.class);
         Client exist = repository.findClientById(request.getId());
-        User savedUser = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                "Requested user id does not exist!"));
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " client already exist");
-        }
-        if(savedUser ==null){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " user record not found! ");
         }
         savedClient.setCreatedBy(0l);
         savedClient.setActive(true);
@@ -60,7 +55,7 @@ public class ClientService {
     }
 
     public ClientResponseDto updateClient(ClientDto request) {
-//        validations.validateCountry(request);
+        validations.validateClient(request);
         Client savedClient = repository.findClientById(request.getId());
         savedClient.setUpdatedBy(0l);
         repository.save(savedClient);
