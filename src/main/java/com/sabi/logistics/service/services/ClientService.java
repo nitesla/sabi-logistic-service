@@ -56,7 +56,10 @@ public class ClientService {
 
     public ClientResponseDto updateClient(ClientDto request) {
         validations.validateClient(request);
-        Client savedClient = repository.findClientById(request.getId());
+//        Client savedClient = repository.findClientById(request.getId());
+        Client savedClient = repository.findById(request.getId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Requested client id does not exist!"));
         savedClient.setUpdatedBy(0l);
         repository.save(savedClient);
         log.debug("client record updated - {}"+ new Gson().toJson(savedClient));
