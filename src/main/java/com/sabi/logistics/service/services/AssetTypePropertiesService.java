@@ -6,6 +6,8 @@ import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
+import com.sabi.framework.models.User;
+import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.AssetTypePropertiesDto;
 import com.sabi.logistics.core.dto.response.AssetTypePropertiesResponseDto;
@@ -45,12 +47,13 @@ public class AssetTypePropertiesService {
 
     public AssetTypePropertiesResponseDto createAssetTypeProperties(AssetTypePropertiesDto request) {
         validations.validateAssetTypeProperties(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         AssetTypeProperties assetTypeProperties = mapper.map(request,AssetTypeProperties.class);
         AssetTypeProperties exist = repository.findByName(request.getName());
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Asset type already exist");
         }
-        assetTypeProperties.setCreatedBy(0l);
+        assetTypeProperties.setCreatedBy(userCurrent.getId());
         assetTypeProperties.setActive(true);
         assetTypeProperties = repository.save(assetTypeProperties);
         log.debug("Create new asset type - {}"+ new Gson().toJson(assetTypeProperties));
@@ -61,11 +64,12 @@ public class AssetTypePropertiesService {
 
     public AssetTypePropertiesResponseDto updateAssetTypeProperties(AssetTypePropertiesDto request) {
         validations.validateAssetTypeProperties(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         AssetTypeProperties assetTypeProperties = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested asset type Id does not exist!"));
         mapper.map(request, assetTypeProperties);
-        assetTypeProperties.setUpdatedBy(0l);
+        assetTypeProperties.setUpdatedBy(userCurrent.getId());
         repository.save(assetTypeProperties);
         log.debug("asset type record updated - {}"+ new Gson().toJson(assetTypeProperties));
         return mapper.map(assetTypeProperties, AssetTypePropertiesResponseDto.class);
@@ -93,11 +97,12 @@ public class AssetTypePropertiesService {
 
 
     public void enableDisEnable (EnableDisEnableDto request){
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         AssetTypeProperties assetTypeProperties  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested asset type Id does not exist!"));
         assetTypeProperties.setActive(request.isActive());
-        assetTypeProperties.setUpdatedBy(0l);
+        assetTypeProperties.setUpdatedBy(userCurrent.getId());
         repository.save(assetTypeProperties);
 
     }

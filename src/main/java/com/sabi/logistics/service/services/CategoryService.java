@@ -6,6 +6,8 @@ import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
+import com.sabi.framework.models.User;
+import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.CategoryDto;
 import com.sabi.logistics.core.dto.response.CategoryResponseDto;
@@ -41,12 +43,13 @@ public class CategoryService {
 
     public CategoryResponseDto createCategory(CategoryDto request) {
         validations.validateCategory(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Category category = mapper.map(request,Category.class);
         Category categoryExist = categoryRepository.findByName(request.getName());
         if(categoryExist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Category already exist");
         }
-        category.setCreatedBy(0l);
+        category.setCreatedBy(userCurrent.getId());
         category.setActive(true);
         category = categoryRepository.save(category);
         log.debug("Create new category - {}"+ new Gson().toJson(category));
@@ -55,11 +58,12 @@ public class CategoryService {
 
     public CategoryResponseDto updateCategory(CategoryDto request) {
         validations.validateCategory(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Category category = categoryRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested category Id does not exist!"));
         mapper.map(request, category);
-        category.setUpdatedBy(0l);
+        category.setUpdatedBy(userCurrent.getId());
         categoryRepository.save(category);
         log.debug("Category record updated - {}"+ new Gson().toJson(category));
         return mapper.map(category, CategoryResponseDto.class);
@@ -86,11 +90,12 @@ public class CategoryService {
 
 
     public void enableDisEnableState (EnableDisEnableDto request){
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Category category  = categoryRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Category Id does not exist!"));
         category.setActive(request.isActive());
-        category.setUpdatedBy(0l);
+        category.setUpdatedBy(userCurrent.getId());
         categoryRepository.save(category);
 
     }

@@ -5,6 +5,8 @@ import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
+import com.sabi.framework.models.User;
+import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.BlockTypeDto;
 import com.sabi.logistics.core.dto.response.BlockTypeResponseDto;
@@ -38,12 +40,13 @@ public class BlockTypeService {
 
     public BlockTypeResponseDto createBlockType(BlockTypeDto request) {
         validations.validateBlockType(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         BlockType partnerCategories = mapper.map(request,BlockType.class);
         BlockType exist = repository.findByName(request.getName());
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " block type already exist");
         }
-        partnerCategories.setCreatedBy(0l);
+        partnerCategories.setCreatedBy(userCurrent.getId());
         partnerCategories.setActive(true);
         partnerCategories = repository.save(partnerCategories);
         log.debug("Create new block type - {}"+ new Gson().toJson(partnerCategories));
@@ -52,11 +55,12 @@ public class BlockTypeService {
 
     public BlockTypeResponseDto updateBlockType(BlockTypeDto request) {
         validations.validateBlockType(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         BlockType savedBlockType = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested block type id does not exist!"));
         mapper.map(request, savedBlockType);
-        savedBlockType.setUpdatedBy(0l);
+        savedBlockType.setUpdatedBy(userCurrent.getId());
         repository.save(savedBlockType);
         log.debug("block type record updated - {}"+ new Gson().toJson(savedBlockType));
         return mapper.map(savedBlockType, BlockTypeResponseDto.class);
@@ -72,7 +76,7 @@ public class BlockTypeService {
     public BlockTypeResponseDto findBlockTypeByName(String name){
         BlockType savedBlockType  = repository.findByName(name);
         if (savedBlockType == null){
-            new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+           throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                     "Requested block type does not exist!");
         }
         return mapper.map(savedBlockType,BlockTypeResponseDto.class);
@@ -87,11 +91,12 @@ public class BlockTypeService {
     }
 
     public void enableDisEnable (EnableDisEnableDto request){
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         BlockType savedBlockType  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested block type id does not exist!"));
         savedBlockType.setActive(request.isActive());
-        savedBlockType.setUpdatedBy(0l);
+        savedBlockType.setUpdatedBy(userCurrent.getId());
         repository.save(savedBlockType);
 
     }

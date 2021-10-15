@@ -5,6 +5,8 @@ import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
+import com.sabi.framework.models.User;
+import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.PartnerCategoriesDto;
 import com.sabi.logistics.core.dto.response.PartnerCategoriesResponseDto;
@@ -44,13 +46,14 @@ public class PartnerCategoriesService {
 
     public PartnerCategoriesResponseDto createPartnerCategory(PartnerCategoriesDto request) {
         validations.validatePartnerCategories(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PartnerCategories partnerCategories = mapper.map(request,PartnerCategories.class);
         PartnerCategories exist = repository.findPartnerCategoriesById(request.getId());
 
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Partner Category already exist");
         }
-        partnerCategories.setCreatedBy(0l);
+        partnerCategories.setCreatedBy(userCurrent.getId());
         partnerCategories.setActive(true);
         partnerCategories = repository.save(partnerCategories);
         log.debug("Create new partner Category - {}"+ new Gson().toJson(partnerCategories));
@@ -59,11 +62,12 @@ public class PartnerCategoriesService {
 
     public PartnerCategoriesResponseDto updatePartnerCategory(PartnerCategoriesDto request) {
         validations.validatePartnerCategories(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PartnerCategories partnerCategories = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner category id does not exist!"));
         mapper.map(request, partnerCategories);
-        partnerCategories.setUpdatedBy(0l);
+        partnerCategories.setUpdatedBy(userCurrent.getId());
         repository.save(partnerCategories);
         log.debug("partner category record updated - {}"+ new Gson().toJson(partnerCategories));
         return mapper.map(partnerCategories, PartnerCategoriesResponseDto.class);
@@ -94,11 +98,12 @@ public class PartnerCategoriesService {
     }
 
     public void enableDisEnable (EnableDisEnableDto request){
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PartnerCategories savedPartnerCategories  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner category id does not exist!"));
         savedPartnerCategories.setActive(request.isActive());
-        savedPartnerCategories.setUpdatedBy(0l);
+        savedPartnerCategories.setUpdatedBy(userCurrent.getId());
         repository.save(savedPartnerCategories);
 
     }
