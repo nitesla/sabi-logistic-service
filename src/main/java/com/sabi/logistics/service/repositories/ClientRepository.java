@@ -15,7 +15,7 @@ import java.util.List;
 @Repository
 public interface ClientRepository extends JpaRepository<Client, Long> {
 
-//    Client findByUserId(Long userId);
+
     List<Client> findByIsActive(Boolean isActive);
     Client findClientById(Long id);
 

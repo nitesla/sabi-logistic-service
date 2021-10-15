@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
+import com.sabi.framework.models.User;
+import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.PartnerLocationDto;
 import com.sabi.logistics.core.dto.response.PartnerLocationResponseDto;
@@ -41,12 +43,13 @@ public class PartnerLocationService {
 
     public PartnerLocationResponseDto createPartnerLocation(PartnerLocationDto request) {
         validations.validatePartnerLocation(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PartnerLocation partnerProperties = mapper.map(request,PartnerLocation.class);
         PartnerLocation exist = repository.findPartnerLocationById(request.getId());
         if (exist != null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Partner location already exist");
         }
-        partnerProperties.setCreatedBy(0l);
+        partnerProperties.setCreatedBy(userCurrent.getId());
         partnerProperties.setActive(true);
         partnerProperties = repository.save(partnerProperties);
         return mapper.map(partnerProperties, PartnerLocationResponseDto.class);
@@ -55,11 +58,12 @@ public class PartnerLocationService {
 
     public PartnerLocationResponseDto updatePartnerLocation(PartnerLocationDto request) {
         validations.validatePartnerLocation(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PartnerLocation partnerProperties = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner location Id does not exist!"));
         mapper.map(request, partnerProperties);
-        partnerProperties.setUpdatedBy(0l);
+        partnerProperties.setUpdatedBy(userCurrent.getId());
         repository.save(partnerProperties);
         log.debug("partner location record updated - {}"+ new Gson().toJson(partnerProperties));
         return mapper.map(partnerProperties, PartnerLocationResponseDto.class);
@@ -83,11 +87,12 @@ public class PartnerLocationService {
     }
 
     public void enableDisEnable (EnableDisEnableDto request){
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PartnerLocation savedPartnerCategories  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner location id does not exist!"));
         savedPartnerCategories.setActive(request.isActive());
-        savedPartnerCategories.setUpdatedBy(0l);
+        savedPartnerCategories.setUpdatedBy(userCurrent.getId());
         repository.save(savedPartnerCategories);
 
     }

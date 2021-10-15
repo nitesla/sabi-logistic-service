@@ -5,6 +5,8 @@ import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
+import com.sabi.framework.models.User;
+import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.PartnerPropertiesDto;
 import com.sabi.logistics.core.dto.response.PartnerPropertiesResponseDto;
@@ -39,12 +41,13 @@ public class PartnerPropertiesService {
 
     public PartnerPropertiesResponseDto createPartnerProperties(PartnerPropertiesDto request) {
         validations.validatePartnerProperties(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PartnerProperties partnerProperties = mapper.map(request,PartnerProperties.class);
         PartnerProperties exist = repository.findByName(request.getName());
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " partner properties already exist");
         }
-        partnerProperties.setCreatedBy(0l);
+        partnerProperties.setCreatedBy(userCurrent.getId());
         partnerProperties.setActive(true);
         partnerProperties = repository.save(partnerProperties);
         log.debug("Create new partner asset - {}"+ new Gson().toJson(partnerProperties));
@@ -54,11 +57,12 @@ public class PartnerPropertiesService {
 
     public PartnerPropertiesResponseDto updatePartnerProperties(PartnerPropertiesDto request) {
         validations.validatePartnerProperties(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PartnerProperties partnerProperties = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner properties Id does not exist!"));
         mapper.map(request, partnerProperties);
-        partnerProperties.setUpdatedBy(0l);
+        partnerProperties.setUpdatedBy(userCurrent.getId());
         repository.save(partnerProperties);
         log.debug("partner asset record updated - {}"+ new Gson().toJson(partnerProperties));
         return mapper.map(partnerProperties, PartnerPropertiesResponseDto.class);
@@ -84,11 +88,12 @@ public class PartnerPropertiesService {
 
 
     public void enableDisEnable (EnableDisEnableDto request){
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PartnerProperties partnerProperties = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner properties Id does not exist!"));
         partnerProperties.setActive(request.isActive());
-        partnerProperties.setUpdatedBy(0l);
+        partnerProperties.setUpdatedBy(userCurrent.getId());
         repository.save(partnerProperties);
 
     }

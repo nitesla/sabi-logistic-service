@@ -7,6 +7,8 @@ import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
+import com.sabi.framework.models.User;
+import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.LGADto;
 import com.sabi.logistics.core.dto.response.LGAResponseDto;
@@ -53,12 +55,13 @@ public class LGAService {
 
     public LGAResponseDto createLga(LGADto request) {
         validations.validateLGA(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         LGA lga = mapper.map(request,LGA.class);
         LGA lgaExist = lgaRepository.findByName(request.getName());
         if(lgaExist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " LGA already exist");
         }
-        lga.setCreatedBy(0l);
+        lga.setCreatedBy(userCurrent.getId());
         lga.setActive(true);
         lga = lgaRepository.save(lga);
         log.debug("Create new LGA - {}"+ new Gson().toJson(lga));
@@ -75,11 +78,12 @@ public class LGAService {
 
     public LGAResponseDto updateLga(LGADto request) {
         validations.validateLGA(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         LGA lga = lgaRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested State Id does not exist!"));
         mapper.map(request, lga);
-        lga.setUpdatedBy(0l);
+        lga.setUpdatedBy(userCurrent.getId());
         lgaRepository.save(lga);
         log.debug("LGA record updated - {}" + new Gson().toJson(lga));
         return mapper.map(lga, LGAResponseDto.class);
@@ -142,11 +146,12 @@ public class LGAService {
      * <remarks>this method is responsible for enabling and dis enabling a country</remarks>
      */
     public void enableDisEnableState (EnableDisEnableDto request){
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         LGA lga = lgaRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested LGA Id does not exist!"));
         lga.setActive(request.isActive());
-        lga.setUpdatedBy(0l);
+        lga.setUpdatedBy(userCurrent.getId());
         lgaRepository.save(lga);
 
     }

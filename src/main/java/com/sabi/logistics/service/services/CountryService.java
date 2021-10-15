@@ -7,6 +7,8 @@ import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
+import com.sabi.framework.models.User;
+import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.CountryDto;
 import com.sabi.logistics.core.dto.response.CountryResponseDto;
@@ -49,12 +51,13 @@ public class CountryService {
 
     public CountryResponseDto createCountry(CountryDto request) {
         validations.validateCountry(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Country country = mapper.map(request,Country.class);
         Country countryExist = countryRepository.findByName(request.getName());
         if(countryExist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Country already exist");
         }
-        country.setCreatedBy(0l);
+        country.setCreatedBy(userCurrent.getId());
         country.setActive(true);
         country = countryRepository.save(country);
         log.debug("Create new Country - {}"+ new Gson().toJson(country));
@@ -71,11 +74,12 @@ public class CountryService {
 
     public CountryResponseDto updateCountry(CountryDto request) {
         validations.validateCountry(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Country country = countryRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Country Id does not exist!"));
         mapper.map(request, country);
-        country.setUpdatedBy(0l);
+        country.setUpdatedBy(userCurrent.getId());
         countryRepository.save(country);
         log.debug("Country record updated - {}"+ new Gson().toJson(country));
         return mapper.map(country, CountryResponseDto.class);
@@ -119,11 +123,12 @@ public class CountryService {
      * <remarks>this method is responsible for enabling and dis enabling a country</remarks>
      */
     public void enableDisEnableState (EnableDisEnableDto request){
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Country country = countryRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Country Id does not exist!"));
         country.setActive(request.isActive());
-        country.setUpdatedBy(0l);
+        country.setUpdatedBy(userCurrent.getId());
         countryRepository.save(country);
 
     }
