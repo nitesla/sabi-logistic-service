@@ -7,7 +7,6 @@ import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
 import com.sabi.framework.repositories.UserRepository;
-import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.ClientDto;
 import com.sabi.logistics.core.dto.response.ClientResponseDto;
@@ -43,13 +42,12 @@ public class ClientService {
 
     public ClientResponseDto createClient(ClientDto request) {
         validations.validateClient(request);
-        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Client savedClient = mapper.map(request,Client.class);
         Client exist = repository.findClientById(request.getId());
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " client already exist");
         }
-        savedClient.setCreatedBy(userCurrent.getId());
+        savedClient.setCreatedBy(0l);
         savedClient.setActive(true);
         savedClient = repository.save(savedClient);
         log.debug("Create new client - {}"+ new Gson().toJson(savedClient));
@@ -58,9 +56,8 @@ public class ClientService {
 
     public ClientResponseDto updateClient(ClientDto request) {
         validations.validateClient(request);
-        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Client savedClient = repository.findClientById(request.getId());
-        savedClient.setUpdatedBy(userCurrent.getId());
+        savedClient.setUpdatedBy(0l);
         repository.save(savedClient);
         log.debug("client record updated - {}"+ new Gson().toJson(savedClient));
         return mapper.map(savedClient, ClientResponseDto.class);
@@ -83,12 +80,11 @@ public class ClientService {
     }
 
     public void enableDisEnable (EnableDisEnableDto request){
-        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Client savedClient  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested client id does not exist!"));
         savedClient.setActive(request.isActive());
-        savedClient.setUpdatedBy(userCurrent.getId());
+        savedClient.setUpdatedBy(0l);
         repository.save(savedClient);
 
     }
