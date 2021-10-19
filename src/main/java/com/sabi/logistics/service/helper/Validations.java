@@ -133,6 +133,36 @@ public class Validations {
         if(partnerLocationDto.getWareHouses() < 0)
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter a valid ware house figure!");
     }
+
+    public void validateDriver(DriverDto driverDto) {
+
+        if (driverDto.getName() == null || driverDto.getName().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+        if(driverDto.getPartnerAssetId()==null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Partner asset id cannot be empty");
+        if(driverDto.getUserId()==null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "User id cannot be empty");
+    }
+
+
+    public void validateDriverAsset(DriverAssetDto driverAssetDto) {
+
+        if (driverAssetDto.getName() == null || driverAssetDto.getName().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+        if(driverAssetDto.getPartnerAssetId()==null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Partner asset id cannot be empty");
+        if(driverAssetDto.getDriverId()==null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Driver id cannot be empty");
+    }
+
+
+    public void validatePartnerPicture(PartnerAssetPictureDto partnerAssetPictureDto) {
+
+
+        if(partnerAssetPictureDto.getPartnerAssetId()==null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Partner asset id cannot be empty");
+
+    }
 }
 
 

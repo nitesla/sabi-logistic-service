@@ -35,7 +35,8 @@ public class PartnerAssetPictureService {
     private final ObjectMapper objectMapper;
     private final Validations validations;
 
-    public PartnerAssetPictureService(PartnerAssetPictureRepository repository, ModelMapper mapper, ObjectMapper objectMapper,Validations validations) {
+    public PartnerAssetPictureService(PartnerAssetPictureRepository repository, ModelMapper mapper,
+                                      ObjectMapper objectMapper,Validations validations) {
         this.repository = repository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
@@ -44,7 +45,7 @@ public class PartnerAssetPictureService {
 
 
     public PartnerAssetPictureResponseDto createPartnerPicture(PartnerAssetPictureDto request) {
-//        validations.validateCountry(request);
+        validations.validatePartnerPicture(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PartnerAssetPicture partnerAssetPicture = mapper.map(request,PartnerAssetPicture.class);
         PartnerAssetPicture exist = repository.findByPartnerAssetIdAndPictureType(request.getPartnerAssetId(),request.getPictureType());
@@ -61,7 +62,7 @@ public class PartnerAssetPictureService {
 
 
     public PartnerAssetPictureResponseDto updatePartnerPicture(PartnerAssetPictureDto request) {
-//        validations.validateCountry(request);
+        validations.validatePartnerPicture(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PartnerAssetPicture assetPicture = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,

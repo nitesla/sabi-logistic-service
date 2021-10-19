@@ -46,7 +46,7 @@ public class DriverService {
 
 
     public DriverResponseDto createDriver(DriverDto request) {
-//        validations.validateCountry(request);
+        validations.validateDriver(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Driver driver = mapper.map(request,Driver.class);
         Driver exist = repository.findByName(request.getName());
@@ -63,7 +63,7 @@ public class DriverService {
 
 
     public DriverResponseDto updateDriver(DriverDto request) {
-//        validations.validateCountry(request);
+        validations.validateDriver(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Driver driver = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
