@@ -47,7 +47,7 @@ public class BlockTypeService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " block type already exist");
         }
         partnerCategories.setCreatedBy(userCurrent.getId());
-        partnerCategories.setActive(true);
+        partnerCategories.setIsActive(true);
         partnerCategories = repository.save(partnerCategories);
         log.debug("Create new block type - {}"+ new Gson().toJson(partnerCategories));
         return mapper.map(partnerCategories, BlockTypeResponseDto.class);
@@ -95,7 +95,7 @@ public class BlockTypeService {
         BlockType savedBlockType  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested block type id does not exist!"));
-        savedBlockType.setActive(request.isActive());
+        savedBlockType.setIsActive(request.isActive());
         savedBlockType.setUpdatedBy(userCurrent.getId());
         repository.save(savedBlockType);
 

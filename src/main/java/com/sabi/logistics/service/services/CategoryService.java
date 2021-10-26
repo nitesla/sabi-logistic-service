@@ -50,7 +50,7 @@ public class CategoryService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Category already exist");
         }
         category.setCreatedBy(userCurrent.getId());
-        category.setActive(true);
+        category.setIsActive(true);
         category = categoryRepository.save(category);
         log.debug("Create new category - {}"+ new Gson().toJson(category));
         return mapper.map(category, CategoryResponseDto.class);
@@ -94,7 +94,7 @@ public class CategoryService {
         Category category  = categoryRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Category Id does not exist!"));
-        category.setActive(request.isActive());
+        category.setIsActive(request.isActive());
         category.setUpdatedBy(userCurrent.getId());
         categoryRepository.save(category);
 

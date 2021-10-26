@@ -48,7 +48,7 @@ public class ClientService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " client already exist");
         }
         savedClient.setCreatedBy(0l);
-        savedClient.setActive(true);
+        savedClient.setIsActive(true);
         savedClient = repository.save(savedClient);
         log.debug("Create new client - {}"+ new Gson().toJson(savedClient));
         return mapper.map(savedClient, ClientResponseDto.class);
@@ -83,7 +83,7 @@ public class ClientService {
         Client savedClient  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested client id does not exist!"));
-        savedClient.setActive(request.isActive());
+        savedClient.setIsActive(request.isActive());
         savedClient.setUpdatedBy(0l);
         repository.save(savedClient);
 

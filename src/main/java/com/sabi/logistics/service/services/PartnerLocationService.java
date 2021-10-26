@@ -10,12 +10,8 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.PartnerLocationDto;
 import com.sabi.logistics.core.dto.response.PartnerLocationResponseDto;
 import com.sabi.logistics.core.models.PartnerLocation;
-import com.sabi.logistics.core.models.PartnerProperties;
-import com.sabi.logistics.core.models.State;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.PartnerLocationRepository;
-import com.sabi.logistics.service.repositories.PartnerPropertiesRepository;
-import com.sabi.logistics.service.repositories.StateRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -50,7 +46,7 @@ public class PartnerLocationService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Partner location already exist");
         }
         partnerProperties.setCreatedBy(userCurrent.getId());
-        partnerProperties.setActive(true);
+        partnerProperties.setIsActive(true);
         partnerProperties = repository.save(partnerProperties);
         return mapper.map(partnerProperties, PartnerLocationResponseDto.class);
     }
@@ -91,7 +87,7 @@ public class PartnerLocationService {
         PartnerLocation savedPartnerCategories  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner location id does not exist!"));
-        savedPartnerCategories.setActive(request.isActive());
+        savedPartnerCategories.setIsActive(request.isActive());
         savedPartnerCategories.setUpdatedBy(userCurrent.getId());
         repository.save(savedPartnerCategories);
 

@@ -54,7 +54,7 @@ public class DriverService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Driver already exist");
         }
         driver.setCreatedBy(userCurrent.getId());
-        driver.setActive(true);
+        driver.setIsActive(true);
         driver = repository.save(driver);
         log.debug("Create new Driver - {}"+ new Gson().toJson(driver));
         return mapper.map(driver, DriverResponseDto.class);
@@ -100,7 +100,7 @@ public class DriverService {
         Driver driver  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested driver Id does not exist!"));
-        driver.setActive(request.isActive());
+        driver.setIsActive(request.isActive());
         driver.setUpdatedBy(userCurrent.getId());
         repository.save(driver);
 

@@ -63,7 +63,7 @@ public class StateService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " State already exist");
         }
         state.setCreatedBy(userCurrent.getId());
-        state.setActive(true);
+        state.setIsActive(true);
         state = stateRepository.save(state);
         log.debug("Create new State - {}"+ new Gson().toJson(state));
         return mapper.map(state, StateResponseDto.class);
@@ -128,7 +128,7 @@ public class StateService {
         State state = stateRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested State Id does not exist!"));
-        state.setActive(request.isActive());
+        state.setIsActive(request.isActive());
         state.setUpdatedBy(userCurrent.getId());
         stateRepository.save(state);
 

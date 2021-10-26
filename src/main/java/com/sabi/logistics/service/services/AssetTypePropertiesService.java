@@ -54,7 +54,7 @@ public class AssetTypePropertiesService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Asset type already exist");
         }
         assetTypeProperties.setCreatedBy(userCurrent.getId());
-        assetTypeProperties.setActive(true);
+        assetTypeProperties.setIsActive(true);
         assetTypeProperties = repository.save(assetTypeProperties);
         log.debug("Create new asset type - {}"+ new Gson().toJson(assetTypeProperties));
         return mapper.map(assetTypeProperties, AssetTypePropertiesResponseDto.class);
@@ -101,7 +101,7 @@ public class AssetTypePropertiesService {
         AssetTypeProperties assetTypeProperties  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested asset type Id does not exist!"));
-        assetTypeProperties.setActive(request.isActive());
+        assetTypeProperties.setIsActive(request.isActive());
         assetTypeProperties.setUpdatedBy(userCurrent.getId());
         repository.save(assetTypeProperties);
 

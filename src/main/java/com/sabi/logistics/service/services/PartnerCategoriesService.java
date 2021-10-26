@@ -10,13 +10,11 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.PartnerCategoriesDto;
 import com.sabi.logistics.core.dto.response.PartnerCategoriesResponseDto;
-import com.sabi.logistics.core.models.Category;
+import com.sabi.logistics.core.models.Partner;
 import com.sabi.logistics.core.models.PartnerCategories;
-import com.sabi.logistics.core.models.PartnerProperties;
 import com.sabi.logistics.service.helper.Validations;
-import com.sabi.logistics.service.repositories.CategoryRepository;
 import com.sabi.logistics.service.repositories.PartnerCategoriesRepository;
-import com.sabi.logistics.service.repositories.PartnerPropertiesRepository;
+import com.sabi.logistics.service.repositories.PartnerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +30,7 @@ public class PartnerCategoriesService {
 
     private PartnerCategoriesRepository repository;
     @Autowired
-    private PartnerPropertiesRepository partnerPropertiesRepository;
+    private PartnerRepository partnerRepository;
     private final ModelMapper mapper;
     private final Validations validations;
 
@@ -54,7 +52,7 @@ public class PartnerCategoriesService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Partner Category already exist");
         }
         partnerCategories.setCreatedBy(userCurrent.getId());
-        partnerCategories.setActive(true);
+        partnerCategories.setIsActive(true);
         partnerCategories = repository.save(partnerCategories);
         log.debug("Create new partner Category - {}"+ new Gson().toJson(partnerCategories));
         return mapper.map(partnerCategories, PartnerCategoriesResponseDto.class);
@@ -80,13 +78,13 @@ public class PartnerCategoriesService {
         return mapper.map(partnerCategories,PartnerCategoriesResponseDto.class);
     }
 
-    public PartnerProperties findByCategoryId(Long id){
-        PartnerProperties savedPartnerCategories  = partnerPropertiesRepository.findPartnerPropertiesById(id);
+    public Partner findByCategoryId(Long id){
+        Partner savedPartnerCategories  = partnerRepository.findPartnerPropertiesById(id);
                 if (savedPartnerCategories == null){
-        new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+        throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner Category does not exist!");
                 }
-        return mapper.map(savedPartnerCategories,PartnerProperties.class);
+        return mapper.map(savedPartnerCategories,Partner.class);
     }
 
     public Page<PartnerCategories> findAll(Long partnerId, Long categoryId, PageRequest pageRequest ){
@@ -102,7 +100,7 @@ public class PartnerCategoriesService {
         PartnerCategories savedPartnerCategories  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner category id does not exist!"));
-        savedPartnerCategories.setActive(request.isActive());
+        savedPartnerCategories.setIsActive(request.isActive());
         savedPartnerCategories.setUpdatedBy(userCurrent.getId());
         repository.save(savedPartnerCategories);
 

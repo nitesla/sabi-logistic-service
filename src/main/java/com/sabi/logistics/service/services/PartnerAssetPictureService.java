@@ -53,7 +53,7 @@ public class PartnerAssetPictureService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Asset picture already exist");
         }
         partnerAssetPicture.setCreatedBy(userCurrent.getId());
-        partnerAssetPicture.setActive(true);
+        partnerAssetPicture.setIsActive(true);
         partnerAssetPicture = repository.save(partnerAssetPicture);
         log.debug("Create new asset picture - {}"+ new Gson().toJson(partnerAssetPicture));
         return mapper.map(partnerAssetPicture, PartnerAssetPictureResponseDto.class);
@@ -99,7 +99,7 @@ public class PartnerAssetPictureService {
         PartnerAssetPicture assetPicture = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "asset picture id does not exist!"));
-        assetPicture.setActive(request.isActive());
+        assetPicture.setIsActive(request.isActive());
         assetPicture.setUpdatedBy(userCurrent.getId());
         repository.save(assetPicture);
 
