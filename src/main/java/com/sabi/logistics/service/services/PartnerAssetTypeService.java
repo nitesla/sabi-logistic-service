@@ -24,13 +24,15 @@ import java.util.List;
 @Slf4j
 @Service
 public class PartnerAssetTypeService {
-    private final PartnerAssetTypeRepository partnerAssetTypeRepository;
+    private PartnerAssetTypeRepository partnerAssetTypeRepository;
     private final ModelMapper mapper;
+    private final ObjectMapper objectMapper;
     private final Validations validations;
 
-    public PartnerAssetTypeService(PartnerAssetTypeRepository PartnerAssetTypeRepository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
-        this.partnerAssetTypeRepository = PartnerAssetTypeRepository;
+    public PartnerAssetTypeService(PartnerAssetTypeRepository partnerAssetTypeRepository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
+        this.partnerAssetTypeRepository = partnerAssetTypeRepository;
         this.mapper = mapper;
+        this.objectMapper = objectMapper;
         this.validations = validations;
     }
 

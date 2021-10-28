@@ -26,8 +26,8 @@ public class ColorService {
     private final ModelMapper mapper;
 
 
-    public ColorService(ColorRepository ColorRepository, ModelMapper mapper) {
-        this.colorRepository = ColorRepository;
+    public ColorService(ColorRepository colorRepository, ModelMapper mapper) {
+        this.colorRepository = colorRepository;
         this.mapper = mapper;
     }
 
