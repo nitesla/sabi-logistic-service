@@ -17,7 +17,6 @@ public interface PartnerCategoriesRepository extends JpaRepository<PartnerCatego
 
     PartnerCategories findByPartnerId(Long partnerId);
     PartnerCategories findPartnerCategoriesById(Long id);
-//    PartnerCategories findByCategoryIdId(Long categoryId);
     List<PartnerCategories> findByIsActive(Boolean isActive);
 
     @Query("SELECT c FROM PartnerCategories c WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND c.partnerId = :partnerId))" )
