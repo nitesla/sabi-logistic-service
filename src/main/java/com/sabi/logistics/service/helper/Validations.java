@@ -9,10 +9,7 @@ import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.*;
 import com.sabi.logistics.core.models.*;
-import com.sabi.logistics.service.repositories.CategoryRepository;
-import com.sabi.logistics.service.repositories.LGARepository;
-import com.sabi.logistics.service.repositories.PartnerPropertiesRepository;
-import com.sabi.logistics.service.repositories.StateRepository;
+import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -28,14 +25,25 @@ public class Validations {
     private UserRepository userRepository;
     private PartnerPropertiesRepository partnerPropertiesRepository;
     private CategoryRepository categoryRepository;
+    private final AssetTypePropertiesRepository assetTypePropertiesRepository;
+    private final PartnerAssetRepository partnerAssetRepository;
+    private final PartnerAssetTypeRepository partnerAssetTypeRepository;
+    private final DriverRepository driverRepository;
+    private final BrandRepository brandRepository;
 
 
-    public Validations(StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository, PartnerPropertiesRepository partnerPropertiesRepository, CategoryRepository categoryRepository) {
+    public Validations(StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository, PartnerPropertiesRepository partnerPropertiesRepository, CategoryRepository categoryRepository,
+                       AssetTypePropertiesRepository assetTypePropertiesRepository, PartnerAssetRepository partnerAssetRepository, PartnerAssetTypeRepository partnerAssetTypeRepository, DriverRepository driverRepository, BrandRepository brandRepository) {
         this.stateRepository = stateRepository;
         this.lgaRepository = lgaRepository;
         this.userRepository = userRepository;
         this.partnerPropertiesRepository = partnerPropertiesRepository;
         this.categoryRepository = categoryRepository;
+        this.assetTypePropertiesRepository = assetTypePropertiesRepository;
+        this.partnerAssetRepository = partnerAssetRepository;
+        this.partnerAssetTypeRepository = partnerAssetTypeRepository;
+        this.driverRepository = driverRepository;
+        this.brandRepository = brandRepository;
     }
 
     public void validateState(StateDto stateDto) {
@@ -132,6 +140,44 @@ public class Validations {
                         " Enter a valid state id!"));
         if(partnerLocationDto.getWareHouses() < 0)
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter a valid ware house figure!");
+    }
+
+    public void validateBrand(BrandRequestDto request) {
+        if(request.getName() != null && !request.getName().isEmpty()){}
+        else throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Brand Name cannot be empty");
+    }
+
+
+    public void validateWarehouse(WarehouseRequestDto request) {
+//        if(request.getPartnerId().)
+        lgaRepository.findById(request.getLgaId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                " Enter a valid lga id!"));
+        //todo check for existing partner id
+        partnerPropertiesRepository.findById(request.getPartnerId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                " Enter a valid partner id!"));
+    }
+
+    public void validatePartnerAssetType(PartnerAssetTypeRequestDto request) {
+        assetTypePropertiesRepository.findById(request.getAssetTypeId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                " Enter a valid asset type id!"));
+        partnerPropertiesRepository.findById(request.getPartnerId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                " Enter a valid partner id!"));
+    }
+
+    public void validatePartnerAsset(PartnerAssetRequestDto request) {
+        partnerAssetTypeRepository.findById(request.getPartnerAssetTypeId()).orElseThrow(()-> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                " Enter a valid Partner Asset Type!"));
+        driverRepository.findById(request.getDriverId()).orElseThrow(()-> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                " Enter a valid Driver!"));
+        brandRepository.findById(request.getBrandId()).orElseThrow(()-> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                " Enter a valid Brand!"));
+    }
+
+    public void validatePartnerUser(PartnerUserRequestDto request) {
+        partnerPropertiesRepository.findById(request.getPartnerId()).orElseThrow(()-> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                " Enter a valid Driver!"));
+        userRepository.findById(request.getUserId()).orElseThrow(()->new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                " Enter a valid User!"));
     }
 }
 
