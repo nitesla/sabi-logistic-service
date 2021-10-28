@@ -3,15 +3,17 @@ package com.sabi.logistics.service.helper;
 
 
 import com.sabi.framework.exceptions.BadRequestException;
+import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
 import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.*;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.repositories.CategoryRepository;
 import com.sabi.logistics.service.repositories.LGARepository;
-import com.sabi.logistics.service.repositories.PartnerPropertiesRepository;
+import com.sabi.logistics.service.repositories.PartnerRepository;
 import com.sabi.logistics.service.repositories.StateRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,15 +28,15 @@ public class Validations {
     private StateRepository stateRepository;
     private LGARepository lgaRepository;
     private UserRepository userRepository;
-    private PartnerPropertiesRepository partnerPropertiesRepository;
+    private PartnerRepository partnerRepository;
     private CategoryRepository categoryRepository;
 
 
-    public Validations(StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository, PartnerPropertiesRepository partnerPropertiesRepository, CategoryRepository categoryRepository) {
+    public Validations(StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository, PartnerRepository partnerRepository, CategoryRepository categoryRepository) {
         this.stateRepository = stateRepository;
         this.lgaRepository = lgaRepository;
         this.userRepository = userRepository;
-        this.partnerPropertiesRepository = partnerPropertiesRepository;
+        this.partnerRepository = partnerRepository;
         this.categoryRepository = categoryRepository;
     }
 
@@ -76,7 +78,7 @@ public class Validations {
 
     }
 
-    public void validatePartnerProperties(PartnerPropertiesDto partnerPropertiesDto) {
+    public void validatePartnerProperties(PartnerDto partnerPropertiesDto) {
         if (partnerPropertiesDto.getName() == null || partnerPropertiesDto.getName().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
         if (partnerPropertiesDto.getAddress() == null || partnerPropertiesDto.getAddress().isEmpty())
@@ -115,7 +117,7 @@ public class Validations {
     }
 
     public void validatePartnerCategories(PartnerCategoriesDto partnerCategoriesDto) {
-        PartnerProperties partnerProperties = partnerPropertiesRepository.findById(partnerCategoriesDto.getPartnerId())
+        Partner partnerProperties = partnerRepository.findById(partnerCategoriesDto.getPartnerId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " Enter a valid partner id!"));
         Category category = categoryRepository.findById(partnerCategoriesDto.getCategoryId())
@@ -124,7 +126,7 @@ public class Validations {
     }
 
     public void validatePartnerLocation(PartnerLocationDto partnerLocationDto) {
-        PartnerProperties partnerProperties = partnerPropertiesRepository.findById(partnerLocationDto.getPartnerId())
+        Partner partnerProperties = partnerRepository.findById(partnerLocationDto.getPartnerId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " Enter a valid partner id!"));
         State state = stateRepository.findById(partnerLocationDto.getStateId())
@@ -132,6 +134,68 @@ public class Validations {
                         " Enter a valid state id!"));
         if(partnerLocationDto.getWareHouses() < 0)
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter a valid ware house figure!");
+    }
+
+    public void validateDriver(DriverDto driverDto) {
+
+        if (driverDto.getName() == null || driverDto.getName().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+        if(driverDto.getPartnerAssetId()==null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Partner asset id cannot be empty");
+        if(driverDto.getUserId()==null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "User id cannot be empty");
+    }
+
+
+    public void validateDriverAsset(DriverAssetDto driverAssetDto) {
+
+        if (driverAssetDto.getName() == null || driverAssetDto.getName().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+        if(driverAssetDto.getPartnerAssetId()==null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Partner asset id cannot be empty");
+        if(driverAssetDto.getDriverId()==null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Driver id cannot be empty");
+    }
+
+
+    public void validatePartnerPicture(PartnerAssetPictureDto partnerAssetPictureDto) {
+
+
+        if(partnerAssetPictureDto.getPartnerAssetId()==null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Partner asset id cannot be empty");
+
+    }
+
+
+
+
+    public void validatePartner(PartnerSignUpDto partner){
+        if (partner.getFirstName() == null || partner.getFirstName().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "First name cannot be empty");
+        if (partner.getFirstName().length() < 2 || partner.getFirstName().length() > 100)// NAME LENGTH*********
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid first name  length");
+
+        if (partner.getLastName() == null || partner.getLastName().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Last name cannot be empty");
+        if (partner.getLastName().length() < 2 || partner.getLastName().length() > 100)// NAME LENGTH*********
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid last name  length");
+
+        if (partner.getEmail() == null || partner.getEmail().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "email cannot be empty");
+        if (!Utility.validEmail(partner.getEmail().trim()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid Email Address");
+        User user = userRepository.findByEmail(partner.getEmail());
+        if(user !=null){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Email already exist");
+        }
+        if (partner.getPhone() == null || partner.getPhone().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Phone number cannot be empty");
+        if (partner.getPhone().length() < 8 || partner.getPhone().length() > 14)// NAME LENGTH*********
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid phone number  length");
+        if (!Utility.isNumeric(partner.getPhone()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for phone number ");
+        if (partner.getName() == null || partner.getName().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
     }
 }
 

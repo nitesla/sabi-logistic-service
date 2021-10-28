@@ -43,7 +43,7 @@ public class DriverAssetService {
 
 
     public DriverAssetResponseDto createDriverAsset(DriverAssetDto request) {
-//        validations.validateCountry(request);
+        validations.validateDriverAsset(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         DriverAsset driverAsset = mapper.map(request,DriverAsset.class);
         DriverAsset exist = repository.findByName(request.getName());
@@ -51,7 +51,7 @@ public class DriverAssetService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Driver asset already exist");
         }
         driverAsset.setCreatedBy(userCurrent.getId());
-        driverAsset.setActive(true);
+        driverAsset.setIsActive(true);
         driverAsset = repository.save(driverAsset);
         log.debug("Create new Driver asset - {}"+ new Gson().toJson(driverAsset));
         return mapper.map(driverAsset, DriverAssetResponseDto.class);
@@ -59,7 +59,7 @@ public class DriverAssetService {
 
 
     public DriverAssetResponseDto updateDriverAsset(DriverAssetDto request) {
-//        validations.validateCountry(request);
+        validations.validateDriverAsset(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         DriverAsset driverAsset = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
@@ -96,7 +96,7 @@ public class DriverAssetService {
         DriverAsset driverAsset  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested driver asset id does not exist!"));
-        driverAsset.setActive(request.isActive());
+        driverAsset.setIsActive(request.isActive());
         driverAsset.setUpdatedBy(userCurrent.getId());
         repository.save(driverAsset);
 
