@@ -21,8 +21,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Slf4j
@@ -44,11 +48,11 @@ public class AllocationService {
         this.validations = validations;
     }
 
-    public AllocationResponseDto createAllocationHistory(AllocationsDto request) {
+    public AllocationResponseDto createAllocation(AllocationsDto request) {
 //        validations.validateAssetTypeProperties(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Allocations allocationHistory = mapper.map(request,Allocations.class);
-        Allocations exist = repository.getOne(request.getId());
+        Allocations exist = repository.findByName(request.getName());
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Allocation already exist");
         }
@@ -56,10 +60,9 @@ public class AllocationService {
 //        if(savedCilent !=null){
 //            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Client profile does not exist!");
 //        }
-        BlockType savedBlockType = blockTypeRepository.getOne(request.getBlockTypeId() );
-        if(savedBlockType !=null){
-            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Block Type profile does not exist!");
-        }
+        BlockType savedBlockType = blockTypeRepository.findById(request.getBlockTypeId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Requested block type Id does not exist!"));
         allocationHistory.setCreatedBy(userCurrent.getId());
         allocationHistory.setIsActive(true);
         allocationHistory = repository.save(allocationHistory);
@@ -81,17 +84,17 @@ public class AllocationService {
     }
 
 
-    public AllocationHistoryResponseDto findAllocationHistory(Long id){
+    public AllocationResponseDto findAllocations(Long id){
         Allocations allocations  = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested allocations Id does not exist!"));
-        return mapper.map(allocations,AllocationHistoryResponseDto.class);
+        return mapper.map(allocations,AllocationResponseDto.class);
     }
 
 
 
-    public Page<Allocations> findAll(Long allocationId, LocalDateTime startDate, PageRequest pageRequest ){
-        Page<Allocations> assetTypeProperties = repository.findAllocations(allocationId,startDate,pageRequest);
+    public Page<Allocations> findAll(String name, PageRequest pageRequest ){
+        Page<Allocations> assetTypeProperties = repository.findAllocations(name,pageRequest);
         if(assetTypeProperties == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

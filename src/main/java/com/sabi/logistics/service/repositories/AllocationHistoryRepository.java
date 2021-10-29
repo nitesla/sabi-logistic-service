@@ -14,16 +14,16 @@ import java.util.List;
 @Repository
 public interface AllocationHistoryRepository extends JpaRepository<AllocationHistory, Long> {
 
-//    AllocationHistory findByName(String name);
+    AllocationHistory findAllocationHistoriesById(Long id);
 
     List<AllocationHistory> findByIsActive(Boolean isActive);
 
     @Query("SELECT c FROM AllocationHistory c WHERE ((:allocationId IS NULL) OR (:allocationId IS NOT NULL AND c.allocationId = :allocationId))" +
-            " AND ((:startDate IS NULL) OR (:startDate IS NOT NULL AND c.startDate = :startDate))"
+            " AND ((:clientId IS NULL) OR (:clientId IS NOT NULL AND c.clientId = :clientId))"
 //            " AND ((:height IS NULL) OR (:height IS NOT NULL AND c.height = :height))" +
 //            " AND ((:price >= 0.0) OR (:price  AND c.price = :price))" )
 //            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND c.isActive = :isActive))
  )
     Page<AllocationHistory> findAllocationHistory(@Param("allocationId") Long allocationId,
-                                                  @Param("startDate") LocalDateTime startDate, Pageable pageable);
+                                                  @Param("clientId") Long clientId, Pageable pageable);
 }
