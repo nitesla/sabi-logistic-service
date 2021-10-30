@@ -56,16 +56,12 @@ public class AllocationHistoryService {
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Allocation history already exist");
         }
-        Client savedClient = clientRepository.findClientById(request.getClientId());
-        if (savedClient == null){
-           throw  new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                    "Client Id does not exist!");
-        }
-        Allocations savedAllocation = allocationsRepository.findAllocationsById(request.getAllocationId());
-            if (savedAllocation == null){
-                throw  new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        "Allocation Id does not exist!");
-            }
+        Client savedClient = clientRepository.findById(request.getClientId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Requested client id does not exist!"));
+        Allocations savedAllocation = allocationsRepository.findById(request.getAllocationId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Requested allocation id does not exist!"));
         allocationHistory.setCreatedBy(userCurrent.getId());
         allocationHistory.setIsActive(true);
         allocationHistory = repository.save(allocationHistory);

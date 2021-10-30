@@ -14,9 +14,11 @@ import com.sabi.logistics.core.dto.response.AllocationHistoryResponseDto;
 import com.sabi.logistics.core.dto.response.AllocationResponseDto;
 import com.sabi.logistics.core.models.Allocations;
 import com.sabi.logistics.core.models.BlockType;
+import com.sabi.logistics.core.models.Warehouse;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.AllocationsRepository;
 import com.sabi.logistics.service.repositories.BlockTypeRepository;
+import com.sabi.logistics.service.repositories.WarehouseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,8 @@ public class AllocationService {
 //    private ClientRepository clientRepository;
     @Autowired
     private BlockTypeRepository blockTypeRepository;
+    @Autowired
+    private WarehouseRepository warehouseRepository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
     private final Validations validations;
@@ -56,10 +60,9 @@ public class AllocationService {
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Allocation already exist");
         }
-//        Warehouse savedWareHouse = clientRepository.getOne(request.getClientId());
-//        if(savedCilent !=null){
-//            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Client profile does not exist!");
-//        }
+        Warehouse savedWareHouse = warehouseRepository.findById(request.getBlockTypeId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Requested warehouse Id does not exist!"));
         BlockType savedBlockType = blockTypeRepository.findById(request.getBlockTypeId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested block type Id does not exist!"));
@@ -76,6 +79,12 @@ public class AllocationService {
         Allocations allocations = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested allocations Id does not exist!"));
+        Warehouse savedWareHouse = warehouseRepository.findById(request.getBlockTypeId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Requested warehouse Id does not exist!"));
+        BlockType savedBlockType = blockTypeRepository.findById(request.getBlockTypeId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Requested block type Id does not exist!"));
         mapper.map(request, allocations);
         allocations.setUpdatedBy(userCurrent.getId());
         repository.save(allocations);
