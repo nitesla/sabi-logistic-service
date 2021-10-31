@@ -15,6 +15,7 @@ import com.sabi.logistics.core.models.Partner;
 import com.sabi.logistics.core.models.State;
 import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @SuppressWarnings("All")
@@ -34,6 +35,9 @@ public class Validations {
     private final PartnerAssetTypeRepository partnerAssetTypeRepository;
     private final DriverRepository driverRepository;
     private final BrandRepository brandRepository;
+
+    @Autowired
+    private WarehouseRepository warehouseRepository;
 
 
     public Validations(StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository,
@@ -250,6 +254,84 @@ public class Validations {
                 " Enter a valid Driver!"));
         userRepository.findById(request.getUserId()).orElseThrow(()->new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                 " Enter a valid User!"));
+    }
+
+    public String generateReferenceNumber(int numOfDigits) {
+        if (numOfDigits < 1) {
+            throw new IllegalArgumentException(numOfDigits + ": Number must be equal or greater than 1");
+        }
+        long random = (long) Math.floor(Math.random() * 9 * (long) Math.pow(10, numOfDigits - 1)) + (long) Math.pow(10, numOfDigits - 1);
+        return Long.toString(random);
+    }
+
+    public void validateOrder (OrderRequestDto request){
+
+        if(request.getWareHouseID() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " wareHouseID can not be null");
+        if (!Utility.isNumeric(request.getWareHouseID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for wareHouseID ");
+
+        if (request.getDeliveryPartnerID() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Partner ID cannot be empty");
+        if (!Utility.isNumeric(request.getDeliveryPartnerID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Delivery Partner ID ");
+
+        if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
+        if (!("Pending".equalsIgnoreCase(request.getDeliveryStatus()) || "Ongoing".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus())))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Delivery Status");
+        if (!Utility.validateName(request.getDeliveryStatus().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Delivery Status ");
+
+        if (request.getCustomerName() == null || request.getCustomerName().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Customer Name cannot be empty");
+        if (!Utility.validateName(request.getCustomerName().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Customer Name ");
+
+        if (request.getCustomerPhone() == null || request.getCustomerPhone().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Customer Phone cannot be empty");
+        if (!Utility.validatePhoneNumber(request.getCustomerPhone().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Customer Phone ");
+
+        if (request.getDeliveryAddress() == null || request.getDeliveryAddress().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Address cannot be empty");
+
+        warehouseRepository.findById(request.getWareHouseID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Warehouse ID does not Exist!")
+        );
+    }
+
+    public void validateOrderItem (OrderItemRequestDto request){
+
+        if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
+        if (!("Pending".equalsIgnoreCase(request.getDeliveryStatus()) || "InTransit".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus())))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Delivery Status");
+        if (!Utility.validateName(request.getDeliveryStatus().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Delivery Status ");
+
+        if (request.getPartnerAssetID() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Partner Asset ID cannot be empty");
+        if (!Utility.isNumeric(request.getPartnerAssetID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Partner Asset ID ");
+
+
+        if (request.getName() == null || request.getName().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+        if (!Utility.validateName(request.getName().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Name ");
+
+        if (request.getQty() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Qty cannot be empty");
+        if (!Utility.isNumeric(request.getQty().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Qty");
+
+
+        partnerAssetRepository.findById(request.getPartnerAssetID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " PartnerAssetID ID does not Exist!")
+        );
     }
 }
 
