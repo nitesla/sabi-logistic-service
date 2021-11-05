@@ -113,4 +113,11 @@ public class PartnerCategoriesService {
 
     }
 
+
+//    public List<PartnerCategories> findAllByPartnerId(Long partnerId){
+//        List<PartnerCategories> partnerCategories = repository.findAllByPartnerId(partnerId);
+//        return partnerCategories;
+//
+//    }
+
 }

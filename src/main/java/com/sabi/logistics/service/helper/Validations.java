@@ -9,10 +9,7 @@ import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.*;
-import com.sabi.logistics.core.models.Category;
-import com.sabi.logistics.core.models.LGA;
-import com.sabi.logistics.core.models.Partner;
-import com.sabi.logistics.core.models.State;
+import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +22,7 @@ public class Validations {
 
 
 
+    private CountryRepository countryRepository;
     private StateRepository stateRepository;
     private LGARepository lgaRepository;
     private UserRepository userRepository;
@@ -40,11 +38,12 @@ public class Validations {
     private WarehouseRepository warehouseRepository;
 
 
-    public Validations(StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository,
+    public Validations(CountryRepository countryRepository,StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository,
                        PartnerRepository partnerRepository, CategoryRepository categoryRepository,
                        AssetTypePropertiesRepository assetTypePropertiesRepository, PartnerAssetRepository partnerAssetRepository,
                        PartnerAssetTypeRepository partnerAssetTypeRepository, DriverRepository driverRepository,
                        BrandRepository brandRepository) {
+        this.countryRepository = countryRepository;
         this.stateRepository = stateRepository;
         this.lgaRepository = lgaRepository;
         this.userRepository = userRepository;
@@ -60,6 +59,9 @@ public class Validations {
     public void validateState(StateDto stateDto) {
         if (stateDto.getName() == null || stateDto.getName().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+        Country country = countryRepository.findById(stateDto.getCountryId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid Country id!"));
     }
 
 

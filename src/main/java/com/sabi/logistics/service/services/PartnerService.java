@@ -121,7 +121,7 @@ public class PartnerService {
         Partner savePartner = new Partner();
         savePartner.setName(request.getName());
         savePartner.setUserId(user.getId());
-        savePartner.setRegistrationToken(Utility.registrationCode());
+        savePartner.setRegistrationToken(Utility.registrationCode("HHmmss"));
         savePartner.setRegistrationTokenExpiration(Utility.expiredTime());
         savePartner.setIsActive(false);
         savePartner.setCreatedBy(user.getId());
