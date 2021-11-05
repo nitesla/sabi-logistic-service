@@ -2,7 +2,6 @@ package com.sabi.logistics.service.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
@@ -11,8 +10,10 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.StateDto;
 import com.sabi.logistics.core.dto.response.StateResponseDto;
+import com.sabi.logistics.core.models.Country;
 import com.sabi.logistics.core.models.State;
 import com.sabi.logistics.service.helper.Validations;
+import com.sabi.logistics.service.repositories.CountryRepository;
 import com.sabi.logistics.service.repositories.StateRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -34,13 +35,14 @@ import java.util.List;
 public class StateService {
 
 
-
+    private CountryRepository countryRepository;
     private StateRepository stateRepository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
     private final Validations validations;
 
-    public StateService(StateRepository stateRepository, ModelMapper mapper, ObjectMapper objectMapper,Validations validations) {
+    public StateService(CountryRepository countryRepository,StateRepository stateRepository, ModelMapper mapper, ObjectMapper objectMapper,Validations validations) {
+        this.countryRepository = countryRepository;
         this.stateRepository = stateRepository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
@@ -99,6 +101,8 @@ public class StateService {
         State state = stateRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested State Id does not exist!"));
+        Country country = countryRepository.getOne(state.getCountryId());
+        state.setCountryName(country.getName());
         return mapper.map(state,StateResponseDto.class);
     }
 
@@ -113,8 +117,12 @@ public class StateService {
             if(state == null){
                 throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
             }
-        return state;
+        state.getContent().forEach(states -> {
+            Country country = countryRepository.getOne(states.getCountryId());
 
+            states.setCountryName(country.getName());
+        });
+            return state;
     }
 
 
@@ -137,6 +145,11 @@ public class StateService {
 
     public List<State> getAll(Boolean isActive){
         List<State> states = stateRepository.findByIsActive(isActive);
+        for (State tran : states
+                ) {
+            Country country = countryRepository.getOne(tran.getCountryId());
+            tran.setCountryName(country.getName());
+        }
         return states;
 
     }
