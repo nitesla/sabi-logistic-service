@@ -10,11 +10,16 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.PartnerAssetTypeRequestDto;
 import com.sabi.logistics.core.dto.response.PartnerAssetTypeResponseDto;
+import com.sabi.logistics.core.models.AssetTypeProperties;
+import com.sabi.logistics.core.models.Partner;
 import com.sabi.logistics.core.models.PartnerAssetType;
 import com.sabi.logistics.service.helper.Validations;
+import com.sabi.logistics.service.repositories.AssetTypePropertiesRepository;
 import com.sabi.logistics.service.repositories.PartnerAssetTypeRepository;
+import com.sabi.logistics.service.repositories.PartnerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -25,12 +30,16 @@ import java.util.List;
 @Service
 public class PartnerAssetTypeService {
     private PartnerAssetTypeRepository partnerAssetTypeRepository;
+    private AssetTypePropertiesRepository assetTypePropertiesRepository;
+    private PartnerRepository partnerRepository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
     private final Validations validations;
 
-    public PartnerAssetTypeService(PartnerAssetTypeRepository partnerAssetTypeRepository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
+    public PartnerAssetTypeService(PartnerAssetTypeRepository partnerAssetTypeRepository, AssetTypePropertiesRepository assetTypePropertiesRepository, PartnerRepository partnerRepository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
         this.partnerAssetTypeRepository = partnerAssetTypeRepository;
+        this.assetTypePropertiesRepository = assetTypePropertiesRepository;
+        this.partnerRepository = partnerRepository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
         this.validations = validations;
@@ -45,6 +54,10 @@ public class PartnerAssetTypeService {
         if(partnerAssetTypeExists !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " PartnerAssetType already exist");
         }
+        AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(request.getAssetTypeId());
+        Partner partner  = partnerRepository.getOne(request.getPartnerId());
+        partnerAssetType.setAssetTypeName(assetTypeProperties.getName());
+        partnerAssetType.setPartnerName(partner.getName());
         partnerAssetType.setCreatedBy(userCurrent.getId());
         partnerAssetType.setIsActive(true);
         partnerAssetType = partnerAssetTypeRepository.save(partnerAssetType);
