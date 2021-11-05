@@ -296,6 +296,30 @@ public class Validations {
         if (request.getDeliveryAddress() == null || request.getDeliveryAddress().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Address cannot be empty");
 
+        if (request.getBarCode() == null || request.getBarCode().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "BarCode cannot be empty");
+        if (!Utility.isAlphaNumeric(request.getBarCode().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for BarCode");
+
+        if (request.getQRcode() == null || request.getQRcode().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "BarCode cannot be empty");
+        if (!Utility.isAlphaNumeric(request.getQRcode().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for BarCode");
+
+        if (request.getTotalAmount() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Total Amount cannot be empty");
+        if (request.getTotalAmount()  <= 0.0)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Total Amount cannot be less than 0");
+        if (!Utility.isNumeric(request.getTotalAmount().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Total Amount");
+
+        if (request.getTotalQuantity() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Qty cannot be empty");
+        if (!Utility.isNumeric(request.getTotalQuantity().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Qty");
+
+
+
         warehouseRepository.findById(request.getWareHouseID()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " Warehouse ID does not Exist!")

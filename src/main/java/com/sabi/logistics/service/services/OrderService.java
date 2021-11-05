@@ -82,7 +82,8 @@ public class OrderService {
 
 
     public Page<Order> findAll(Long wareHouseID, Long deliveryPartnerID, String referenceNo, String deliveryStatus,
-                               String customerName, String customerPhone, String deliveryAddress, PageRequest pageRequest ){
+                               String customerName, String customerPhone, String deliveryAddress,
+                               String barCode, String QRcode, PageRequest pageRequest ){
         GenericSpecification<Order> genericSpecification = new GenericSpecification<Order>();
 
         if (wareHouseID != null)
