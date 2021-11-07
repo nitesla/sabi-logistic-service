@@ -10,8 +10,10 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.PartnerAssetRequestDto;
 import com.sabi.logistics.core.dto.response.PartnerAssetResponseDto;
 import com.sabi.logistics.core.models.PartnerAsset;
+import com.sabi.logistics.core.models.PartnerAssetType;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.PartnerAssetRepository;
+import com.sabi.logistics.service.repositories.PartnerAssetTypeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -24,11 +26,13 @@ import java.util.List;
 @Slf4j
 public class PartnerAssetService {
     private final PartnerAssetRepository partnerAssetRepository;
+    private final PartnerAssetTypeRepository partnerAssetTypeRepository;
     private final ModelMapper mapper;
     private final Validations validations;
 
-    public PartnerAssetService(PartnerAssetRepository PartnerAssetRepository, ModelMapper mapper, Validations validations) {
-        this.partnerAssetRepository = PartnerAssetRepository;
+    public PartnerAssetService(PartnerAssetRepository partnerAssetRepository, PartnerAssetTypeRepository partnerAssetTypeRepository, ModelMapper mapper, Validations validations) {
+        this.partnerAssetRepository = partnerAssetRepository;
+        this.partnerAssetTypeRepository = partnerAssetTypeRepository;
         this.mapper = mapper;
         this.validations = validations;
     }
@@ -41,8 +45,11 @@ public class PartnerAssetService {
         if(PartnerAssetExists !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " partnerAsset already exist");
         }
+        PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(request.getPartnerAssetTypeId());
+        partnerAsset.setPartnerName(partnerAssetType.getPartnerName());
+        partnerAsset.setAssetTypeName(partnerAssetType.getAssetTypeName());
         partnerAsset.setCreatedBy(userCurrent.getId());
-        partnerAsset.setActive(true);
+        partnerAsset.setIsActive(true);
         partnerAsset = partnerAssetRepository.save(partnerAsset);
         log.debug("Create new PartnerAsset - {}"+ new Gson().toJson(partnerAsset));
         return mapper.map(partnerAsset, PartnerAssetResponseDto.class);
@@ -69,8 +76,8 @@ public class PartnerAssetService {
     }
 
 
-    public Page<PartnerAsset> findAll(String name, PageRequest pageRequest ){
-        Page<PartnerAsset> PartnerAssets = partnerAssetRepository.findPartnerAsset(name,pageRequest);
+    public Page<PartnerAsset> findAll(String name,Long brandId, String status, Long driverId, Long partnerAssetTypeId, PageRequest pageRequest ){
+        Page<PartnerAsset> PartnerAssets = partnerAssetRepository.findPartnerAsset(name,brandId,status,driverId,partnerAssetTypeId,pageRequest);
         if(PartnerAssets == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
@@ -85,7 +92,7 @@ public class PartnerAssetService {
         PartnerAsset partnerAsset  = partnerAssetRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested PartnerAsset Id does not exist!"));
-        partnerAsset.setActive(request.isActive());
+        partnerAsset.setIsActive(request.isActive());
         partnerAsset.setUpdatedBy(userCurrent.getId());
         partnerAssetRepository.save(partnerAsset);
 

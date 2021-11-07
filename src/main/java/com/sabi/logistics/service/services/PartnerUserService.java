@@ -69,8 +69,8 @@ public class PartnerUserService {
     }
 
 
-    public Page<PartnerUser> findAll(long partnerId, PageRequest pageRequest ){
-        Page<PartnerUser> PartnerUsers = partnerUserRepository.findPartnerUser(partnerId,pageRequest);
+    public Page<PartnerUser> findAll(long partnerId, Long userId, PageRequest pageRequest ){
+        Page<PartnerUser> PartnerUsers = partnerUserRepository.findPartnerUser(partnerId,userId,pageRequest);
         if(PartnerUsers == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,6 +15,8 @@ public interface PartnerUserRepository extends JpaRepository<PartnerUser, Long> 
     boolean existsByPartnerIdAndUserId(Long partnerId, Long userId);
     List<PartnerUser> findByIsActive(Boolean isActive);
 
-    @Query("SELECT s FROM PartnerUser s WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND s.partnerId = :partnerId))")
-    Page<PartnerUser> findPartnerUser(Long partnerId, Pageable pageable);
+    @Query("SELECT s FROM PartnerUser s WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND s.partnerId = :partnerId))" +
+            " AND ((:userId IS NULL) OR (:userId IS NOT NULL AND s.userId = :userId))")
+    Page<PartnerUser> findPartnerUser(@Param("partnerId") Long partnerId,
+                                      @Param("userId") Long userId, Pageable pageable);
 }

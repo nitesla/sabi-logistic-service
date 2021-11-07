@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,11 +20,17 @@ public interface AllocationHistoryRepository extends JpaRepository<AllocationHis
     List<AllocationHistory> findByIsActive(Boolean isActive);
 
     @Query("SELECT c FROM AllocationHistory c WHERE ((:allocationId IS NULL) OR (:allocationId IS NOT NULL AND c.allocationId = :allocationId))" +
-            " AND ((:clientId IS NULL) OR (:clientId IS NOT NULL AND c.clientId = :clientId))"
-//            " AND ((:height IS NULL) OR (:height IS NOT NULL AND c.height = :height))" +
-//            " AND ((:price >= 0.0) OR (:price  AND c.price = :price))" )
-//            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND c.isActive = :isActive))
- )
+            " AND ((:clientId IS NULL) OR (:clientId IS NOT NULL AND c.clientId = :clientId))" +
+            " AND ((:amountPaid IS NULL) OR (:amountPaid IS NOT NULL AND c.amountPaid = :amountPaid))" +
+            " AND ((:totalAmount IS NULL) OR (:totalAmount  IS NOT NULL AND c.totalAmount = :totalAmount))" +
+            " AND ((:balance IS NULL) OR (:balance  IS NOT NULL AND c.balance = :balance))"
+
+
+    )
     Page<AllocationHistory> findAllocationHistory(@Param("allocationId") Long allocationId,
-                                                  @Param("clientId") Long clientId, Pageable pageable);
+                                                  @Param("clientId") Long clientId,
+                                                  @Param("amountPaid") BigDecimal amountPaid,
+                                                  @Param("totalAmount") BigDecimal totalAmount,
+                                                  @Param("balance") BigDecimal balance,
+                                                  Pageable pageable);
 }

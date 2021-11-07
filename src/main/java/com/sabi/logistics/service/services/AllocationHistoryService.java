@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -102,8 +103,8 @@ public class AllocationHistoryService {
 
 
 
-    public Page<AllocationHistory> findAll(Long allocationId, Long clientId, PageRequest pageRequest ){
-        Page<AllocationHistory> assetTypeProperties = repository.findAllocationHistory(allocationId,clientId,pageRequest);
+    public Page<AllocationHistory> findAll(Long allocationId, Long clientId, BigDecimal amountPaid , BigDecimal totalAmount, BigDecimal balance, PageRequest pageRequest ){
+        Page<AllocationHistory> assetTypeProperties = repository.findAllocationHistory(allocationId,clientId, amountPaid, totalAmount, balance,pageRequest);
         if(assetTypeProperties == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

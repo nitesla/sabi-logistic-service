@@ -20,7 +20,16 @@ public interface AllocationsRepository extends JpaRepository<Allocations, Long> 
 
     List<Allocations> findByIsActive(Boolean isActive);
 
-    @Query("SELECT d FROM Allocations d WHERE ((:name IS NULL) OR (:name IS NOT NULL AND d.name = :name))")
-    Page<Allocations> findAllocations(@Param("name") String name, Pageable pageable);
+    @Query("SELECT d FROM Allocations d WHERE ((:name IS NULL) OR (:name IS NOT NULL AND d.name = :name))" +
+            " AND ((:wareHouseId IS NULL) OR (:wareHouseId IS NOT NULL AND d.wareHouseId = :wareHouseId))" +
+            " AND ((:blockTypeId IS NULL) OR (:blockTypeId IS NOT NULL AND d.blockTypeId = :blockTypeId))" +
+            " AND ((:status IS NULL) OR (:status IS NOT NULL AND d.status = :status))" +
+            " AND ((:clientId IS NULL) OR (:clientId IS NOT NULL AND d.clientId = :clientId))"
+            )
+    Page<Allocations> findAllocations(@Param("name") String name,
+                                      @Param("wareHouseId") Long wareHouseId,
+                                      @Param("blockTypeId") Long blockTypeId,
+                                      @Param("status")String status,
+                                      @Param("clientId") Long clientId, Pageable pageable);
 
 }

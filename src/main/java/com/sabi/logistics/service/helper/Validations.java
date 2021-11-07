@@ -38,6 +38,8 @@ public class Validations {
     private WarehouseRepository warehouseRepository;
 
 
+
+
     public Validations(CountryRepository countryRepository,StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository,
                        PartnerRepository partnerRepository, CategoryRepository categoryRepository,
                        AssetTypePropertiesRepository assetTypePropertiesRepository, PartnerAssetRepository partnerAssetRepository,
@@ -179,10 +181,16 @@ public class Validations {
 
     public void validatePartnerPicture(PartnerAssetPictureDto partnerAssetPictureDto) {
 
+//        if(partnerAssetPictureDto.getPartnerAssetId()==null)
+//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Partner asset id cannot be empty");
+//        PartnerAsset partnerAsset = partnerAssetRepository.getOne(partnerAssetPictureDto.getPartnerAssetId());
+//        if (partnerAsset == null){
+//
+//        }
 
-        if(partnerAssetPictureDto.getPartnerAssetId()==null)
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Partner asset id cannot be empty");
-
+        PartnerAsset partnerAsset = partnerAssetRepository.findById(partnerAssetPictureDto.getPartnerAssetId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid partner asset id!"));
     }
 
 

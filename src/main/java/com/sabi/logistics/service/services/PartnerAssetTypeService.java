@@ -50,7 +50,7 @@ public class PartnerAssetTypeService {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PartnerAssetType partnerAssetType = mapper.map(request,PartnerAssetType.class);
         PartnerAssetType partnerAssetTypeExists
-                = partnerAssetTypeRepository.findByAssetTypeId(request.getAssetTypeId());
+                = partnerAssetTypeRepository.findByAssetTypeId(request.getId());
         if(partnerAssetTypeExists !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " PartnerAssetType already exist");
         }
