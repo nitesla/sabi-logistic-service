@@ -81,7 +81,7 @@ public class OrderService {
     }
 
 
-    public Page<Order> findAll(Long wareHouseID, Long deliveryPartnerID, String referenceNo, String deliveryStatus,
+    public Page<Order> findAll(Long wareHouseID, String referenceNo, String deliveryStatus,
                                String customerName, String customerPhone, String deliveryAddress,
                                String barCode, String QRcode, PageRequest pageRequest ){
         GenericSpecification<Order> genericSpecification = new GenericSpecification<Order>();
@@ -89,11 +89,6 @@ public class OrderService {
         if (wareHouseID != null)
         {
             genericSpecification.add(new SearchCriteria("wareHouseID", wareHouseID, SearchOperation.EQUAL));
-        }
-
-        if (deliveryPartnerID != null)
-        {
-            genericSpecification.add(new SearchCriteria("deliveryPartnerID", deliveryPartnerID, SearchOperation.EQUAL));
         }
 
         if (referenceNo != null && !referenceNo.isEmpty())
@@ -119,6 +114,16 @@ public class OrderService {
         if (deliveryAddress != null && !deliveryAddress.isEmpty())
         {
             genericSpecification.add(new SearchCriteria("deliveryAddress", deliveryAddress, SearchOperation.MATCH));
+        }
+
+        if (barCode != null && !barCode.isEmpty())
+        {
+            genericSpecification.add(new SearchCriteria("barCode", barCode, SearchOperation.MATCH));
+        }
+
+        if (QRcode != null && !QRcode.isEmpty())
+        {
+            genericSpecification.add(new SearchCriteria("QRcode", QRcode, SearchOperation.MATCH));
         }
 
         Page<Order> orders = orderRepository.findAll(genericSpecification, pageRequest);

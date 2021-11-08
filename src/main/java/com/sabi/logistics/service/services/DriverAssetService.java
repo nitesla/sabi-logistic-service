@@ -9,14 +9,10 @@ import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.DriverAssetDto;
-import com.sabi.logistics.core.dto.request.DriverDto;
 import com.sabi.logistics.core.dto.response.DriverAssetResponseDto;
-import com.sabi.logistics.core.dto.response.DriverResponseDto;
-import com.sabi.logistics.core.models.Driver;
 import com.sabi.logistics.core.models.DriverAsset;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.DriverAssetRepository;
-import com.sabi.logistics.service.repositories.DriverRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -82,8 +78,8 @@ public class DriverAssetService {
 
 
 
-    public Page<DriverAsset> findAll(String name, PageRequest pageRequest ){
-        Page<DriverAsset> drivers = repository.findDriverAssets(name,pageRequest);
+    public Page<DriverAsset> findAll(String name, Long driverId, Long partnerId, Long partnerAssetTypeId, PageRequest pageRequest ){
+        Page<DriverAsset> drivers = repository.findDriverAssets(name, driverId, partnerId, partnerAssetTypeId,pageRequest);
         if(drivers == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

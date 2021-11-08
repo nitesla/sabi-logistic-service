@@ -15,8 +15,11 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
 
     List<Driver> findByIsActive(Boolean isActive);
 
+    List<Driver> findByPartnerIdAndIsActive(Long partnerId, Boolean isActive);
+
     Driver findByName (String name);
 
-    @Query("SELECT d FROM Driver d WHERE ((:name IS NULL) OR (:name IS NOT NULL AND d.name = :name))")
-    Page<Driver> findDrivers(@Param("name") String name,Pageable pageable);
+    @Query("SELECT d FROM Driver d WHERE ((:name IS NULL) OR (:name IS NOT NULL AND d.name = :name))" +
+            " AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND d.partnerId = :partnerId))")
+    Page<Driver> findDrivers(@Param("name") String name, @Param("partnerId") Long partnerId, Pageable pageable);
 }

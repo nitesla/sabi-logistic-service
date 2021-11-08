@@ -9,14 +9,10 @@ import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
-import com.sabi.logistics.core.dto.request.CountryDto;
 import com.sabi.logistics.core.dto.request.DriverDto;
-import com.sabi.logistics.core.dto.response.CountryResponseDto;
 import com.sabi.logistics.core.dto.response.DriverResponseDto;
-import com.sabi.logistics.core.models.Country;
 import com.sabi.logistics.core.models.Driver;
 import com.sabi.logistics.service.helper.Validations;
-import com.sabi.logistics.service.repositories.CountryRepository;
 import com.sabi.logistics.service.repositories.DriverRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -84,8 +80,8 @@ public class DriverService {
     }
 
 
-    public Page<Driver> findAll(String name, PageRequest pageRequest ){
-        Page<Driver> drivers = repository.findDrivers(name,pageRequest);
+    public Page<Driver> findAll(String name, Long partnerId, PageRequest pageRequest ){
+        Page<Driver> drivers = repository.findDrivers(name, partnerId, pageRequest);
         if(drivers == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
@@ -107,8 +103,8 @@ public class DriverService {
     }
 
 
-    public List<Driver> getAll(Boolean isActive){
-        List<Driver> drivers = repository.findByIsActive(isActive);
+    public List<Driver> getAll(Long partnerId, Boolean isActive){
+        List<Driver> drivers = repository.findByPartnerIdAndIsActive(partnerId, isActive);
         return drivers;
 
     }

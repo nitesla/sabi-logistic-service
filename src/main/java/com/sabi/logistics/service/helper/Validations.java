@@ -37,6 +37,15 @@ public class Validations {
     @Autowired
     private WarehouseRepository warehouseRepository;
 
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+
+    @Autowired
+    private DeliveryRepository deliveryRepository;
+
+//    @Autowired
+//    private TripRequestRepository tripRequestRepository;
+
 
     public Validations(CountryRepository countryRepository,StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository,
                        PartnerRepository partnerRepository, CategoryRepository categoryRepository,
@@ -273,11 +282,6 @@ public class Validations {
         if (!Utility.isNumeric(request.getWareHouseID().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for wareHouseID ");
 
-        if (request.getDeliveryPartnerID() == null )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Partner ID cannot be empty");
-        if (!Utility.isNumeric(request.getDeliveryPartnerID().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Delivery Partner ID ");
-
         if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
         if (!("Pending".equalsIgnoreCase(request.getDeliveryStatus()) || "Ongoing".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus())))
@@ -359,6 +363,82 @@ public class Validations {
                         " PartnerAssetID ID does not Exist!")
         );
     }
+
+    public void validateDelivery (DeliveryRequestDto request){
+
+        if(request.getPartnerAssetID() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " partnerAssetID can not be null");
+        if (!Utility.isNumeric(request.getPartnerAssetID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerAssetID ");
+
+        if (request.getOrderItemID() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderItemID cannot be empty");
+        if (!Utility.isNumeric(request.getOrderItemID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for orderItemID ");
+
+        if (request.getStatus() == null || request.getStatus().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
+        if (!("Completed".equalsIgnoreCase(request.getStatus()) || "Partially Completed".equalsIgnoreCase(request.getStatus()) || "Cancelled".equalsIgnoreCase(request.getStatus())))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
+
+        if(request.getDriverID() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " driverID can not be null");
+        if (!Utility.isNumeric(request.getDriverID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for driverID ");
+
+        if (request.getDriverAssistantID() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "driverAssistantID cannot be empty");
+        if (!Utility.isNumeric(request.getDriverAssistantID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for driverAssistantID ");
+
+
+
+
+        partnerAssetRepository.findById(request.getPartnerAssetID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " partnerAssetID does not Exist!")
+        );
+
+        orderItemRepository.findById(request.getOrderItemID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " orderItemID does not Exist!")
+        );
+        driverRepository.findById(request.getDriverID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " driverID ID does not Exist!")
+        );
+    }
+
+    public void validateDeliveryItem (DeliveryItemRequestDto request){
+
+        if (request.getDeliveryID() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "deliveryID cannot be empty");
+        if (!Utility.isNumeric(request.getDeliveryID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for deliveryID ");
+
+        if (request.getTripRequestID() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "tripRequestID cannot be empty");
+        if (!Utility.isNumeric(request.getTripRequestID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for tripRequestID");
+
+        if (request.getStatus() == null || request.getStatus().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
+        if (!("Completed".equalsIgnoreCase(request.getStatus()) || "InTransit".equalsIgnoreCase(request.getStatus()) || "Returned".equalsIgnoreCase(request.getStatus())))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
+
+
+
+        deliveryRepository.findById(request.getDeliveryID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " deliveryID does not Exist!")
+        );
+
+//        tripRequestRepository.findById(request.getTripRequestID()).orElseThrow(() ->
+//                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                        " tripRequestID does not Exist!")
+//        );
+    }
+
 }
 
 
