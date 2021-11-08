@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -60,6 +61,24 @@ public class PartnerAssetPictureService {
     }
 
 
+    public  List<PartnerAssetPictureResponseDto> createPartnerPictures(List<PartnerAssetPictureDto> requests) {
+        List<PartnerAssetPictureResponseDto> responseDtos = new ArrayList<>();
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        requests.forEach(request->{
+            validations.validatePartnerPicture(request);
+            PartnerAssetPicture partnerAssetPicture = mapper.map(request,PartnerAssetPicture.class);
+            PartnerAssetPicture exist = repository.findByPartnerAssetIdAndPictureType(request.getPartnerAssetId(),request.getPictureType());
+            if(exist !=null){
+                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Asset picture already exist");
+            }
+            partnerAssetPicture.setCreatedBy(userCurrent.getId());
+            partnerAssetPicture.setIsActive(true);
+            partnerAssetPicture = repository.save(partnerAssetPicture);
+            log.debug("Create new asset picture - {}"+ new Gson().toJson(partnerAssetPicture));
+             responseDtos.add(mapper.map(partnerAssetPicture, PartnerAssetPictureResponseDto.class));
+        });
+        return responseDtos;
+    }
 
     public PartnerAssetPictureResponseDto updatePartnerPicture(PartnerAssetPictureDto request) {
         validations.validatePartnerPicture(request);
