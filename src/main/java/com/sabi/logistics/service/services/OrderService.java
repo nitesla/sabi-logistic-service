@@ -10,11 +10,13 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.OrderRequestDto;
 import com.sabi.logistics.core.dto.response.OrderResponseDto;
 import com.sabi.logistics.core.models.Order;
+import com.sabi.logistics.core.models.Warehouse;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.OrderRepository;
+import com.sabi.logistics.service.repositories.WarehouseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,9 @@ public class OrderService {
     private final ModelMapper mapper;
     @Autowired
     private Validations validations;
+
+    @Autowired
+    private WarehouseRepository warehouseRepository;
 
 
     public OrderService(OrderRepository orderRepository, ModelMapper mapper) {
@@ -52,6 +57,8 @@ public class OrderService {
         if(orderExists != null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order already exist");
         }
+        Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseID());
+        order.setWareHouseName(warehouse.getName());
 
         order.setCreatedBy(userCurrent.getId());
         order.setIsActive(true);

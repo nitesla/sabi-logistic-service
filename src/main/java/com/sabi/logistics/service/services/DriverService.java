@@ -12,10 +12,13 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.DriverDto;
 import com.sabi.logistics.core.dto.response.DriverResponseDto;
 import com.sabi.logistics.core.models.Driver;
+import com.sabi.logistics.core.models.PartnerAsset;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.DriverRepository;
+import com.sabi.logistics.service.repositories.PartnerAssetRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,9 @@ public class DriverService {
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
     private final Validations validations;
+
+    @Autowired
+    private PartnerAssetRepository partnerAssetRepository;
 
     public DriverService(DriverRepository repository, ModelMapper mapper, ObjectMapper objectMapper,Validations validations) {
         this.repository = repository;
@@ -49,6 +55,11 @@ public class DriverService {
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Driver already exist");
         }
+        PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetId());
+        driver.setPartnerName(partnerAsset.getPartnerName());
+        driver.setPartnerAssetName(partnerAsset.getName());
+
+
         driver.setCreatedBy(userCurrent.getId());
         driver.setIsActive(true);
         driver = repository.save(driver);

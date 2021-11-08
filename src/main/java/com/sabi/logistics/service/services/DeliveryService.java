@@ -10,11 +10,17 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.DeliveryRequestDto;
 import com.sabi.logistics.core.dto.response.DeliveryResponseDto;
 import com.sabi.logistics.core.models.Delivery;
+import com.sabi.logistics.core.models.Driver;
+import com.sabi.logistics.core.models.OrderItem;
+import com.sabi.logistics.core.models.PartnerAsset;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.DeliveryRepository;
+import com.sabi.logistics.service.repositories.DriverRepository;
+import com.sabi.logistics.service.repositories.OrderItemRepository;
+import com.sabi.logistics.service.repositories.PartnerAssetRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +37,15 @@ public class DeliveryService {
     private final ModelMapper mapper;
     @Autowired
     private Validations validations;
+
+    @Autowired
+    private PartnerAssetRepository partnerAssetRepository;
+
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+
+    @Autowired
+    private DriverRepository driverRepository;
 
 
     public DeliveryService(DeliveryRepository deliveryRepository, ModelMapper mapper) {
@@ -49,6 +64,16 @@ public class DeliveryService {
         if(deliveryExists != null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Delivery already exist");
         }
+
+        PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetID());
+        delivery.setPartnerAssetName(partnerAsset.getName());
+
+        OrderItem orderItem = orderItemRepository.getOne(request.getOrderItemID());
+        delivery.setOrderItemName(orderItem.getName());
+
+        Driver driver = driverRepository.getOne(request.getDriverID());
+        delivery.setDriverName(driver.getName());
+
 
         delivery.setCreatedBy(userCurrent.getId());
         delivery.setIsActive(true);
