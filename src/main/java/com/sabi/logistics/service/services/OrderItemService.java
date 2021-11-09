@@ -74,6 +74,12 @@ public class OrderItemService {
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested order item Id does not exist!"));
         mapper.map(request, orderItem);
+
+        if(request.getPartnerAssetID() != null ) {
+            PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetID());
+            orderItem.setPartnerAssetName(partnerAsset.getName());
+        }
+
         orderItem.setUpdatedBy(userCurrent.getId());
         orderItemRepository.save(orderItem);
         log.debug("color record updated - {}"+ new Gson().toJson(orderItem));

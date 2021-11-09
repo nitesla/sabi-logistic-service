@@ -76,6 +76,13 @@ public class DriverService {
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Driver Id does not exist!"));
         mapper.map(request, driver);
+
+        if(request.getPartnerAssetId() != null ) {
+            PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetId());
+            driver.setPartnerName(partnerAsset.getPartnerName());
+            driver.setPartnerAssetName(partnerAsset.getName());
+        }
+
         driver.setUpdatedBy(userCurrent.getId());
         repository.save(driver);
         log.debug("Driver record updated - {}"+ new Gson().toJson(driver));

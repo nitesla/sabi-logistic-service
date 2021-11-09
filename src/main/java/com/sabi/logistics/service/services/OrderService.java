@@ -74,6 +74,12 @@ public class OrderService {
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested order Id does not exist!"));
         mapper.map(request, order);
+
+        if(request.getWareHouseID() != null ) {
+            Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseID());
+            order.setWareHouseName(warehouse.getName());
+        }
+
         order.setUpdatedBy(userCurrent.getId());
         orderRepository.save(order);
         log.debug("order record updated - {}"+ new Gson().toJson(order));

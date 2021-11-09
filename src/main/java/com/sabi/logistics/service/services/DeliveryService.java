@@ -89,6 +89,23 @@ public class DeliveryService {
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested delivery Id does not exist!"));
         mapper.map(request, delivery);
+
+        if(request.getPartnerAssetID() != null ) {
+            PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetID());
+            delivery.setPartnerAssetName(partnerAsset.getName());
+        }
+
+        if(request.getOrderItemID() != null) {
+            OrderItem orderItem = orderItemRepository.getOne(request.getOrderItemID());
+            delivery.setOrderItemName(orderItem.getName());
+        }
+
+        if(request.getDriverID() != null) {
+            Driver driver = driverRepository.getOne(request.getDriverID());
+            delivery.setDriverName(driver.getName());
+
+        }
+
         delivery.setUpdatedBy(userCurrent.getId());
         deliveryRepository.save(delivery);
         log.debug("delivery record updated - {}"+ new Gson().toJson(delivery));

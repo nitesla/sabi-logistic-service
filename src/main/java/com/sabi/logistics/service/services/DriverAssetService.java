@@ -80,6 +80,18 @@ public class DriverAssetService {
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Driver asset id does not exist!"));
         mapper.map(request, driverAsset);
+
+        if(request.getPartnerAssetId() != null ) {
+            PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetId());
+            driverAsset.setPartnerName(partnerAsset.getPartnerName());
+            driverAsset.setPartnerAssetName(partnerAsset.getName());
+        }
+
+        if(request.getDriverId() != null ) {
+            Driver driver = driverRepository.getOne(request.getDriverId());
+            driverAsset.setDriverName(driver.getName());
+        }
+
         driverAsset.setUpdatedBy(userCurrent.getId());
         repository.save(driverAsset);
         log.debug("Driver asset record updated - {}"+ new Gson().toJson(driverAsset));
