@@ -104,7 +104,7 @@ public class PartnerService {
         }
         String password = request.getPassword();
         user.setPassword(passwordEncoder.encode(password));
-        user.setUserCategory(Constants.AGENT_USER);
+        user.setUserCategory(Constants.OTHER_USER);
         user.setUsername(request.getEmail());
         user.setLoginAttempts(0l);
         user.setCreatedBy(0l);
