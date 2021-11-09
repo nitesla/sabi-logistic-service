@@ -227,6 +227,8 @@ public class Validations {
         //todo check for existing partner id
         partnerRepository.findById(request.getPartnerId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                 " Enter a valid partner id!"));
+        userRepository
+                .findById(request.getUserId()).orElseThrow(()-> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, "Enter a valid user Id"));
     }
 
     public void validatePartnerAssetType(PartnerAssetTypeRequestDto request) {
