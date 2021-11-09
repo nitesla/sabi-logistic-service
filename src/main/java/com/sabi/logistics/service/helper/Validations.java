@@ -9,12 +9,10 @@ import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.*;
-import com.sabi.logistics.core.models.Category;
-import com.sabi.logistics.core.models.LGA;
-import com.sabi.logistics.core.models.Partner;
-import com.sabi.logistics.core.models.State;
+import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @SuppressWarnings("All")
@@ -24,6 +22,7 @@ public class Validations {
 
 
 
+    private CountryRepository countryRepository;
     private StateRepository stateRepository;
     private LGARepository lgaRepository;
     private UserRepository userRepository;
@@ -35,12 +34,16 @@ public class Validations {
     private final DriverRepository driverRepository;
     private final BrandRepository brandRepository;
 
+    @Autowired
+    private WarehouseRepository warehouseRepository;
 
-    public Validations(StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository,
+
+    public Validations(CountryRepository countryRepository,StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository,
                        PartnerRepository partnerRepository, CategoryRepository categoryRepository,
                        AssetTypePropertiesRepository assetTypePropertiesRepository, PartnerAssetRepository partnerAssetRepository,
                        PartnerAssetTypeRepository partnerAssetTypeRepository, DriverRepository driverRepository,
                        BrandRepository brandRepository) {
+        this.countryRepository = countryRepository;
         this.stateRepository = stateRepository;
         this.lgaRepository = lgaRepository;
         this.userRepository = userRepository;
@@ -56,6 +59,9 @@ public class Validations {
     public void validateState(StateDto stateDto) {
         if (stateDto.getName() == null || stateDto.getName().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+        Country country = countryRepository.findById(stateDto.getCountryId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid Country id!"));
     }
 
 
@@ -214,6 +220,40 @@ public class Validations {
 
 
 
+
+
+    public void validatePartnerUser(PartnerUserRequestDto request){
+        if (request.getFirstName() == null || request.getFirstName().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "First name cannot be empty");
+        if (request.getFirstName().length() < 2 || request.getFirstName().length() > 100)// NAME LENGTH*********
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid first name  length");
+
+        if (request.getLastName() == null || request.getLastName().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Last name cannot be empty");
+        if (request.getLastName().length() < 2 || request.getLastName().length() > 100)// NAME LENGTH*********
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid last name  length");
+
+        if (request.getEmail() == null || request.getEmail().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "email cannot be empty");
+        if (!Utility.validEmail(request.getEmail().trim()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid Email Address");
+        User user = userRepository.findByEmail(request.getEmail());
+        if(user !=null){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Email already exist");
+        }
+        if (request.getPhone() == null || request.getPhone().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Phone number cannot be empty");
+        if (request.getPhone().length() < 8 || request.getPhone().length() > 14)// NAME LENGTH*********
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid phone number  length");
+        if (!Utility.isNumeric(request.getPhone()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for phone number ");
+        User userExist = userRepository.findByPhone(request.getPhone());
+        if(userExist !=null){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "  user phone already exist");
+        }
+    }
+
+
     public void validateBrand(BrandRequestDto request) {
         if(request.getName() != null && !request.getName().isEmpty()){}
         else throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Brand Name cannot be empty");
@@ -247,11 +287,84 @@ public class Validations {
                 " Enter a valid Brand!"));
     }
 
-    public void validatePartnerUser(PartnerUserRequestDto request) {
-        partnerRepository.findById(request.getPartnerId()).orElseThrow(()-> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                " Enter a valid Driver!"));
-        userRepository.findById(request.getUserId()).orElseThrow(()->new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                " Enter a valid User!"));
+
+
+    public String generateReferenceNumber(int numOfDigits) {
+        if (numOfDigits < 1) {
+            throw new IllegalArgumentException(numOfDigits + ": Number must be equal or greater than 1");
+        }
+        long random = (long) Math.floor(Math.random() * 9 * (long) Math.pow(10, numOfDigits - 1)) + (long) Math.pow(10, numOfDigits - 1);
+        return Long.toString(random);
+    }
+
+    public void validateOrder (OrderRequestDto request){
+
+        if(request.getWareHouseID() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " wareHouseID can not be null");
+        if (!Utility.isNumeric(request.getWareHouseID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for wareHouseID ");
+
+        if (request.getDeliveryPartnerID() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Partner ID cannot be empty");
+        if (!Utility.isNumeric(request.getDeliveryPartnerID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Delivery Partner ID ");
+
+        if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
+        if (!("Pending".equalsIgnoreCase(request.getDeliveryStatus()) || "Ongoing".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus())))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Delivery Status");
+        if (!Utility.validateName(request.getDeliveryStatus().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Delivery Status ");
+
+        if (request.getCustomerName() == null || request.getCustomerName().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Customer Name cannot be empty");
+        if (!Utility.validateName(request.getCustomerName().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Customer Name ");
+
+        if (request.getCustomerPhone() == null || request.getCustomerPhone().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Customer Phone cannot be empty");
+        if (!Utility.validatePhoneNumber(request.getCustomerPhone().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Customer Phone ");
+
+        if (request.getDeliveryAddress() == null || request.getDeliveryAddress().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Address cannot be empty");
+
+        warehouseRepository.findById(request.getWareHouseID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Warehouse ID does not Exist!")
+        );
+    }
+
+    public void validateOrderItem (OrderItemRequestDto request){
+
+        if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
+        if (!("Pending".equalsIgnoreCase(request.getDeliveryStatus()) || "InTransit".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus())))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Delivery Status");
+        if (!Utility.validateName(request.getDeliveryStatus().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Delivery Status ");
+
+        if (request.getPartnerAssetID() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Partner Asset ID cannot be empty");
+        if (!Utility.isNumeric(request.getPartnerAssetID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Partner Asset ID ");
+
+
+        if (request.getName() == null || request.getName().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+        if (!Utility.validateName(request.getName().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Name ");
+
+        if (request.getQty() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Qty cannot be empty");
+        if (!Utility.isNumeric(request.getQty().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Qty");
+
+
+        partnerAssetRepository.findById(request.getPartnerAssetID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " PartnerAssetID ID does not Exist!")
+        );
     }
 }
 

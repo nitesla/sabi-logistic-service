@@ -104,7 +104,7 @@ public class PartnerService {
         }
         String password = request.getPassword();
         user.setPassword(passwordEncoder.encode(password));
-        user.setUserCategory(Constants.AGENT_USER);
+        user.setUserCategory(Constants.OTHER_USER);
         user.setUsername(request.getEmail());
         user.setLoginAttempts(0l);
         user.setCreatedBy(0l);
@@ -121,7 +121,7 @@ public class PartnerService {
         Partner savePartner = new Partner();
         savePartner.setName(request.getName());
         savePartner.setUserId(user.getId());
-        savePartner.setRegistrationToken(Utility.registrationCode());
+        savePartner.setRegistrationToken(Utility.registrationCode("HHmmss"));
         savePartner.setRegistrationTokenExpiration(Utility.expiredTime());
         savePartner.setIsActive(false);
         savePartner.setCreatedBy(user.getId());
