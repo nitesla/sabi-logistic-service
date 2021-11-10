@@ -43,8 +43,8 @@ public class Validations {
     @Autowired
     private DeliveryRepository deliveryRepository;
 
-//    @Autowired
-//    private TripRequestRepository tripRequestRepository;
+    @Autowired
+    private TripRequestRepository tripRequestRepository;
 
 
 
@@ -441,10 +441,39 @@ public class Validations {
                         " deliveryID does not Exist!")
         );
 
-//        tripRequestRepository.findById(request.getTripRequestID()).orElseThrow(() ->
-//                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-//                        " tripRequestID does not Exist!")
-//        );
+        tripRequestRepository.findById(request.getTripRequestID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " tripRequestID does not Exist!")
+        );
+    }
+
+    public void validateTripRequest (TripRequestDto request){
+
+        if(request.getPartnerID() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " partnerID can not be null");
+        if (!Utility.isNumeric(request.getPartnerID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerID ");
+
+        if (request.getOrderItemID() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderItemID cannot be empty");
+        if (!Utility.isNumeric(request.getOrderItemID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for orderItemID ");
+
+        if (request.getStatus() == null || request.getStatus().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
+        if (!("Accepted".equalsIgnoreCase(request.getStatus()) || "Rejected".equalsIgnoreCase(request.getStatus()) || "Pending".equalsIgnoreCase(request.getStatus())))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
+
+
+        partnerRepository.findById(request.getPartnerID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " partnerID does not Exist!")
+        );
+
+        orderItemRepository.findById(request.getOrderItemID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " orderItemID does not Exist!")
+        );
     }
 
 }
