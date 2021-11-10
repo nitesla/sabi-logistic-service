@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Base64;
+
 @SuppressWarnings("All")
 @Slf4j
 @Service
@@ -312,6 +314,11 @@ public class Validations {
         }
         long random = (long) Math.floor(Math.random() * 9 * (long) Math.pow(10, numOfDigits - 1)) + (long) Math.pow(10, numOfDigits - 1);
         return Long.toString(random);
+    }
+
+    public String generateCode(String code) {
+        String encodedString = Base64.getEncoder().encodeToString(code.getBytes());
+        return encodedString;
     }
 
     public void validateOrder (OrderRequestDto request){
