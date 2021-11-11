@@ -22,15 +22,9 @@ import com.sabi.logistics.core.dto.response.CompleteSignUpResponse;
 import com.sabi.logistics.core.dto.response.PartnerActivationResponse;
 import com.sabi.logistics.core.dto.response.PartnerResponseDto;
 import com.sabi.logistics.core.dto.response.PartnerSignUpResponseDto;
-import com.sabi.logistics.core.models.Partner;
-import com.sabi.logistics.core.models.PartnerAssetType;
-import com.sabi.logistics.core.models.PartnerCategories;
-import com.sabi.logistics.core.models.PartnerLocation;
+import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.Validations;
-import com.sabi.logistics.service.repositories.PartnerAssetTypeRepository;
-import com.sabi.logistics.service.repositories.PartnerCategoriesRepository;
-import com.sabi.logistics.service.repositories.PartnerLocationRepository;
-import com.sabi.logistics.service.repositories.PartnerRepository;
+import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,13 +55,15 @@ public class PartnerService {
     private final ObjectMapper objectMapper;
     private final Validations validations;
     private NotificationService notificationService;
+    private final PartnerUserRepository partnerUserRepository;
 
 
     public PartnerService(PartnerRepository repository,PartnerAssetTypeRepository partnerAssetTypeRepository,
                           PartnerCategoriesRepository partnerCategoriesRepository,PartnerLocationRepository partnerLocationRepository,
                           UserRepository userRepository,PreviousPasswordRepository previousPasswordRepository,
                           ModelMapper mapper, ObjectMapper objectMapper,
-                          Validations validations,NotificationService notificationService) {
+                          Validations validations,NotificationService notificationService,
+                          PartnerUserRepository partnerUserRepository) {
         this.repository = repository;
         this.partnerAssetTypeRepository = partnerAssetTypeRepository;
         this.partnerCategoriesRepository = partnerCategoriesRepository;
@@ -78,6 +74,7 @@ public class PartnerService {
         this.objectMapper = objectMapper;
         this.validations = validations;
         this.notificationService = notificationService;
+        this.partnerUserRepository = partnerUserRepository;
     }
 
 
@@ -87,7 +84,7 @@ public class PartnerService {
         validations.validatePartner(request);
         User user = mapper.map(request,User.class);
 
-        User exist = userRepository.findByPhone(request.getPhone());
+        User exist = userRepository.findByEmailOrPhone(request.getEmail(),request.getPhone());
         if(exist !=null && exist.getPasswordChangedOn()== null){
           PartnerSignUpResponseDto partnerSignUpResponseDto= PartnerSignUpResponseDto.builder()
                   .id(exist.getId())
@@ -128,6 +125,13 @@ public class PartnerService {
 
         Partner partnerResponse= repository.save(savePartner);
         log.debug("Create new partner  - {}"+ new Gson().toJson(savePartner));
+
+        PartnerUser partnerUser = new PartnerUser();
+        partnerUser.setPartnerId(partnerResponse.getId());
+        partnerUser.setUserId(user.getId());
+        partnerUser.setCreatedBy(0l);
+        partnerUser.setIsActive(true);
+        partnerUserRepository.save(partnerUser);
 
         PartnerSignUpResponseDto response = PartnerSignUpResponseDto.builder()
                 .id(user.getId())
