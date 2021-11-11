@@ -74,8 +74,8 @@ public class PartnerLocationService {
         return mapper.map(savedPartnerCategories,PartnerLocationResponseDto.class);
     }
 
-    public Page<PartnerLocation> findAll(Long id, PageRequest pageRequest ){
-        Page<PartnerLocation> savedPartnerCategories = repository.findPartnerLocation(id,pageRequest);
+    public Page<PartnerLocation> findAll(Long id, Long partnerId, Long stateId, PageRequest pageRequest ){
+        Page<PartnerLocation> savedPartnerCategories = repository.findPartnerLocation(id,partnerId,stateId,pageRequest);
         if(savedPartnerCategories == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

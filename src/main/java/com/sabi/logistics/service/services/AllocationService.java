@@ -102,8 +102,8 @@ public class AllocationService {
 
 
 
-    public Page<Allocations> findAll(String name, PageRequest pageRequest ){
-        Page<Allocations> assetTypeProperties = repository.findAllocations(name,pageRequest);
+    public Page<Allocations> findAll(String name, Long wareHouseId, Long blockTypeId, String status, Long clientId, PageRequest pageRequest ){
+        Page<Allocations> assetTypeProperties = repository.findAllocations(name,wareHouseId,blockTypeId,status,clientId,pageRequest);
         if(assetTypeProperties == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

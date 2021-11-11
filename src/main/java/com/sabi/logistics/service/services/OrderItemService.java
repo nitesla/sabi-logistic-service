@@ -10,11 +10,13 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.OrderItemRequestDto;
 import com.sabi.logistics.core.dto.response.OrderItemResponseDto;
 import com.sabi.logistics.core.models.OrderItem;
+import com.sabi.logistics.core.models.PartnerAsset;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.OrderItemRepository;
+import com.sabi.logistics.service.repositories.PartnerAssetRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,8 @@ public class OrderItemService {
     private final ModelMapper mapper;
     @Autowired
     private Validations validations;
+    @Autowired
+    private PartnerAssetRepository partnerAssetRepository;
 
 
     public OrderItemService(OrderItemRepository orderItemRepository, ModelMapper mapper) {
@@ -52,6 +56,10 @@ public class OrderItemService {
         if(orderItemExists !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order Item already exist");
         }
+
+        PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetID());
+        orderItem.setPartnerAssetName(partnerAsset.getName());
+
         orderItem.setCreatedBy(userCurrent.getId());
         orderItem.setIsActive(true);
         orderItem = orderItemRepository.save(orderItem);
@@ -66,6 +74,12 @@ public class OrderItemService {
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested order item Id does not exist!"));
         mapper.map(request, orderItem);
+
+        if(request.getPartnerAssetID() != null ) {
+            PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetID());
+            orderItem.setPartnerAssetName(partnerAsset.getName());
+        }
+
         orderItem.setUpdatedBy(userCurrent.getId());
         orderItemRepository.save(orderItem);
         log.debug("color record updated - {}"+ new Gson().toJson(orderItem));
