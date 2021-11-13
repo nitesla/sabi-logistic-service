@@ -16,7 +16,7 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
 
     List<TripRequest> findByIsActive(Boolean isActive);
 
-    TripRequest findByOrderItemIDAndPartnerID(Long orderItemId, Long partnerAssetId );
+    TripRequest findByPartnerAssetIDAndPartnerID(Long partnerAssetId, Long partnerId );
 
 
 }

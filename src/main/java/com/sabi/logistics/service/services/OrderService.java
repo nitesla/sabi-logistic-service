@@ -58,7 +58,6 @@ public class OrderService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order already exist");
         }
         Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseID());
-        order.setWareHouseName(warehouse.getName());
 
         order.setBarCode(validations.generateCode(order.getReferenceNo()));
         order.setQRcode(validations.generateCode(order.getReferenceNo()));
@@ -67,7 +66,9 @@ public class OrderService {
         order.setIsActive(true);
         order = orderRepository.save(order);
         log.debug("Create new order - {}"+ new Gson().toJson(order));
-        return mapper.map(order, OrderResponseDto.class);
+        OrderResponseDto orderResponseDto = mapper.map(order, OrderResponseDto.class);
+        orderResponseDto.setWareHouseName(warehouse.getName());
+        return orderResponseDto;
     }
 
     public OrderResponseDto updateOrder(OrderRequestDto request) {
@@ -78,15 +79,16 @@ public class OrderService {
                         "Requested order Id does not exist!"));
         mapper.map(request, order);
 
-        if(request.getWareHouseID() != null ) {
-            Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseID());
-            order.setWareHouseName(warehouse.getName());
-        }
-
         order.setUpdatedBy(userCurrent.getId());
         orderRepository.save(order);
         log.debug("order record updated - {}"+ new Gson().toJson(order));
-        return mapper.map(order, OrderResponseDto.class);
+        OrderResponseDto orderResponseDto = mapper.map(order, OrderResponseDto.class);
+        if(request.getWareHouseID() != null ) {
+            Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseID());
+            orderResponseDto.setWareHouseName(warehouse.getName());
+        }
+
+        return orderResponseDto;
     }
 
     public OrderResponseDto findOrder(Long id){

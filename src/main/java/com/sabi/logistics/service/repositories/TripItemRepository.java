@@ -2,8 +2,7 @@ package com.sabi.logistics.service.repositories;
 
 
 
-
-import com.sabi.logistics.core.models.OrderItem;
+import com.sabi.logistics.core.models.TripItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -12,12 +11,12 @@ import java.util.List;
 
 
 @Repository
-public interface OrderItemRepository extends JpaRepository<OrderItem, Long>, JpaSpecificationExecutor<OrderItem> {
+public interface TripItemRepository extends JpaRepository<TripItem, Long>, JpaSpecificationExecutor<TripItem> {
 
 
-    OrderItem findByName(String name);
+    List<TripItem> findByIsActive(Boolean isActive);
 
-    List<OrderItem> findByIsActive(Boolean isActive);
+    TripItem findByOrderItemID(Long orderItemID);
 
 
 }
