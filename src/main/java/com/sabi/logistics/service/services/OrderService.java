@@ -65,7 +65,7 @@ public class OrderService {
         Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseID());
 
         order.setBarCode(validations.generateCode(order.getReferenceNo()));
-        order.setQRcode(validations.generateCode(order.getReferenceNo()));
+        order.setQRCode(validations.generateCode(order.getReferenceNo()));
 
         order.setCreatedBy(userCurrent.getId());
         order.setIsActive(true);

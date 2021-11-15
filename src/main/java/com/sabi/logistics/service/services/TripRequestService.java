@@ -54,6 +54,7 @@ public class TripRequestService {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         TripRequest tripRequest = mapper.map(request,TripRequest.class);
 
+        tripRequest.setReferenceNo(validations.generateReferenceNumber(10));
         TripRequest tripRequestExists = tripRequestRepository.findByPartnerAssetIDAndPartnerID(tripRequest.getPartnerID(), tripRequest.getPartnerAssetID());
         if(tripRequestExists != null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Trip Request already exist");
@@ -61,6 +62,9 @@ public class TripRequestService {
 
         Partner partner = partnerRepository.getOne(request.getPartnerID());
         PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetID());
+
+        tripRequest.setBarCode(validations.generateCode(tripRequest.getReferenceNo()));
+        tripRequest.setQRCode(validations.generateCode(tripRequest.getReferenceNo()));
 
         tripRequest.setCreatedBy(userCurrent.getId());
         tripRequest.setIsActive(true);
