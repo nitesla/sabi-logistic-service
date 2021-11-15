@@ -145,7 +145,7 @@ public class PartnerUserService {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
 
         PartnerUser partner = partnerUserRepository.findByUserId(userCurrent.getId());
-        List<User> users = userRepository.findByIsActiveAAndClientId(isActive,partner.getPartnerId());
+        List<User> users = userRepository.findByIsActiveAndClientId(isActive,partner.getPartnerId());
         return users;
 
     }

@@ -99,7 +99,7 @@ public class PartnerRoleService {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
 
         PartnerUser partner = partnerUserRepository.findByUserId(userCurrent.getId());
-        List<Role> roles = roleRepository.findByIsActiveAAndClientId(isActive,partner.getPartnerId());
+        List<Role> roles = roleRepository.findByIsActiveAndClientId(isActive,partner.getPartnerId());
         return roles;
 
     }
