@@ -65,7 +65,7 @@ public class OrderService {
         Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseID());
 
         order.setBarCode(validations.generateCode(order.getReferenceNo()));
-        order.setQRCode(validations.generateCode(order.getReferenceNo()));
+        order.setQrCode(validations.generateCode(order.getReferenceNo()));
 
         order.setCreatedBy(userCurrent.getId());
         order.setIsActive(true);
@@ -110,7 +110,7 @@ public class OrderService {
 
     public Page<Order> findAll(Long wareHouseID, String referenceNo, String deliveryStatus,
                                String customerName, String customerPhone, String deliveryAddress,
-                               String barCode, String QRcode, PageRequest pageRequest ){
+                               String barCode, String qrCode, PageRequest pageRequest ){
         GenericSpecification<Order> genericSpecification = new GenericSpecification<Order>();
 
         if (wareHouseID != null)
@@ -148,9 +148,9 @@ public class OrderService {
             genericSpecification.add(new SearchCriteria("barCode", barCode, SearchOperation.MATCH));
         }
 
-        if (QRcode != null && !QRcode.isEmpty())
+        if (qrCode != null && !qrCode.isEmpty())
         {
-            genericSpecification.add(new SearchCriteria("QRcode", QRcode, SearchOperation.MATCH));
+            genericSpecification.add(new SearchCriteria("QRcode", qrCode, SearchOperation.MATCH));
         }
 
         Page<Order> orders = orderRepository.findAll(genericSpecification, pageRequest);

@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@SuppressWarnings("All")
 @Service
 @Slf4j
 public class TripRequestService {
@@ -64,7 +65,7 @@ public class TripRequestService {
         PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetID());
 
         tripRequest.setBarCode(validations.generateCode(tripRequest.getReferenceNo()));
-        tripRequest.setQRCode(validations.generateCode(tripRequest.getReferenceNo()));
+        tripRequest.setQrCode(validations.generateCode(tripRequest.getReferenceNo()));
 
         tripRequest.setCreatedBy(userCurrent.getId());
         tripRequest.setIsActive(true);

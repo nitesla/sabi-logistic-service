@@ -17,6 +17,6 @@ public interface RequestResponseRepository extends JpaRepository<RequestResponse
 
     RequestResponse findByTripRequestIDAndPartnerID(Long tripRequestID, Long partnerID);
 
-    List<RequestResponse> findByTripRequestID(Long ID);
+    List<RequestResponse> findByTripRequestID(Long id);
 
 }

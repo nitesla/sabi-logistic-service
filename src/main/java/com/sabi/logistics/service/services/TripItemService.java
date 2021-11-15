@@ -26,6 +26,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+
+@SuppressWarnings("All")
 @Service
 @Slf4j
 public class TripItemService {
