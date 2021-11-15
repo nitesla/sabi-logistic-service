@@ -48,7 +48,7 @@ public class RequestResponseService {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         RequestResponse requestResponse = mapper.map(request,RequestResponse.class);
 
-        RequestResponse requestResponseExists = requestResponseRepository.findByTripRequestID(requestResponse.getTripRequestID());
+        RequestResponse requestResponseExists = requestResponseRepository.findByTripRequestIDAndPartnerID(requestResponse.getTripRequestID(), requestResponse.getPartnerID());
 
 
         if(requestResponseExists != null){

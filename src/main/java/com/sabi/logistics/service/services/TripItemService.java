@@ -48,7 +48,7 @@ public class TripItemService {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         TripItem tripItem = mapper.map(request,TripItem.class);
 
-        TripItem tripItemExists = tripItemRepository.findByOrderItemID(tripItem.getOrderItemID());
+        TripItem tripItemExists = tripItemRepository.findByOrderItemIDAndTripRequestID(request.getOrderItemID(), request.getTripRequestID());
 
 
         if(tripItemExists !=null){

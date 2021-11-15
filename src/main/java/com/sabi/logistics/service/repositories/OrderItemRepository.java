@@ -19,5 +19,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long>, Jpa
 
     List<OrderItem> findByIsActive(Boolean isActive);
 
+    List<OrderItem> findByOrderID(Long orderID);
+
 
 }

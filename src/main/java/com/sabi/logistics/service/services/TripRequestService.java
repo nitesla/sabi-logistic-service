@@ -9,16 +9,12 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.TripRequestDto;
 import com.sabi.logistics.core.dto.response.TripResponseDto;
-import com.sabi.logistics.core.models.Partner;
-import com.sabi.logistics.core.models.PartnerAsset;
-import com.sabi.logistics.core.models.TripRequest;
+import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
-import com.sabi.logistics.service.repositories.PartnerAssetRepository;
-import com.sabi.logistics.service.repositories.PartnerRepository;
-import com.sabi.logistics.service.repositories.TripRequestRepository;
+import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +38,11 @@ public class TripRequestService {
     @Autowired
     private PartnerAssetRepository partnerAssetRepository;
 
+    @Autowired
+    private TripItemRepository tripItemRepository;
+
+    @Autowired
+    private RequestResponseRepository requestResponseRepository;
 
     public TripRequestService(TripRequestRepository tripRequestRepository, ModelMapper mapper) {
         this.tripRequestRepository = tripRequestRepository;
@@ -97,7 +98,12 @@ public class TripRequestService {
         TripRequest tripRequest  = tripRequestRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Trip Request Id does not exist!"));
-        return mapper.map(tripRequest, TripResponseDto.class);
+
+        TripResponseDto tripResponseDto = mapper.map(tripRequest, TripResponseDto.class);
+        tripResponseDto.setTripItem(getAllTripItems(id));
+        tripResponseDto.setRequestResponse(getAllRequestResponse(id));
+
+        return tripResponseDto;
     }
 
 
@@ -145,6 +151,17 @@ public class TripRequestService {
 
     public List<TripRequest> getAll(Boolean isActive){
         List<TripRequest> tripRequests = tripRequestRepository.findByIsActive(isActive);
+        return tripRequests;
+
+    }
+
+    public List<TripItem> getAllTripItems(Long tripRequestID){
+        List<TripItem> tripItems = tripItemRepository.findByTripRequestID(tripRequestID);
+        return tripItems;
+
+    }
+    public List<RequestResponse> getAllRequestResponse(Long tripRequestID){
+        List<RequestResponse> tripRequests = requestResponseRepository.findByTripRequestID(tripRequestID);
         return tripRequests;
 
     }

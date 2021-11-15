@@ -1,7 +1,6 @@
 package com.sabi.logistics.service.repositories;
 
 
-
 import com.sabi.logistics.core.models.TripItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -16,7 +15,9 @@ public interface TripItemRepository extends JpaRepository<TripItem, Long>, JpaSp
 
     List<TripItem> findByIsActive(Boolean isActive);
 
-    TripItem findByOrderItemID(Long orderItemID);
+    TripItem findByOrderItemIDAndTripRequestID(Long orderItemID, Long tripRequestID);
+
+    List<TripItem> findByTripRequestID(Long ID);
 
 
 }
