@@ -17,9 +17,9 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long>, Jpa
 
     OrderItem findByName(String name);
 
-    OrderItem findByReferenceNo(String referenceNo);
-
     List<OrderItem> findByIsActive(Boolean isActive);
+
+    List<OrderItem> findByOrderID(Long orderID);
 
 
 }

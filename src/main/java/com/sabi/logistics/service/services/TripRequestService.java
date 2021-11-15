@@ -9,16 +9,12 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.TripRequestDto;
 import com.sabi.logistics.core.dto.response.TripResponseDto;
-import com.sabi.logistics.core.models.OrderItem;
-import com.sabi.logistics.core.models.Partner;
-import com.sabi.logistics.core.models.TripRequest;
+import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
-import com.sabi.logistics.service.repositories.OrderItemRepository;
-import com.sabi.logistics.service.repositories.PartnerRepository;
-import com.sabi.logistics.service.repositories.TripRequestRepository;
+import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +36,13 @@ public class TripRequestService {
     private PartnerRepository partnerRepository;
 
     @Autowired
-    private OrderItemRepository orderItemRepository;
+    private PartnerAssetRepository partnerAssetRepository;
 
+    @Autowired
+    private TripItemRepository tripItemRepository;
+
+    @Autowired
+    private RequestResponseRepository requestResponseRepository;
 
     public TripRequestService(TripRequestRepository tripRequestRepository, ModelMapper mapper) {
         this.tripRequestRepository = tripRequestRepository;
@@ -53,25 +54,26 @@ public class TripRequestService {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         TripRequest tripRequest = mapper.map(request,TripRequest.class);
 
-        TripRequest tripRequestExists = tripRequestRepository.findByOrderItemIDAndPartnerID(tripRequest.getOrderItemID(), tripRequest.getPartnerID());
-
-
+        tripRequest.setReferenceNo(validations.generateReferenceNumber(10));
+        TripRequest tripRequestExists = tripRequestRepository.findByPartnerAssetIDAndPartnerID(tripRequest.getPartnerID(), tripRequest.getPartnerAssetID());
         if(tripRequestExists != null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Trip Request already exist");
         }
 
         Partner partner = partnerRepository.getOne(request.getPartnerID());
-        tripRequest.setPartnerName(partner.getName());
+        PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetID());
 
-        OrderItem orderItem = orderItemRepository.getOne(request.getOrderItemID());
-        tripRequest.setOrderItemName(orderItem.getName());
-
+        tripRequest.setBarCode(validations.generateCode(tripRequest.getReferenceNo()));
+        tripRequest.setQRCode(validations.generateCode(tripRequest.getReferenceNo()));
 
         tripRequest.setCreatedBy(userCurrent.getId());
         tripRequest.setIsActive(true);
         tripRequest = tripRequestRepository.save(tripRequest);
         log.debug("Create new trip Request - {}"+ new Gson().toJson(tripRequest));
-        return mapper.map(tripRequest, TripResponseDto.class);
+        TripResponseDto tripResponseDto = mapper.map(tripRequest, TripResponseDto.class);
+        tripResponseDto.setPartnerName(partner.getName());
+        tripResponseDto.setPartnerAssetName(partnerAsset.getName());
+        return tripResponseDto;
     }
 
     public TripResponseDto updateTripRequest(TripRequestDto request) {
@@ -82,27 +84,30 @@ public class TripRequestService {
                         "Requested Trip Request ID does not exist!"));
         mapper.map(request, tripRequest);
 
-        if(request.getPartnerID() != null ) {
-            Partner partner = partnerRepository.getOne(request.getPartnerID());
-            tripRequest.setPartnerName(partner.getName());
-        }
-
-        if(request.getOrderItemID() != null) {
-            OrderItem orderItem = orderItemRepository.getOne(request.getOrderItemID());
-            tripRequest.setOrderItemName(orderItem.getName());
-        }
-
         tripRequest.setUpdatedBy(userCurrent.getId());
         tripRequestRepository.save(tripRequest);
         log.debug("tripRequest record updated - {}"+ new Gson().toJson(tripRequest));
-        return mapper.map(tripRequest, TripResponseDto.class);
+        TripResponseDto tripResponseDto = mapper.map(tripRequest, TripResponseDto.class);
+
+        if(request.getPartnerID() != null || request.getPartnerAssetID() != null ) {
+            Partner partner = partnerRepository.getOne(request.getPartnerID());
+            tripResponseDto.setPartnerName(partner.getName());
+            PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetID());
+            tripResponseDto.setPartnerAssetName(partnerAsset.getName());
+        }
+        return tripResponseDto;
     }
 
     public TripResponseDto findTripRequest(Long id){
         TripRequest tripRequest  = tripRequestRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Trip Request Id does not exist!"));
-        return mapper.map(tripRequest, TripResponseDto.class);
+
+        TripResponseDto tripResponseDto = mapper.map(tripRequest, TripResponseDto.class);
+        tripResponseDto.setTripItem(getAllTripItems(id));
+        tripResponseDto.setRequestResponse(getAllRequestResponse(id));
+
+        return tripResponseDto;
     }
 
 
@@ -150,6 +155,17 @@ public class TripRequestService {
 
     public List<TripRequest> getAll(Boolean isActive){
         List<TripRequest> tripRequests = tripRequestRepository.findByIsActive(isActive);
+        return tripRequests;
+
+    }
+
+    public List<TripItem> getAllTripItems(Long tripRequestID){
+        List<TripItem> tripItems = tripItemRepository.findByTripRequestID(tripRequestID);
+        return tripItems;
+
+    }
+    public List<RequestResponse> getAllRequestResponse(Long tripRequestID){
+        List<RequestResponse> tripRequests = requestResponseRepository.findByTripRequestID(tripRequestID);
         return tripRequests;
 
     }
