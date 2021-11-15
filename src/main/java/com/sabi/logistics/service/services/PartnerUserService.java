@@ -91,7 +91,7 @@ public class PartnerUserService {
         previousPasswordRepository.save(previousPasswords);
 
         PartnerUser partnerUser = new PartnerUser();
-        partnerUser.setPartnerId(partner.getPartnerId());
+        partnerUser.setPartnerId(user.getClientId());
         partnerUser.setUserId(user.getId());
         partnerUser.setCreatedBy(userCurrent.getId());
         partnerUser.setIsActive(true);
@@ -141,7 +141,14 @@ public class PartnerUserService {
 
 
 
+    public List<User> getAll(Boolean isActive){
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
 
+        PartnerUser partner = partnerUserRepository.findByUserId(userCurrent.getId());
+        List<User> users = userRepository.findByIsActiveAAndClientId(isActive,partner.getPartnerId());
+        return users;
+
+    }
 
 
 
