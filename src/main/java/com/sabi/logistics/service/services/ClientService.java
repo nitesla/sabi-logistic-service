@@ -71,8 +71,8 @@ public class ClientService {
     }
 
 
-    public Page<Client> findAll(Long id, Long userId, PageRequest pageRequest ){
-        Page<Client> savedClient = repository.findAllClients(id,userId,pageRequest);
+    public Page<Client> findAll( Long userId, PageRequest pageRequest ){
+        Page<Client> savedClient = repository.findAllClients(userId,pageRequest);
         if(savedClient == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

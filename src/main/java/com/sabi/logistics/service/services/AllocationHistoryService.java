@@ -125,10 +125,13 @@ public class AllocationHistoryService {
 
     }
 
-
     public List<AllocationHistory> getAll(Boolean isActive){
         List<AllocationHistory> assetTypeProperties = repository.findByIsActive(isActive);
         return assetTypeProperties;
+    }
 
+    public List<AllocationHistory> getAllocatioIdAll(Long allocationId){
+        List<AllocationHistory> assetTypeProperties = repository.findByAllocatioId(allocationId);
+        return assetTypeProperties;
     }
 }

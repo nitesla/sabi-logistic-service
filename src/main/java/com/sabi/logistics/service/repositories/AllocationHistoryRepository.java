@@ -1,6 +1,7 @@
 package com.sabi.logistics.service.repositories;
 
 import com.sabi.logistics.core.models.AllocationHistory;
+import com.sabi.logistics.core.models.Allocations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,6 +17,9 @@ import java.util.List;
 public interface AllocationHistoryRepository extends JpaRepository<AllocationHistory, Long> {
 
     AllocationHistory findAllocationHistoriesById(Long id);
+
+    List<AllocationHistory> findByAllocatioId(Long allocationId);
+
 
     List<AllocationHistory> findByIsActive(Boolean isActive);
 
