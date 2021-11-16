@@ -12,10 +12,12 @@ import com.sabi.logistics.core.dto.request.AllocationHistoryDto;
 import com.sabi.logistics.core.dto.request.AllocationsDto;
 import com.sabi.logistics.core.dto.response.AllocationHistoryResponseDto;
 import com.sabi.logistics.core.dto.response.AllocationResponseDto;
+import com.sabi.logistics.core.models.AllocationHistory;
 import com.sabi.logistics.core.models.Allocations;
 import com.sabi.logistics.core.models.BlockType;
 import com.sabi.logistics.core.models.Warehouse;
 import com.sabi.logistics.service.helper.Validations;
+import com.sabi.logistics.service.repositories.AllocationHistoryRepository;
 import com.sabi.logistics.service.repositories.AllocationsRepository;
 import com.sabi.logistics.service.repositories.BlockTypeRepository;
 import com.sabi.logistics.service.repositories.WarehouseRepository;
@@ -42,6 +44,9 @@ public class AllocationService {
     private BlockTypeRepository blockTypeRepository;
     @Autowired
     private WarehouseRepository warehouseRepository;
+
+    @Autowired
+    private AllocationHistoryRepository allocationHistoryRepository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
     private final Validations validations;
@@ -97,7 +102,11 @@ public class AllocationService {
         Allocations allocations  = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested allocations Id does not exist!"));
-        return mapper.map(allocations,AllocationResponseDto.class);
+       List <AllocationHistory> allocationHistory = allocationHistoryRepository.findByAllocationId(id);
+       AllocationResponseDto allocationResponseDto = mapper.map(allocations,AllocationResponseDto.class);
+//        mapper.map(allocations,AllocationResponseDto.class);
+        allocationResponseDto.setHistorys(allocationHistory);
+        return allocationResponseDto;
     }
 
 
