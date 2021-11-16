@@ -462,30 +462,30 @@ public class Validations {
 
     public void validateTripRequest (TripRequestDto request){
 
-        if(request.getPartnerID() == null)
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " partnerID can not be null");
+//        if(request.getPartnerID() == null)
+//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " partnerID can not be null");
         if (!Utility.isNumeric(request.getPartnerID().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerID ");
 
-        if (request.getPartnerAssetID() == null )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "partnerAssetID cannot be empty");
+//        if (request.getPartnerAssetID() == null )
+//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "partnerAssetID cannot be empty");
         if (!Utility.isNumeric(request.getPartnerAssetID().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerAssetID ");
 
-        if (request.getDriverID() == null )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "driverID cannot be empty");
+//        if (request.getDriverID() == null )
+//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "driverID cannot be empty");
         if (!Utility.isNumeric(request.getDriverID().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for driverID ");
 
         if (request.getStatus() == null || request.getStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
-        if (!("Accepted".equalsIgnoreCase(request.getStatus()) || "Rejected".equalsIgnoreCase(request.getStatus()) || "Pending".equalsIgnoreCase(request.getStatus())))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
+//        if (!("Accepted".equalsIgnoreCase(request.getStatus()) || "Rejected".equalsIgnoreCase(request.getStatus()) || "Pending".equalsIgnoreCase(request.getStatus())))
+//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
 
         if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
-        if (!("Completed".equalsIgnoreCase(request.getStatus()) || "Partially Completed".equalsIgnoreCase(request.getStatus()) || "Cancelled".equalsIgnoreCase(request.getStatus())))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
+//        if (!("Completed".equalsIgnoreCase(request.getStatus()) || "Partially Completed".equalsIgnoreCase(request.getStatus()) || "Cancelled".equalsIgnoreCase(request.getStatus())))
+//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
 
 
         partnerRepository.findById(request.getPartnerID()).orElseThrow(() ->
