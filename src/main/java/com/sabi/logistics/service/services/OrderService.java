@@ -10,11 +10,13 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.OrderRequestDto;
 import com.sabi.logistics.core.dto.response.OrderResponseDto;
 import com.sabi.logistics.core.models.Order;
+import com.sabi.logistics.core.models.OrderItem;
 import com.sabi.logistics.core.models.Warehouse;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
+import com.sabi.logistics.service.repositories.OrderItemRepository;
 import com.sabi.logistics.service.repositories.OrderRepository;
 import com.sabi.logistics.service.repositories.WarehouseRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +39,9 @@ public class OrderService {
     @Autowired
     private WarehouseRepository warehouseRepository;
 
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+
 
     public OrderService(OrderRepository orderRepository, ModelMapper mapper) {
         this.orderRepository = orderRepository;
@@ -58,16 +63,17 @@ public class OrderService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order already exist");
         }
         Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseID());
-        order.setWareHouseName(warehouse.getName());
 
         order.setBarCode(validations.generateCode(order.getReferenceNo()));
-        order.setQRcode(validations.generateCode(order.getReferenceNo()));
+        order.setQrCode(validations.generateCode(order.getReferenceNo()));
 
         order.setCreatedBy(userCurrent.getId());
         order.setIsActive(true);
         order = orderRepository.save(order);
         log.debug("Create new order - {}"+ new Gson().toJson(order));
-        return mapper.map(order, OrderResponseDto.class);
+        OrderResponseDto orderResponseDto = mapper.map(order, OrderResponseDto.class);
+        orderResponseDto.setWareHouseName(warehouse.getName());
+        return orderResponseDto;
     }
 
     public OrderResponseDto updateOrder(OrderRequestDto request) {
@@ -78,28 +84,33 @@ public class OrderService {
                         "Requested order Id does not exist!"));
         mapper.map(request, order);
 
-        if(request.getWareHouseID() != null ) {
-            Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseID());
-            order.setWareHouseName(warehouse.getName());
-        }
-
         order.setUpdatedBy(userCurrent.getId());
         orderRepository.save(order);
         log.debug("order record updated - {}"+ new Gson().toJson(order));
-        return mapper.map(order, OrderResponseDto.class);
+        OrderResponseDto orderResponseDto = mapper.map(order, OrderResponseDto.class);
+        if(request.getWareHouseID() != null ) {
+            Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseID());
+            orderResponseDto.setWareHouseName(warehouse.getName());
+        }
+
+        return orderResponseDto;
     }
 
     public OrderResponseDto findOrder(Long id){
         Order order  = orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested order Id does not exist!"));
-        return mapper.map(order, OrderResponseDto.class);
+        OrderResponseDto orderResponseDto = mapper.map(order, OrderResponseDto.class);
+        orderResponseDto.setOrderItem(getAllOrderItems(id));
+
+        return orderResponseDto;
+
     }
 
 
     public Page<Order> findAll(Long wareHouseID, String referenceNo, String deliveryStatus,
                                String customerName, String customerPhone, String deliveryAddress,
-                               String barCode, String QRcode, PageRequest pageRequest ){
+                               String barCode, String qrCode, PageRequest pageRequest ){
         GenericSpecification<Order> genericSpecification = new GenericSpecification<Order>();
 
         if (wareHouseID != null)
@@ -137,9 +148,9 @@ public class OrderService {
             genericSpecification.add(new SearchCriteria("barCode", barCode, SearchOperation.MATCH));
         }
 
-        if (QRcode != null && !QRcode.isEmpty())
+        if (qrCode != null && !qrCode.isEmpty())
         {
-            genericSpecification.add(new SearchCriteria("QRcode", QRcode, SearchOperation.MATCH));
+            genericSpecification.add(new SearchCriteria("QRcode", qrCode, SearchOperation.MATCH));
         }
 
         Page<Order> orders = orderRepository.findAll(genericSpecification, pageRequest);
@@ -167,6 +178,12 @@ public class OrderService {
     public List<Order> getAll(Boolean isActive){
         List<Order> orders = orderRepository.findByIsActive(isActive);
         return orders;
+
+    }
+
+    public List<OrderItem> getAllOrderItems(Long orderID){
+        List<OrderItem> orderItems = orderItemRepository.findByOrderID(orderID);
+        return orderItems;
 
     }
 }
