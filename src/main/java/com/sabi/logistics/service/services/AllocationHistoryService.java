@@ -131,7 +131,7 @@ public class AllocationHistoryService {
     }
 
     public List<AllocationHistory> getAllocatioIdAll(Long allocationId){
-        List<AllocationHistory> assetTypeProperties = repository.findByAllocatioId(allocationId);
+        List<AllocationHistory> assetTypeProperties = repository.findByAllocationId(allocationId);
         return assetTypeProperties;
     }
 }

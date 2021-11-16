@@ -102,9 +102,11 @@ public class AllocationService {
         Allocations allocations  = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested allocations Id does not exist!"));
-       List <AllocationHistory> allocationHistory = allocationHistoryRepository.findByAllocatioId(id);
-       mapper.map(allocations,allocationHistory);
-        return mapper.map(allocations,AllocationResponseDto.class);
+       List <AllocationHistory> allocationHistory = allocationHistoryRepository.findByAllocationId(id);
+       AllocationResponseDto allocationResponseDto = mapper.map(allocations,AllocationResponseDto.class);
+//        mapper.map(allocations,AllocationResponseDto.class);
+        allocationResponseDto.setHistorys(allocationHistory);
+        return allocationResponseDto;
     }
 
 

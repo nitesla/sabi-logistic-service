@@ -18,7 +18,7 @@ public interface AllocationHistoryRepository extends JpaRepository<AllocationHis
 
     AllocationHistory findAllocationHistoriesById(Long id);
 
-    List<AllocationHistory> findByAllocatioId(Long allocationId);
+    List<AllocationHistory> findByAllocationId (Long allocationId);
 
 
     List<AllocationHistory> findByIsActive(Boolean isActive);
