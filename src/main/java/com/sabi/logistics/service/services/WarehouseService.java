@@ -66,14 +66,14 @@ public class WarehouseService {
     }
 
     public WarehouseResponseDto findWarehouse(Long id) {
-        Warehouse Warehouse = warehouseRepository.findById(id)
+        Warehouse warehouse = warehouseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Warehouse Id does not exist!"));
-        return mapper.map(Warehouse, WarehouseResponseDto.class);
+        return mapper.map(warehouse, WarehouseResponseDto.class);
     }
 
 
-    public Page<Warehouse> findAll(String owner, String name, long partnerId, long lgaId, PageRequest pageRequest) {
+    public Page<Warehouse> findAll(String owner, String name, Long partnerId, Long lgaId, PageRequest pageRequest) {
         Page<Warehouse> warehouse = warehouseRepository.findWarehouse(owner, name, partnerId, lgaId, pageRequest);
         if (warehouse == null) {
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");

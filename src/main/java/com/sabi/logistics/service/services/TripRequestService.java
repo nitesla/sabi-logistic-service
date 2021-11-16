@@ -43,7 +43,7 @@ public class TripRequestService {
     private TripItemRepository tripItemRepository;
 
     @Autowired
-    private RequestResponseRepository requestResponseRepository;
+    private TripRequestResponseRepository tripRequestResponseRepository;
 
     public TripRequestService(TripRequestRepository tripRequestRepository, ModelMapper mapper) {
         this.tripRequestRepository = tripRequestRepository;
@@ -61,9 +61,6 @@ public class TripRequestService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Trip Request already exist");
         }
 
-        Partner partner = partnerRepository.getOne(request.getPartnerID());
-        PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetID());
-
         tripRequest.setBarCode(validations.generateCode(tripRequest.getReferenceNo()));
         tripRequest.setQrCode(validations.generateCode(tripRequest.getReferenceNo()));
 
@@ -72,8 +69,13 @@ public class TripRequestService {
         tripRequest = tripRequestRepository.save(tripRequest);
         log.debug("Create new trip Request - {}"+ new Gson().toJson(tripRequest));
         TripResponseDto tripResponseDto = mapper.map(tripRequest, TripResponseDto.class);
-        tripResponseDto.setPartnerName(partner.getName());
-        tripResponseDto.setPartnerAssetName(partnerAsset.getName());
+
+        if ((request.getPartnerAssetID() != null || request.getPartnerID() != null)) {
+            Partner partner = partnerRepository.getOne(request.getPartnerID());
+            PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetID());
+            tripResponseDto.setPartnerName(partner.getName());
+            tripResponseDto.setPartnerAssetName(partnerAsset.getName());
+        }
         return tripResponseDto;
     }
 
@@ -106,23 +108,18 @@ public class TripRequestService {
 
         TripResponseDto tripResponseDto = mapper.map(tripRequest, TripResponseDto.class);
         tripResponseDto.setTripItem(getAllTripItems(id));
-        tripResponseDto.setRequestResponse(getAllRequestResponse(id));
+        tripResponseDto.setTripRequestResponse(getAllRequestResponse(id));
 
         return tripResponseDto;
     }
 
 
-    public Page<TripRequest> findAll(Long partnerID, Long orderItemID, String status, PageRequest pageRequest ){
+    public Page<TripRequest> findAll(Long partnerID, String status, PageRequest pageRequest ){
         GenericSpecification<TripRequest> genericSpecification = new GenericSpecification<TripRequest>();
 
         if (partnerID != null)
         {
             genericSpecification.add(new SearchCriteria("partnerID", partnerID, SearchOperation.EQUAL));
-        }
-
-        if (orderItemID != null)
-        {
-            genericSpecification.add(new SearchCriteria("orderItemID", orderItemID, SearchOperation.EQUAL));
         }
 
         if (status != null && !status.isEmpty())
@@ -165,8 +162,8 @@ public class TripRequestService {
         return tripItems;
 
     }
-    public List<RequestResponse> getAllRequestResponse(Long tripRequestID){
-        List<RequestResponse> tripRequests = requestResponseRepository.findByTripRequestID(tripRequestID);
+    public List<TripRequestResponse> getAllRequestResponse(Long tripRequestID){
+        List<TripRequestResponse> tripRequests = tripRequestResponseRepository.findByTripRequestID(tripRequestID);
         return tripRequests;
 
     }
