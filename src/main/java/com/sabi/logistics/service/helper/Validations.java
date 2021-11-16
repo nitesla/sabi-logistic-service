@@ -400,7 +400,7 @@ public class Validations {
         );
     }
 
-    public void validateRequestResponse (RequestResponseRequestDto request){
+    public void validateTripRequestResponse (TripRequestResponseReqDto request){
 
         if (request.getTripRequestID() == null )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "tripRequestID cannot be empty");

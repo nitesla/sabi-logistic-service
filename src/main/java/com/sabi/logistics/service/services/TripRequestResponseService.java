@@ -7,16 +7,16 @@ import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
-import com.sabi.logistics.core.dto.request.RequestResponseRequestDto;
-import com.sabi.logistics.core.dto.response.RequestResponseDto;
+import com.sabi.logistics.core.dto.request.TripRequestResponseReqDto;
+import com.sabi.logistics.core.dto.response.TripRequestResponseDto;
 import com.sabi.logistics.core.models.Partner;
-import com.sabi.logistics.core.models.RequestResponse;
+import com.sabi.logistics.core.models.TripRequestResponse;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.PartnerRepository;
-import com.sabi.logistics.service.repositories.RequestResponseRepository;
+import com.sabi.logistics.service.repositories.TripRequestResponseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +29,8 @@ import java.util.List;
 @SuppressWarnings("All")
 @Service
 @Slf4j
-public class RequestResponseService {
-    private final RequestResponseRepository requestResponseRepository;
+public class TripRequestResponseService {
+    private final TripRequestResponseRepository tripRequestResponseRepository;
     private final ModelMapper mapper;
     @Autowired
     private Validations validations;
@@ -39,47 +39,47 @@ public class RequestResponseService {
     private PartnerRepository partnerRepository;
 
 
-    public RequestResponseService(RequestResponseRepository requestResponseRepository, ModelMapper mapper) {
-        this.requestResponseRepository = requestResponseRepository;
+    public TripRequestResponseService(TripRequestResponseRepository tripRequestResponseRepository, ModelMapper mapper) {
+        this.tripRequestResponseRepository = tripRequestResponseRepository;
         this.mapper = mapper;
     }
 
-    public RequestResponseDto createRequestResponse(RequestResponseRequestDto request) {
-        validations.validateRequestResponse(request);
+    public TripRequestResponseDto createTripRequestResponse(TripRequestResponseReqDto request) {
+        validations.validateTripRequestResponse(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-        RequestResponse requestResponse = mapper.map(request,RequestResponse.class);
+        TripRequestResponse requestResponse = mapper.map(request,TripRequestResponse.class);
 
-        RequestResponse requestResponseExists = requestResponseRepository.findByTripRequestIDAndPartnerID(requestResponse.getTripRequestID(), requestResponse.getPartnerID());
+        TripRequestResponse requestResponseExists = tripRequestResponseRepository.findByTripRequestIDAndPartnerID(requestResponse.getTripRequestID(), requestResponse.getPartnerID());
 
 
         if(requestResponseExists != null){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Request Response already exist");
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Trip Request Response already exist");
         }
 
         Partner partner = partnerRepository.getOne(request.getPartnerID());
 
         requestResponse.setCreatedBy(userCurrent.getId());
         requestResponse.setIsActive(true);
-        requestResponse = requestResponseRepository.save(requestResponse);
-        log.debug("Create new requestResponse - {}"+ new Gson().toJson(requestResponse));
-        RequestResponseDto requestResponseDto  = mapper.map(requestResponse, RequestResponseDto.class);
+        requestResponse = tripRequestResponseRepository.save(requestResponse);
+        log.debug("Create new tripRequestResponse - {}"+ new Gson().toJson(requestResponse));
+        TripRequestResponseDto requestResponseDto  = mapper.map(requestResponse, TripRequestResponseDto.class);
         requestResponseDto.setPartnerName(partner.getName());
 
         return requestResponseDto;
     }
 
-    public RequestResponseDto updateRequestResponse(RequestResponseRequestDto request) {
-        validations.validateRequestResponse(request);
+    public TripRequestResponseDto updateTripRequestResponse(TripRequestResponseReqDto request) {
+        validations.validateTripRequestResponse(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-        RequestResponse requestResponse = requestResponseRepository.findById(request.getId())
+        TripRequestResponse requestResponse = tripRequestResponseRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested requestResponse Id does not exist!"));
         mapper.map(request, requestResponse);
 
         requestResponse.setUpdatedBy(userCurrent.getId());
-        requestResponseRepository.save(requestResponse);
+        tripRequestResponseRepository.save(requestResponse);
         log.debug("requestResponse record updated - {}"+ new Gson().toJson(requestResponse));
-        RequestResponseDto requestResponseDto = mapper.map(requestResponse, RequestResponseDto.class);
+        TripRequestResponseDto requestResponseDto = mapper.map(requestResponse, TripRequestResponseDto.class);
 
         if(request.getPartnerID() != null ) {
             Partner partner = partnerRepository.getOne(request.getPartnerID());
@@ -89,16 +89,16 @@ public class RequestResponseService {
 
     }
 
-    public RequestResponseDto findRequestResponse(Long id){
-        RequestResponse requestResponse  = requestResponseRepository.findById(id)
+    public TripRequestResponseDto findTripRequestResponse(Long id){
+        TripRequestResponse requestResponse  = tripRequestResponseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested requestResponseId does not exist!"));
-        return mapper.map(requestResponse, RequestResponseDto.class);
+        return mapper.map(requestResponse, TripRequestResponseDto.class);
     }
 
 
-    public Page<RequestResponse> findAll(Long tripRequest, Long partnerID, String status, PageRequest pageRequest ){
-        GenericSpecification<RequestResponse> genericSpecification = new GenericSpecification<RequestResponse>();
+    public Page<TripRequestResponse> findAll(Long tripRequest, Long partnerID, String status, PageRequest pageRequest ){
+        GenericSpecification<TripRequestResponse> genericSpecification = new GenericSpecification<TripRequestResponse>();
 
         if (tripRequest != null)
         {
@@ -117,7 +117,7 @@ public class RequestResponseService {
 
 
 
-        Page<RequestResponse> requestResponses = requestResponseRepository.findAll(genericSpecification, pageRequest);
+        Page<TripRequestResponse> requestResponses = tripRequestResponseRepository.findAll(genericSpecification, pageRequest);
         if(requestResponses == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
@@ -129,18 +129,18 @@ public class RequestResponseService {
 
     public void enableDisable (EnableDisEnableDto request){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-        RequestResponse requestResponse  = requestResponseRepository.findById(request.getId())
+        TripRequestResponse requestResponse  = tripRequestResponseRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        "Requested RequestResponse Id does not exist!"));
+                        "Requested TripRequestResponse Id does not exist!"));
         requestResponse.setIsActive(request.isActive());
         requestResponse.setUpdatedBy(userCurrent.getId());
-        requestResponseRepository.save(requestResponse);
+        tripRequestResponseRepository.save(requestResponse);
 
     }
 
 
-    public List<RequestResponse> getAll(Boolean isActive){
-        List<RequestResponse> requestResponses = requestResponseRepository.findByIsActive(isActive);
+    public List<TripRequestResponse> getAll(Boolean isActive){
+        List<TripRequestResponse> requestResponses = tripRequestResponseRepository.findByIsActive(isActive);
         return requestResponses;
 
     }

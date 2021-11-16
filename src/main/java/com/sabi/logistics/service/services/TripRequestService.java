@@ -43,7 +43,7 @@ public class TripRequestService {
     private TripItemRepository tripItemRepository;
 
     @Autowired
-    private RequestResponseRepository requestResponseRepository;
+    private TripRequestResponseRepository tripRequestResponseRepository;
 
     public TripRequestService(TripRequestRepository tripRequestRepository, ModelMapper mapper) {
         this.tripRequestRepository = tripRequestRepository;
@@ -106,7 +106,7 @@ public class TripRequestService {
 
         TripResponseDto tripResponseDto = mapper.map(tripRequest, TripResponseDto.class);
         tripResponseDto.setTripItem(getAllTripItems(id));
-        tripResponseDto.setRequestResponse(getAllRequestResponse(id));
+        tripResponseDto.setTripRequestResponse(getAllRequestResponse(id));
 
         return tripResponseDto;
     }
@@ -165,8 +165,8 @@ public class TripRequestService {
         return tripItems;
 
     }
-    public List<RequestResponse> getAllRequestResponse(Long tripRequestID){
-        List<RequestResponse> tripRequests = requestResponseRepository.findByTripRequestID(tripRequestID);
+    public List<TripRequestResponse> getAllRequestResponse(Long tripRequestID){
+        List<TripRequestResponse> tripRequests = tripRequestResponseRepository.findByTripRequestID(tripRequestID);
         return tripRequests;
 
     }
