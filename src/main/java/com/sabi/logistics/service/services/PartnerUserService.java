@@ -17,8 +17,11 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.PartnerUserRequestDto;
 import com.sabi.logistics.core.dto.response.PartnerUserResponseDto;
+import com.sabi.logistics.core.models.Driver;
 import com.sabi.logistics.core.models.PartnerUser;
+import com.sabi.logistics.service.helper.PartnerConstants;
 import com.sabi.logistics.service.helper.Validations;
+import com.sabi.logistics.service.repositories.DriverRepository;
 import com.sabi.logistics.service.repositories.PartnerRepository;
 import com.sabi.logistics.service.repositories.PartnerUserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -43,17 +46,20 @@ public class PartnerUserService {
     private UserRepository userRepository;
     private PreviousPasswordRepository previousPasswordRepository;
     private final PartnerUserRepository partnerUserRepository;
+    private DriverRepository driverRepository;
     private NotificationService notificationService;
     private final ModelMapper mapper;
     private final Validations validations;
 
     public PartnerUserService(PartnerRepository partnerRepository,UserRepository userRepository,PreviousPasswordRepository previousPasswordRepository,
-                              PartnerUserRepository partnerUserRepository,NotificationService notificationService,
+                              PartnerUserRepository partnerUserRepository,DriverRepository driverRepository,
+                              NotificationService notificationService,
                               ModelMapper mapper, Validations validations) {
         this.partnerRepository = partnerRepository;
         this.userRepository = userRepository;
         this.previousPasswordRepository = previousPasswordRepository;
         this.partnerUserRepository = partnerUserRepository;
+        this.driverRepository = driverRepository;
         this.notificationService = notificationService;
         this.mapper = mapper;
         this.validations = validations;
@@ -94,10 +100,19 @@ public class PartnerUserService {
         partnerUser.setPartnerId(user.getClientId());
         partnerUser.setUserId(user.getId());
         partnerUser.setCreatedBy(userCurrent.getId());
+        partnerUser.setUserType(request.getUserType());
         partnerUser.setIsActive(true);
         partnerUserRepository.save(partnerUser);
 
         log.debug("save to partner user table - {}"+ new Gson().toJson(partnerUser));
+
+        if(request.getUserType().equalsIgnoreCase(PartnerConstants.DRIVER_USER)){
+            Driver driver = Driver.builder()
+                    .partnerId(user.getClientId())
+                    .userId(user.getId())
+                    .build();
+            driverRepository.save(driver);
+        }
 
         // --------  sending token  -----------
 
@@ -138,6 +153,36 @@ public class PartnerUserService {
     }
 
 
+    public Page<PartnerUser> findPartnerUsers(String userType, PageRequest pageRequest ){
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+
+        PartnerUser partner = partnerUserRepository.findByUserId(userCurrent.getId());
+        Page<PartnerUser> partnerUsers = partnerUserRepository.findPartnerUsers(partner.getPartnerId(),userType,pageRequest);
+        if(partnerUsers == null){
+            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
+        }
+        partnerUsers.getContent().forEach(users -> {
+
+         User user = userRepository.getOne(users.getUserId());
+         users.setEmail(user.getEmail());
+         users.setFirstName(user.getFirstName());
+         users.setLastName(user.getLastName());
+         users.setPhone(user.getPhone());
+         users.setMiddleName(user.getMiddleName());
+         users.setUsername(user.getUsername());
+         users.setRoleId(user.getRoleId());
+         users.setLoginAttempts(user.getLoginAttempts());
+         users.setFailedLoginDate(user.getFailedLoginDate());
+         users.setLastLogin(user.getLastLogin());
+         users.setLockedDate(user.getLockedDate());
+
+        });
+
+            return partnerUsers;
+
+    }
+
+
 
 
 
@@ -150,6 +195,33 @@ public class PartnerUserService {
 
     }
 
+
+
+    public List<PartnerUser> findPartnerUsersList(String userType){
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+
+        PartnerUser partner = partnerUserRepository.findByUserId(userCurrent.getId());
+        List<PartnerUser> partnerUsers = partnerUserRepository.findPartnerUsersList(partner.getPartnerId(),userType);
+
+        for (PartnerUser users : partnerUsers
+                ) {
+            User user = userRepository.getOne(users.getUserId());
+
+            users.setEmail(user.getEmail());
+            users.setFirstName(user.getFirstName());
+            users.setLastName(user.getLastName());
+            users.setPhone(user.getPhone());
+            users.setMiddleName(user.getMiddleName());
+            users.setUsername(user.getUsername());
+            users.setRoleId(user.getRoleId());
+            users.setLoginAttempts(user.getLoginAttempts());
+            users.setFailedLoginDate(user.getFailedLoginDate());
+            users.setLastLogin(user.getLastLogin());
+            users.setLockedDate(user.getLockedDate());
+        }
+        return partnerUsers;
+
+    }
 
 
 
