@@ -2,8 +2,6 @@ package com.sabi.logistics.service.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-
-
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
@@ -109,7 +107,7 @@ public class LGAService {
                 .id(lga.getId())
                 .name(lga.getName())
                 .stateId(lga.getStateId())
-                .state(state.getName())
+                .stateName(state.getName())
                 .createdDate(lga.getCreatedDate())
                 .createdBy(lga.getCreatedBy())
                 .updatedBy(lga.getUpdatedBy())
@@ -130,11 +128,16 @@ public class LGAService {
 
 
 
-    public Page<LGA> findAll(String name, PageRequest pageRequest ) {
+    public Page<LGA> findAll(String name, Long stateId, PageRequest pageRequest ) {
         Page<LGA> lga = lgaRepository.findLgas(name, pageRequest);
         if (lga == null) {
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
+        lga.getContent().forEach(lgas -> {
+            State state = stateRepository.getOne(lgas.getStateId());
+
+            lgas.setStateName(state.getName());
+        });
         return lga;
 
     }
@@ -157,8 +160,13 @@ public class LGAService {
     }
 
 
-    public List<LGA> getAll(Boolean isActive){
+    public List<LGA> getAll(Long stateId, Boolean isActive){
         List<LGA> lga = lgaRepository.findByIsActive(isActive);
+        for (LGA tran : lga
+        ) {
+            State state = stateRepository.getOne(tran.getStateId());
+            tran.setStateName(state.getName());
+        }
         return lga;
 
     }

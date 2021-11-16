@@ -9,16 +9,17 @@ import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.DriverAssetDto;
-import com.sabi.logistics.core.dto.request.DriverDto;
 import com.sabi.logistics.core.dto.response.DriverAssetResponseDto;
-import com.sabi.logistics.core.dto.response.DriverResponseDto;
 import com.sabi.logistics.core.models.Driver;
 import com.sabi.logistics.core.models.DriverAsset;
+import com.sabi.logistics.core.models.PartnerAsset;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.DriverAssetRepository;
 import com.sabi.logistics.service.repositories.DriverRepository;
+import com.sabi.logistics.service.repositories.PartnerAssetRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,12 @@ public class DriverAssetService {
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
     private final Validations validations;
+
+    @Autowired
+    private PartnerAssetRepository partnerAssetRepository;
+
+    @Autowired
+    private DriverRepository driverRepository;
 
     public DriverAssetService(DriverAssetRepository repository, ModelMapper mapper, ObjectMapper objectMapper,Validations validations) {
         this.repository = repository;
@@ -50,6 +57,14 @@ public class DriverAssetService {
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Driver asset already exist");
         }
+
+        PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetId());
+        driverAsset.setPartnerName(partnerAsset.getPartnerName());
+        driverAsset.setPartnerAssetName(partnerAsset.getName());
+
+        Driver driver = driverRepository.getOne(request.getDriverId());
+        driverAsset.setDriverName(driver.getName());
+
         driverAsset.setCreatedBy(userCurrent.getId());
         driverAsset.setIsActive(true);
         driverAsset = repository.save(driverAsset);
@@ -65,6 +80,18 @@ public class DriverAssetService {
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Driver asset id does not exist!"));
         mapper.map(request, driverAsset);
+
+        if(request.getPartnerAssetId() != null ) {
+            PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetId());
+            driverAsset.setPartnerName(partnerAsset.getPartnerName());
+            driverAsset.setPartnerAssetName(partnerAsset.getName());
+        }
+
+        if(request.getDriverId() != null ) {
+            Driver driver = driverRepository.getOne(request.getDriverId());
+            driverAsset.setDriverName(driver.getName());
+        }
+
         driverAsset.setUpdatedBy(userCurrent.getId());
         repository.save(driverAsset);
         log.debug("Driver asset record updated - {}"+ new Gson().toJson(driverAsset));
@@ -82,8 +109,8 @@ public class DriverAssetService {
 
 
 
-    public Page<DriverAsset> findAll(String name, PageRequest pageRequest ){
-        Page<DriverAsset> drivers = repository.findDriverAssets(name,pageRequest);
+    public Page<DriverAsset> findAll(String name, Long driverId, Long partnerId, Long partnerAssetTypeId, PageRequest pageRequest ){
+        Page<DriverAsset> drivers = repository.findDriverAssets(name, driverId, partnerId, partnerAssetTypeId,pageRequest);
         if(drivers == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

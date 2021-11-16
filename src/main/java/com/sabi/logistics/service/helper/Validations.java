@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Base64;
+
 @SuppressWarnings("All")
 @Slf4j
 @Service
@@ -36,6 +38,15 @@ public class Validations {
 
     @Autowired
     private WarehouseRepository warehouseRepository;
+
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+
+    @Autowired
+    private DeliveryRepository deliveryRepository;
+
+    @Autowired
+    private TripRequestRepository tripRequestRepository;
 
 
 
@@ -275,6 +286,8 @@ public class Validations {
         //todo check for existing partner id
         partnerRepository.findById(request.getPartnerId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                 " Enter a valid partner id!"));
+        userRepository
+                .findById(request.getUserId()).orElseThrow(()-> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, "Enter a valid user Id"));
     }
 
     public void validatePartnerAssetType(PartnerAssetTypeRequestDto request) {
@@ -303,17 +316,17 @@ public class Validations {
         return Long.toString(random);
     }
 
+    public String generateCode(String code) {
+        String encodedString = Base64.getEncoder().encodeToString(code.getBytes());
+        return encodedString;
+    }
+
     public void validateOrder (OrderRequestDto request){
 
         if(request.getWareHouseID() == null)
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " wareHouseID can not be null");
         if (!Utility.isNumeric(request.getWareHouseID().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for wareHouseID ");
-
-        if (request.getDeliveryPartnerID() == null )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Partner ID cannot be empty");
-        if (!Utility.isNumeric(request.getDeliveryPartnerID().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Delivery Partner ID ");
 
         if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
@@ -334,6 +347,30 @@ public class Validations {
 
         if (request.getDeliveryAddress() == null || request.getDeliveryAddress().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Address cannot be empty");
+
+        if (request.getBarCode() == null || request.getBarCode().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "BarCode cannot be empty");
+        if (!Utility.isAlphaNumeric(request.getBarCode().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for BarCode");
+
+        if (request.getQRcode() == null || request.getQRcode().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "BarCode cannot be empty");
+        if (!Utility.isAlphaNumeric(request.getQRcode().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for BarCode");
+
+        if (request.getTotalAmount() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Total Amount cannot be empty");
+        if (request.getTotalAmount()  <= 0.0)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Total Amount cannot be less than 0");
+        if (!Utility.isNumeric(request.getTotalAmount().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Total Amount");
+
+        if (request.getTotalQuantity() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Qty cannot be empty");
+        if (!Utility.isNumeric(request.getTotalQuantity().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Qty");
+
+
 
         warehouseRepository.findById(request.getWareHouseID()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
@@ -372,6 +409,111 @@ public class Validations {
                         " PartnerAssetID ID does not Exist!")
         );
     }
+
+    public void validateDelivery (DeliveryRequestDto request){
+
+        if(request.getPartnerAssetID() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " partnerAssetID can not be null");
+        if (!Utility.isNumeric(request.getPartnerAssetID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerAssetID ");
+
+        if (request.getOrderItemID() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderItemID cannot be empty");
+        if (!Utility.isNumeric(request.getOrderItemID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for orderItemID ");
+
+        if (request.getStatus() == null || request.getStatus().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
+        if (!("Completed".equalsIgnoreCase(request.getStatus()) || "Partially Completed".equalsIgnoreCase(request.getStatus()) || "Cancelled".equalsIgnoreCase(request.getStatus())))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
+
+        if(request.getDriverID() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " driverID can not be null");
+        if (!Utility.isNumeric(request.getDriverID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for driverID ");
+
+        if (request.getDriverAssistantID() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "driverAssistantID cannot be empty");
+        if (!Utility.isNumeric(request.getDriverAssistantID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for driverAssistantID ");
+
+
+
+
+        partnerAssetRepository.findById(request.getPartnerAssetID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " partnerAssetID does not Exist!")
+        );
+
+        orderItemRepository.findById(request.getOrderItemID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " orderItemID does not Exist!")
+        );
+        driverRepository.findById(request.getDriverID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " driverID ID does not Exist!")
+        );
+    }
+
+    public void validateDeliveryItem (DeliveryItemRequestDto request){
+
+        if (request.getDeliveryID() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "deliveryID cannot be empty");
+        if (!Utility.isNumeric(request.getDeliveryID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for deliveryID ");
+
+        if (request.getTripRequestID() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "tripRequestID cannot be empty");
+        if (!Utility.isNumeric(request.getTripRequestID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for tripRequestID");
+
+        if (request.getStatus() == null || request.getStatus().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
+        if (!("Completed".equalsIgnoreCase(request.getStatus()) || "InTransit".equalsIgnoreCase(request.getStatus()) || "Returned".equalsIgnoreCase(request.getStatus())))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
+
+
+
+        deliveryRepository.findById(request.getDeliveryID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " deliveryID does not Exist!")
+        );
+
+        tripRequestRepository.findById(request.getTripRequestID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " tripRequestID does not Exist!")
+        );
+    }
+
+    public void validateTripRequest (TripRequestDto request){
+
+        if(request.getPartnerID() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " partnerID can not be null");
+        if (!Utility.isNumeric(request.getPartnerID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerID ");
+
+        if (request.getOrderItemID() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderItemID cannot be empty");
+        if (!Utility.isNumeric(request.getOrderItemID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for orderItemID ");
+
+        if (request.getStatus() == null || request.getStatus().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
+        if (!("Accepted".equalsIgnoreCase(request.getStatus()) || "Rejected".equalsIgnoreCase(request.getStatus()) || "Pending".equalsIgnoreCase(request.getStatus())))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
+
+
+        partnerRepository.findById(request.getPartnerID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " partnerID does not Exist!")
+        );
+
+        orderItemRepository.findById(request.getOrderItemID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " orderItemID does not Exist!")
+        );
+    }
+
 }
 
 

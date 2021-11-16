@@ -1,6 +1,5 @@
 package com.sabi.logistics.service.repositories;
 
-import com.sabi.logistics.core.models.Driver;
 import com.sabi.logistics.core.models.DriverAsset;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +17,10 @@ public interface DriverAssetRepository extends JpaRepository<DriverAsset, Long> 
 
     List<DriverAsset> findByIsActive(Boolean isActive);
 
-    @Query("SELECT d FROM DriverAsset d WHERE ((:name IS NULL) OR (:name IS NOT NULL AND d.name = :name))")
-    Page<DriverAsset> findDriverAssets(@Param("name") String name, Pageable pageable);
+    @Query("SELECT d FROM DriverAsset d WHERE ((:name IS NULL) OR (:name IS NOT NULL AND d.name = :name))" +
+            " AND ((:driverId IS NULL) OR (:driverId IS NOT NULL AND d.driverId = :driverId))" +
+            " AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND d.partnerId = :partnerId))" +
+            " AND ((:partnerAssetTypeId IS NULL) OR (:partnerAssetTypeId IS NOT NULL AND d.partnerAssetTypeId = :partnerAssetTypeId))"
+    )
+    Page<DriverAsset> findDriverAssets(@Param("name") String name, Long driverId, Long partnerId, Long partnerAssetTypeId, Pageable pageable);
 }
