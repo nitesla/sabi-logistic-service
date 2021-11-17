@@ -59,7 +59,9 @@ public class WarehouseService {
         warehouse.setIsActive(true);
         warehouse = warehouseRepository.save(warehouse);
         log.debug("Create new warehouse - {}" + new Gson().toJson(warehouse));
-        return mapper.map(warehouse, WarehouseResponseDto.class);
+        WarehouseResponseDto warehouseResponseDto = mapper.map(warehouse, WarehouseResponseDto.class);
+        warehouseResponseDto.setStockLeft(warehouseResponseDto.getTotalStock() - warehouseResponseDto.getStockSold());
+        return warehouseResponseDto;
     }
 
     public WarehouseResponseDto updateWarehouse(WarehouseRequestDto request) {
@@ -72,18 +74,22 @@ public class WarehouseService {
         warehouse.setUpdatedBy(userCurrent.getId());
         warehouseRepository.save(warehouse);
         log.debug("warehouse record updated - {}" + new Gson().toJson(warehouse));
-        return mapper.map(warehouse, WarehouseResponseDto.class);
+        WarehouseResponseDto warehouseResponseDto = mapper.map(warehouse, WarehouseResponseDto.class);
+        warehouseResponseDto.setStockLeft(warehouseResponseDto.getTotalStock() - warehouseResponseDto.getStockSold());
+        return warehouseResponseDto;
     }
 
     public WarehouseResponseDto findWarehouse(Long id) {
         Warehouse warehouse = warehouseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Warehouse Id does not exist!"));
-      LGA lga  =  lgaRepository.findLGAById (warehouse.getLgaId());
-     warehouse.setLgaName(lga.getName());
+        LGA lga  =  lgaRepository.findLGAById (warehouse.getLgaId());
+        warehouse.setLgaName(lga.getName());
         State state = stateRepository.getOne(lga.getStateId());
         warehouse.setStateName(state.getName());
-        return mapper.map(warehouse, WarehouseResponseDto.class);
+        WarehouseResponseDto warehouseResponseDto = mapper.map(warehouse, WarehouseResponseDto.class);
+        warehouseResponseDto.setStockLeft(warehouseResponseDto.getTotalStock() - warehouseResponseDto.getStockSold());
+        return warehouseResponseDto;
     }
 
 
