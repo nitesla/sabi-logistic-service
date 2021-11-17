@@ -124,7 +124,7 @@ public class TripRequestService {
 
         if (status != null && !status.isEmpty())
         {
-            genericSpecification.add(new SearchCriteria("status", status, SearchOperation.EQUAL));
+            genericSpecification.add(new SearchCriteria("status", status, SearchOperation.MATCH));
         }
 
 

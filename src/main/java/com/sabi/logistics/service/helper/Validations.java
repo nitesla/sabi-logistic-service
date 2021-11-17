@@ -460,6 +460,30 @@ public class Validations {
         );
     }
 
+    public void validateProduct (ProductRequestDto request){
+
+        if (request.getThirdPartyId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "thirdPartyId cannot be empty");
+        if (!Utility.isNumeric(request.getThirdPartyId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for thirdPartyId ");
+
+        if (request.getTotalStock() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "totalStock cannot be empty");
+        if (!Utility.isNumeric(request.getTotalStock().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for totalStock");
+
+        if (request.getStockSold() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "stockSold cannot be empty");
+        if (!Utility.isNumeric(request.getStockSold().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for stockSold");
+
+
+        if (request.getName() == null || request.getName().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+
+
+    }
+
     public void validateTripRequest (TripRequestDto request){
 
 //        if(request.getPartnerID() == null)

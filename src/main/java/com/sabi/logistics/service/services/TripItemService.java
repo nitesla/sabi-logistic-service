@@ -100,7 +100,7 @@ public class TripItemService {
     }
 
 
-    public Page<TripItem> findAll(Long orderItemID, Long tripRequest,
+    public Page<TripItem> findAll(Long orderItemID, Long tripRequestID,
                                    String status, PageRequest pageRequest ){
 
         GenericSpecification<TripItem> genericSpecification = new GenericSpecification<TripItem>();
@@ -110,9 +110,9 @@ public class TripItemService {
             genericSpecification.add(new SearchCriteria("orderItemID", orderItemID, SearchOperation.EQUAL));
         }
 
-        if (tripRequest != null)
+        if (tripRequestID != null)
         {
-            genericSpecification.add(new SearchCriteria("tripRequest", tripRequest, SearchOperation.EQUAL));
+            genericSpecification.add(new SearchCriteria("tripRequestID", tripRequestID, SearchOperation.EQUAL));
         }
 
         if (status != null && !status.isEmpty())
