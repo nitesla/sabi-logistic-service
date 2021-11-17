@@ -536,6 +536,10 @@ public class Validations {
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " driverID does not Exist!")
         );
+        warehouseRepository.findById(request.getWareHouseId()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " wareHouseId does not Exist!")
+        );
     }
 
     public void validateBank(BankDto bankDto) {
