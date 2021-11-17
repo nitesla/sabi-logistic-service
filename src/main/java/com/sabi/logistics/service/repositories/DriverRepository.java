@@ -8,4 +8,8 @@ import org.springframework.stereotype.Repository;
 public interface DriverRepository extends JpaRepository<Driver, Long> {
 
 
+    Driver findByUserId(Long userId);
+
+
+
 }
