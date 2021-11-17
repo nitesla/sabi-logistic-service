@@ -10,11 +10,16 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.WarehouseRequestDto;
 import com.sabi.logistics.core.dto.response.WarehouseResponseDto;
+import com.sabi.logistics.core.models.LGA;
+import com.sabi.logistics.core.models.State;
 import com.sabi.logistics.core.models.Warehouse;
 import com.sabi.logistics.service.helper.Validations;
+import com.sabi.logistics.service.repositories.LGARepository;
+import com.sabi.logistics.service.repositories.StateRepository;
 import com.sabi.logistics.service.repositories.WarehouseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +33,11 @@ public class WarehouseService {
     private final WarehouseRepository warehouseRepository;
     private final ModelMapper mapper;
     private final Validations validations;
+
+    @Autowired
+    private  LGARepository lgaRepository;
+    @Autowired
+    private StateRepository stateRepository;
 
     public WarehouseService(WarehouseRepository WarehouseRepository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
         this.warehouseRepository = WarehouseRepository;
@@ -69,6 +79,10 @@ public class WarehouseService {
         Warehouse warehouse = warehouseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Warehouse Id does not exist!"));
+      LGA lga  =  lgaRepository.findLGAById (warehouse.getLgaId());
+     warehouse.setLgaName(lga.getName());
+        State state = stateRepository.getOne(lga.getStateId());
+        warehouse.setStateName(state.getName());
         return mapper.map(warehouse, WarehouseResponseDto.class);
     }
 
@@ -78,6 +92,12 @@ public class WarehouseService {
         if (warehouse == null) {
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
+        warehouse.forEach(warehouse1 ->{
+                LGA   lga  =  lgaRepository.findLGAById (warehouse1.getLgaId());
+        warehouse1.setLgaName(lga.getName());
+        State state = stateRepository.getOne(lga.getStateId());
+            warehouse1.setStateName(state.getName());
+        });
         return warehouse;
 
     }

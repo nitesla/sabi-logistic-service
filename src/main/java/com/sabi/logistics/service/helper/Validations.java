@@ -302,8 +302,13 @@ public class Validations {
     public void validatePartnerAsset(PartnerAssetRequestDto request) {
         partnerAssetTypeRepository.findById(request.getPartnerAssetTypeId()).orElseThrow(()-> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                 " Enter a valid Partner Asset Type!"));
-        driverRepository.findById(request.getDriverId()).orElseThrow(()-> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                " Enter a valid Driver!"));
+        Driver driver = driverRepository.findByUserId(request.getDriverId());
+        if(driver ==null || driver.equals("")){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " user Id does not exist!");
+        }
+        if (request.getDriverId().equals(request.getDriverAssistantId())){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " driver Id and driver assistant id can not be same!");
+        }
         brandRepository.findById(request.getBrandId()).orElseThrow(()-> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                 " Enter a valid Brand!"));
     }
@@ -506,6 +511,11 @@ public class Validations {
         );
     }
 
+    public void validateInventory(InventoryDto request) {
+        if (request.getPartnerId().equals("") || request.getPartnerId() == null){
+        throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Brand Name cannot be empty");
+    }
+    }
 }
 
 

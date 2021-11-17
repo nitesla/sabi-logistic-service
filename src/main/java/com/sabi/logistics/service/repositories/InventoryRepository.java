@@ -1,18 +1,43 @@
-//package com.sabi.logistics.service.repositories;
-//
-//import com.sabi.logistics.core.models.LGA;
-//import org.springframework.data.jpa.repository.JpaRepository;
-//import org.springframework.stereotype.Repository;
-//
-//@Repository
-//public interface InventoryRepository extends JpaRepository<Inventory, Long> {
-//
-//    Invetory findByName(String name);
-//    List<Country> findByIsActive(Boolean isActive);
-//
-//    @Query("SELECT c FROM Country c WHERE ((:name IS NULL) OR (:name IS NOT NULL AND c.name = :name))" +
-//            " AND ((:code IS NULL) OR (:code IS NOT NULL AND c.code = :code))")
-//    Page<Country> findCountries(@Param("name") String name,
-//                                @Param("code") String code,
-//                                Pageable pageable);
-//}
+package com.sabi.logistics.service.repositories;
+
+import com.sabi.logistics.core.models.Inventory;
+import com.sabi.logistics.core.models.LGA;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Repository
+public interface InventoryRepository extends JpaRepository<Inventory, Long> {
+
+    Inventory findByShippingId(Long shippingId);
+    List<Inventory> findByIsActive(Boolean isActive);
+
+    @Query("SELECT c FROM Inventory c WHERE ((:thirdPartyId IS NULL) OR (:thirdPartyId IS NOT NULL AND c.thirdPartyId = :thirdPartyId))" +
+            " AND ((:productName IS NULL) OR (:productName IS NOT NULL AND c.productName = :productName))" +
+//            " AND ((:qty IS NULL) OR (:qty IS NOT NULL AND c.qty = :qty))" +
+            " AND ((:totalAmount IS NULL) OR (:totalAmount IS NOT NULL AND c.totalAmount = :totalAmount))" +
+            " AND ((:status IS NULL) OR (:status IS NOT NULL AND c.status = :status))" +
+            " AND ((:deliveryPartnerName IS NULL) OR (:deliveryPartnerName IS NOT NULL AND c.deliveryPartnerName = :deliveryPartnerName))" +
+            " AND ((:deliveryPartnerEmail IS NULL) OR (:deliveryPartnerEmail IS NOT NULL AND c.deliveryPartnerEmail = :deliveryPartnerEmail))" +
+            " AND ((:deliveryPartnerPhone IS NULL) OR (:deliveryPartnerPhone IS NOT NULL AND c.deliveryPartnerPhone = :deliveryPartnerPhone))" +
+            " AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND c.partnerId = :partnerId))" +
+            " AND ((:shippingId IS NULL) OR (:shippingId IS NOT NULL AND c.shippingId = :shippingId))"
+    )
+    Page<Inventory> findInventory(@Param("thirdPartyId") Long thirdPartyId,
+                                  @Param("productName") String productName,
+//                                  @Param("qty") int qty,
+                                  @Param("totalAmount") BigDecimal totalAmount,
+                                  @Param("status") String status,
+                                  @Param("deliveryPartnerName") String deliveryPartnerName,
+                                  @Param("deliveryPartnerEmail") String deliveryPartnerEmail,
+                                  @Param("deliveryPartnerPhone") String deliveryPartnerPhone,
+                                  @Param("partnerId") Long partnerId,
+                                  @Param("shippingId") Long shippingId,
+                                  Pageable pageable);
+}
