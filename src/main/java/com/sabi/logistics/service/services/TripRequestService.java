@@ -109,6 +109,7 @@ public class TripRequestService {
         TripResponseDto tripResponseDto = mapper.map(tripRequest, TripResponseDto.class);
         tripResponseDto.setTripItem(getAllTripItems(id));
         tripResponseDto.setTripRequestResponse(getAllRequestResponse(id));
+        tripResponseDto.setPickUp(tripResponseDto.getTripItem().size());
 
         return tripResponseDto;
     }
