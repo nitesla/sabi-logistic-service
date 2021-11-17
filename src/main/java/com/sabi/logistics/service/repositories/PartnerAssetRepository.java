@@ -15,7 +15,6 @@ public interface PartnerAssetRepository extends JpaRepository<PartnerAsset, Long
     PartnerAsset findByPlateNo(String plateNo);
 
     List<PartnerAsset> findByIsActive(Boolean isActive);
-
     @Query("SELECT c FROM PartnerAsset c WHERE ((:name IS NULL) OR (:name IS NOT NULL AND c.name = :name))" +
             " AND ((:brandId IS NULL) OR (:brandId IS NOT NULL AND c.brandId = :brandId))" +
             " AND ((:status IS NULL) OR (:status IS NOT NULL AND c.status = :status))" +
