@@ -15,14 +15,21 @@ public interface PartnerAssetRepository extends JpaRepository<PartnerAsset, Long
     PartnerAsset findByPlateNo(String plateNo);
 
     List<PartnerAsset> findByIsActive(Boolean isActive);
-    @Query("SELECT c FROM PartnerAsset c WHERE ((:name IS NULL) OR (:name IS NOT NULL AND c.name = :name))" +
-            " AND ((:brandId IS NULL) OR (:brandId IS NOT NULL AND c.brandId = :brandId))" +
-            " AND ((:status IS NULL) OR (:status IS NOT NULL AND c.status = :status))" +
-            " AND ((:driverId IS NULL) OR (:driverId IS NOT NULL AND c.driverId = :driverId))" +
-            " AND ((:partnerAssetTypeId IS NULL) OR (:partnerAssetTypeId IS NOT NULL AND c.partnerAssetTypeId = :partnerAssetTypeId))")
+
+@Query("SELECT pa,pt from PartnerAsset pa inner join PartnerAssetType pt on pa.partnerAssetTypeId = pt.id  where ((:partnerId IS NULL) OR (pt.partnerId = :partnerId)) and ((:isActive IS NULL) OR(pa.isActive = :isActive))")
+List<PartnerAsset> findByIsActiveAndId(@Param("partnerId") Long partnerId,
+                                           @Param("isActive") Boolean isActive);
+
+    @Query("SELECT pa,pt FROM PartnerAsset pa inner join PartnerAssetType pt on pa.partnerAssetTypeId = pt.id WHERE ((:partnerId IS NULL) OR (pt.partnerId = :partnerId)) and ((:name IS NULL) OR (:name IS NOT NULL AND pa.name = :name))" +
+            " AND ((:brandId IS NULL) OR (:brandId IS NOT NULL AND pa.brandId = :brandId))" +
+            " AND ((:status IS NULL) OR (:status IS NOT NULL AND pa.status = :status))" +
+            " AND ((:driverId IS NULL) OR (:driverId IS NOT NULL AND pa.driverId = :driverId))" +
+            " AND ((:partnerAssetTypeId IS NULL) OR (:partnerAssetTypeId IS NOT NULL AND pa.partnerAssetTypeId = :partnerAssetTypeId))")
     Page<PartnerAsset> findPartnerAsset(@Param("name") String name,
                                         @Param("brandId") Long brandId,
                                         @Param("status") String status,
                                         @Param("driverId") Long driverId,
+                                        @Param("partnerId") Long partnerId,
                                         @Param("partnerAssetTypeId") Long partnerAssetTypeId, Pageable pageRequest);
+
 }

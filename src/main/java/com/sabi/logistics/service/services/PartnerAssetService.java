@@ -76,8 +76,8 @@ public class PartnerAssetService {
     }
 
 
-    public Page<PartnerAsset> findAll(String name,Long brandId, String status, Long driverId, Long partnerAssetTypeId, PageRequest pageRequest ){
-        Page<PartnerAsset> PartnerAssets = partnerAssetRepository.findPartnerAsset(name,brandId,status,driverId,partnerAssetTypeId,pageRequest);
+    public Page<PartnerAsset> findAll(String name,Long brandId, String status, Long driverId,Long partnerId, Long partnerAssetTypeId, PageRequest pageRequest ){
+        Page<PartnerAsset> PartnerAssets = partnerAssetRepository.findPartnerAsset(name,brandId,status,driverId,partnerId,partnerAssetTypeId,pageRequest);
         if(PartnerAssets == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
@@ -99,8 +99,8 @@ public class PartnerAssetService {
     }
 
 
-    public List<PartnerAsset> getAll(Boolean isActive){
-        List<PartnerAsset> partnerAssets = partnerAssetRepository.findByIsActive(isActive);
+    public List<PartnerAsset> getAll(Long partnerId,Boolean isActive){
+        List<PartnerAsset> partnerAssets = partnerAssetRepository.findByIsActiveAndId(partnerId,isActive);
         return partnerAssets;
 
     }
