@@ -168,15 +168,7 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter a valid ware house figure!");
     }
 
-    public void validateDriver(DriverDto driverDto) {
 
-        if (driverDto.getName() == null || driverDto.getName().isEmpty())
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
-        if(driverDto.getPartnerAssetId()==null)
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Partner asset id cannot be empty");
-        if(driverDto.getUserId()==null)
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "User id cannot be empty");
-    }
 
 
     public void validateDriverAsset(DriverAssetDto driverAssetDto) {
@@ -269,6 +261,16 @@ public class Validations {
         User userExist = userRepository.findByPhone(request.getPhone());
         if(userExist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "  user phone already exist");
+        }
+
+        if(request.getUserType() == null || request.getUserType().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "User type cannot be empty");
+
+        if (request.getUserType() != null || !request.getUserType().isEmpty()) {
+
+            if (!PartnerConstants.DRIVER_USER.equals(request.getUserType())
+                    && !PartnerConstants.PARTNER_USER.equals(request.getUserType()))
+                throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid User category type");
         }
     }
 

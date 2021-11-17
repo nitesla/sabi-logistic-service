@@ -10,7 +10,6 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.DriverAssetDto;
 import com.sabi.logistics.core.dto.response.DriverAssetResponseDto;
-import com.sabi.logistics.core.models.Driver;
 import com.sabi.logistics.core.models.DriverAsset;
 import com.sabi.logistics.core.models.PartnerAsset;
 import com.sabi.logistics.service.helper.Validations;
@@ -62,8 +61,8 @@ public class DriverAssetService {
         driverAsset.setPartnerName(partnerAsset.getPartnerName());
         driverAsset.setPartnerAssetName(partnerAsset.getName());
 
-        Driver driver = driverRepository.getOne(request.getDriverId());
-        driverAsset.setDriverName(driver.getName());
+//        Driver driver = driverRepository.getOne(request.getDriverId());
+//        driverAsset.setDriverName(driver.getName());
 
         driverAsset.setCreatedBy(userCurrent.getId());
         driverAsset.setIsActive(true);
@@ -87,10 +86,10 @@ public class DriverAssetService {
             driverAsset.setPartnerAssetName(partnerAsset.getName());
         }
 
-        if(request.getDriverId() != null ) {
-            Driver driver = driverRepository.getOne(request.getDriverId());
-            driverAsset.setDriverName(driver.getName());
-        }
+//        if(request.getDriverId() != null ) {
+//            Driver driver = driverRepository.getOne(request.getDriverId());
+//            driverAsset.setDriverName(driver.getName());
+//        }
 
         driverAsset.setUpdatedBy(userCurrent.getId());
         repository.save(driverAsset);
