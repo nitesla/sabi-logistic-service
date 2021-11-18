@@ -87,6 +87,17 @@ public class Validations {
                         " Enter a valid State id!"));
     }
 
+    public void validatePartnerUserActivation (PartnerUserActivation request){
+        if (request.getEmail() == null || request.getEmail().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Email cannot be empty");
+        if (!Utility.validEmail(request.getEmail().trim()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid Email Address");
+        if(request.getActivationUrl()== null || request.getActivationUrl().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Activation url cannot be empty");
+
+
+    }
+
 
     public void validateCountry(CountryDto countryDto) {
         if (countryDto.getName() == null || countryDto.getName().isEmpty())
@@ -272,6 +283,7 @@ public class Validations {
                     && !PartnerConstants.PARTNER_USER.equals(request.getUserType()))
                 throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid User category type");
         }
+
     }
 
 

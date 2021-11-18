@@ -15,6 +15,7 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.Constants;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.framework.utils.Utility;
+import com.sabi.logistics.core.dto.request.PartnerUserActivation;
 import com.sabi.logistics.core.dto.request.PartnerUserRequestDto;
 import com.sabi.logistics.core.dto.response.PartnerUserResponseDto;
 import com.sabi.logistics.core.models.Driver;
@@ -85,8 +86,8 @@ public class PartnerUserService {
         user.setClientId(partner.getPartnerId());
         user.setIsActive(false);
         user.setLoginAttempts(0l);
-        user.setResetToken(Utility.registrationCode("HHmmss"));
-        user.setResetTokenExpirationDate(Utility.tokenExpiration());
+//        user.setResetToken(Utility.registrationCode("HHmmss"));
+//        user.setResetTokenExpirationDate(Utility.tokenExpiration());
         user = userRepository.save(user);
         log.debug("Create new partner user - {}"+ new Gson().toJson(user));
 
@@ -103,7 +104,6 @@ public class PartnerUserService {
         partnerUser.setUserType(request.getUserType());
         partnerUser.setIsActive(true);
         partnerUserRepository.save(partnerUser);
-
         log.debug("save to partner user table - {}"+ new Gson().toJson(partnerUser));
 
         if(request.getUserType().equalsIgnoreCase(PartnerConstants.DRIVER_USER)){
@@ -113,26 +113,48 @@ public class PartnerUserService {
                     .build();
             driverRepository.save(driver);
         }
-
-        // --------  sending token  -----------
-
-        NotificationRequestDto notificationRequestDto = new NotificationRequestDto();
-        User emailRecipient = userRepository.getOne(user.getId());
-        notificationRequestDto.setMessage("Activation Otp " + " " + user.getResetToken());
-        List<RecipientRequest> recipient = new ArrayList<>();
-        recipient.add(RecipientRequest.builder()
-                .email(emailRecipient.getEmail())
-                .build());
-        notificationRequestDto.setRecipient(recipient);
-        notificationService.emailNotificationRequest(notificationRequestDto);
-
-        SmsRequest smsRequest = SmsRequest.builder()
-                .message("Activation Otp " + " " + user.getResetToken())
-                .phoneNumber(emailRecipient.getPhone())
-                .build();
-        notificationService.smsNotificationRequest(smsRequest);
-
         return mapper.map(user, PartnerUserResponseDto.class);
+    }
+
+
+
+
+
+         public  void activatePartnerUser (PartnerUserActivation request) {
+              validations.validatePartnerUserActivation(request);
+            User user = userRepository.findByEmail(request.getEmail());
+            if (user == null) {
+                throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, "Invalid email");
+            }
+            user.setResetToken(Utility.registrationCode("HHmmss"));
+            user.setResetTokenExpirationDate(Utility.tokenExpiration());
+            userRepository.save(user);
+
+             String msg = "Hello " + " " + user.getFirstName() + " " + user.getLastName() + "<br/>"
+                     + "Username :" + " "+ user.getUsername() + "<br/>"
+                     + "Activation OTP :" + " "+ user.getResetToken() + "<br/>"
+                     + " Kindly click the link below to complete your registration " + "<br/>"
+                     + "<a href=\"" + request.getActivationUrl() +  "\">Activate your account</a>";
+
+            NotificationRequestDto notificationRequestDto = new NotificationRequestDto();
+            User emailRecipient = userRepository.getOne(user.getId());
+            notificationRequestDto.setMessage(msg);
+            List<RecipientRequest> recipient = new ArrayList<>();
+            recipient.add(RecipientRequest.builder()
+                    .email(emailRecipient.getEmail())
+                    .build());
+            notificationRequestDto.setRecipient(recipient);
+            notificationService.emailNotificationRequest(notificationRequestDto);
+
+
+            SmsRequest smsRequest = SmsRequest.builder()
+                    .message("Activation Otp " + " " + user.getResetToken())
+                    .phoneNumber(emailRecipient.getPhone())
+                    .build();
+            notificationService.smsNotificationRequest(smsRequest);
+
+
+
     }
 
 
