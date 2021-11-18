@@ -48,6 +48,9 @@ public class Validations {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private BankRepository bankRepository;
+
 
 
 
@@ -479,6 +482,30 @@ public class Validations {
         );
     }
 
+    public void validateProduct (ProductRequestDto request){
+
+        if (request.getThirdPartyId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "thirdPartyId cannot be empty");
+        if (!Utility.isNumeric(request.getThirdPartyId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for thirdPartyId ");
+
+        if (request.getTotalStock() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "totalStock cannot be empty");
+        if (!Utility.isNumeric(request.getTotalStock().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for totalStock");
+
+        if (request.getStockSold() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "stockSold cannot be empty");
+        if (!Utility.isNumeric(request.getStockSold().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for stockSold");
+
+
+        if (request.getName() == null || request.getName().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+
+
+    }
+
     public void validateTripRequest (TripRequestDto request){
 
 //        if(request.getPartnerID() == null)
@@ -521,6 +548,70 @@ public class Validations {
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " driverID does not Exist!")
         );
+        warehouseRepository.findById(request.getWareHouseId()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " wareHouseId does not Exist!")
+        );
+    }
+
+    public void validateBank(BankDto bankDto) {
+        String valName = bankDto.getName();
+        char valCharName = valName.charAt(0);
+        if (Character.isDigit(valCharName)){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name can not start with a number");
+        }
+        if (bankDto.getName() == null || bankDto.getName().trim().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+        if (bankDto.getCode() == null || bankDto.getCode().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Bank code cannot be empty");
+    }
+
+    public void validatePartnerBank (PartnerBankDto request){
+
+        if (request.getPartnerId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "partnerId cannot be empty");
+        if (!Utility.isNumeric(request.getPartnerId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerId ");
+
+        if (request.getBankId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "bankId cannot be empty");
+        if (!Utility.isNumeric(request.getBankId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for bankId");
+
+
+        if (request.getAccountNumber() == null || request.getAccountNumber().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "accountNumber cannot be empty");
+        if (!Utility.isNumeric(request.getAccountNumber().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for accountNumber");
+
+        Partner partner = partnerRepository.findById(request.getPartnerId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid partnerId!"));
+
+        Bank bank = bankRepository.findById(request.getBankId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid bankId!"));
+
+
+    }
+
+    public void validatePaymentTerms (PaymentTermsDto request){
+
+        if (request.getPartnerAssetTypeId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "partnerAssetTypeId cannot be empty");
+        if (!Utility.isNumeric(request.getPartnerAssetTypeId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerAssetTypeId ");
+
+        if (request.getDays() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "days cannot be empty");
+        if (!Utility.isNumeric(request.getDays().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for days");
+
+        PartnerAssetType partnerAssetType = partnerAssetTypeRepository.findById(request.getPartnerAssetTypeId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid partnerAssetTypeId!"));
+
+
     }
 
     public void validateInventory(InventoryDto request) {

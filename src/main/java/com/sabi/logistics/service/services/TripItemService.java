@@ -9,6 +9,7 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.TripItemRequestDto;
 import com.sabi.logistics.core.dto.response.TripItemResponseDto;
+import com.sabi.logistics.core.models.Order;
 import com.sabi.logistics.core.models.OrderItem;
 import com.sabi.logistics.core.models.TripItem;
 import com.sabi.logistics.service.helper.GenericSpecification;
@@ -16,6 +17,7 @@ import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.OrderItemRepository;
+import com.sabi.logistics.service.repositories.OrderRepository;
 import com.sabi.logistics.service.repositories.TripItemRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -39,6 +41,9 @@ public class TripItemService {
     @Autowired
     private OrderItemRepository orderItemRepository;
 
+    @Autowired
+    private OrderRepository orderRepository;
+
 
     public TripItemService(TripItemRepository tripItemRepository, ModelMapper mapper) {
         this.tripItemRepository = tripItemRepository;
@@ -59,6 +64,8 @@ public class TripItemService {
 
         OrderItem orderItem = orderItemRepository.getOne(request.getOrderItemID());
 
+        Order order = orderRepository.getOne(orderItem.getOrderID());
+
 
         tripItem.setCreatedBy(userCurrent.getId());
         tripItem.setIsActive(true);
@@ -67,6 +74,7 @@ public class TripItemService {
 
         TripItemResponseDto tripItemResponseDto = mapper.map(tripItem, TripItemResponseDto.class);
         tripItemResponseDto.setOrderItemName(orderItem.getName());
+        tripItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
 
         return tripItemResponseDto;
 
@@ -86,7 +94,9 @@ public class TripItemService {
 
         if(request.getOrderItemID() != null ) {
             OrderItem orderItem = orderItemRepository.getOne(request.getOrderItemID());
+            Order order = orderRepository.getOne(orderItem.getOrderID());
             tripItemResponseDto.setOrderItemName(orderItem.getName());
+            tripItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
         }
 
         return tripItemResponseDto;
@@ -100,7 +110,7 @@ public class TripItemService {
     }
 
 
-    public Page<TripItem> findAll(Long orderItemID, Long tripRequest,
+    public Page<TripItem> findAll(Long orderItemID, Long tripRequestID,
                                    String status, PageRequest pageRequest ){
 
         GenericSpecification<TripItem> genericSpecification = new GenericSpecification<TripItem>();
@@ -110,9 +120,9 @@ public class TripItemService {
             genericSpecification.add(new SearchCriteria("orderItemID", orderItemID, SearchOperation.EQUAL));
         }
 
-        if (tripRequest != null)
+        if (tripRequestID != null)
         {
-            genericSpecification.add(new SearchCriteria("tripRequest", tripRequest, SearchOperation.EQUAL));
+            genericSpecification.add(new SearchCriteria("tripRequestID", tripRequestID, SearchOperation.EQUAL));
         }
 
         if (status != null && !status.isEmpty())

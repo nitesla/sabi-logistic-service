@@ -109,12 +109,14 @@ public class TripRequestService {
         TripResponseDto tripResponseDto = mapper.map(tripRequest, TripResponseDto.class);
         tripResponseDto.setTripItem(getAllTripItems(id));
         tripResponseDto.setTripRequestResponse(getAllRequestResponse(id));
+        tripResponseDto.setPickUp(tripResponseDto.getTripItem().size());
 
         return tripResponseDto;
     }
 
 
-    public Page<TripRequest> findAll(Long partnerID, String status, PageRequest pageRequest ){
+    public Page<TripRequest> findAll(Long partnerID, String status, String referenceNo, Long driverID,
+                                     Long wareHouseId, String wareHouseAddress, Long partnerAssetID, PageRequest pageRequest ){
         GenericSpecification<TripRequest> genericSpecification = new GenericSpecification<TripRequest>();
 
         if (partnerID != null)
@@ -124,8 +126,34 @@ public class TripRequestService {
 
         if (status != null && !status.isEmpty())
         {
-            genericSpecification.add(new SearchCriteria("status", status, SearchOperation.EQUAL));
+            genericSpecification.add(new SearchCriteria("status", status, SearchOperation.MATCH));
         }
+
+        if (referenceNo != null && !referenceNo.isEmpty())
+        {
+            genericSpecification.add(new SearchCriteria("referenceNo", referenceNo, SearchOperation.MATCH));
+        }
+
+        if (driverID != null)
+        {
+            genericSpecification.add(new SearchCriteria("driverID", driverID, SearchOperation.EQUAL));
+        }
+
+        if (wareHouseId != null)
+        {
+            genericSpecification.add(new SearchCriteria("wareHouseId", wareHouseId, SearchOperation.EQUAL));
+        }
+
+        if (wareHouseAddress != null && !wareHouseAddress.isEmpty())
+        {
+            genericSpecification.add(new SearchCriteria("wareHouseAddress", wareHouseAddress, SearchOperation.MATCH));
+        }
+
+        if (partnerAssetID != null)
+        {
+            genericSpecification.add(new SearchCriteria("partnerAssetID", partnerAssetID, SearchOperation.EQUAL));
+        }
+
 
 
 
