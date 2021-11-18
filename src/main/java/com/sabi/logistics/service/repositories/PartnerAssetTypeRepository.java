@@ -15,7 +15,8 @@ public interface PartnerAssetTypeRepository extends JpaRepository<PartnerAssetTy
     List<PartnerAssetType> findByIsActive(Boolean isActive);
     PartnerAssetType findByAssetTypeId(Long name);
 
-    @Query("SELECT s FROM PartnerAssetType s WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND s.partnerId = :partnerId))")
-    Page<PartnerAssetType> findPartnerAssetType(Long partnerId, Pageable pageRequest);
+    @Query("SELECT s FROM PartnerAssetType s WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND s.partnerId = :partnerId))" +
+            " AND ((:assetTypeId IS NULL) OR (:assetTypeId IS NOT NULL AND s.assetTypeId = :assetTypeId))")
+    Page<PartnerAssetType> findPartnerAssetType(Long partnerId, Long assetTypeId, Pageable pageRequest);
 }
 

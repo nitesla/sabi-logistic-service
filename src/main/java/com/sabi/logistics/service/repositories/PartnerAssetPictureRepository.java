@@ -1,6 +1,5 @@
 package com.sabi.logistics.service.repositories;
 
-import com.sabi.logistics.core.models.Country;
 import com.sabi.logistics.core.models.PartnerAssetPicture;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +17,8 @@ public interface PartnerAssetPictureRepository extends JpaRepository<PartnerAsse
     PartnerAssetPicture findByPartnerAssetIdAndPictureType(Long partnerAssetId,String pictureType);
 
     List<PartnerAssetPicture> findByIsActive(Boolean isActive);
+
+    List<PartnerAssetPicture> findByPartnerAssetId(Long partnerAssetId);
 
 
     @Query("SELECT c FROM PartnerAssetPicture c WHERE ((:partnerAssetId IS NULL) OR (:partnerAssetId IS NOT NULL AND c.partnerAssetId = :partnerAssetId))" +

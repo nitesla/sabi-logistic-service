@@ -24,12 +24,15 @@ List<PartnerAsset> findByIsActiveAndId(@Param("partnerId") Long partnerId,
             " AND ((:brandId IS NULL) OR (:brandId IS NOT NULL AND pa.brandId = :brandId))" +
             " AND ((:status IS NULL) OR (:status IS NOT NULL AND pa.status = :status))" +
             " AND ((:driverId IS NULL) OR (:driverId IS NOT NULL AND pa.driverId = :driverId))" +
-            " AND ((:partnerAssetTypeId IS NULL) OR (:partnerAssetTypeId IS NOT NULL AND pa.partnerAssetTypeId = :partnerAssetTypeId))")
+            " AND ((:partnerAssetTypeId IS NULL) OR (:partnerAssetTypeId IS NOT NULL AND pa.partnerAssetTypeId = :partnerAssetTypeId))" +
+            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND pa.isActive = :isActive))")
     Page<PartnerAsset> findPartnerAsset(@Param("name") String name,
                                         @Param("brandId") Long brandId,
                                         @Param("status") String status,
                                         @Param("driverId") Long driverId,
                                         @Param("partnerId") Long partnerId,
-                                        @Param("partnerAssetTypeId") Long partnerAssetTypeId, Pageable pageRequest);
+                                        @Param("partnerAssetTypeId") Long partnerAssetTypeId,
+                                        @Param("isActive") Boolean isActive,
+                                        Pageable pageRequest);
 
 }

@@ -19,7 +19,6 @@ import com.sabi.logistics.service.repositories.PartnerAssetTypeRepository;
 import com.sabi.logistics.service.repositories.PartnerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -62,7 +61,10 @@ public class PartnerAssetTypeService {
         partnerAssetType.setIsActive(true);
         partnerAssetType = partnerAssetTypeRepository.save(partnerAssetType);
         log.debug("Create new PartnerAssetType - {}"+ new Gson().toJson(partnerAssetType));
-        return mapper.map(partnerAssetType, PartnerAssetTypeResponseDto.class);
+        PartnerAssetTypeResponseDto  partnerAssetTypeResponseDto = mapper.map(partnerAssetType, PartnerAssetTypeResponseDto.class);
+        partnerAssetTypeResponseDto.setAssetTypeName(assetTypeProperties.getName());
+        partnerAssetTypeResponseDto.setPartnerName(partner.getName());
+        return partnerAssetTypeResponseDto;
     }
 
     public PartnerAssetTypeResponseDto updatePartnerAssetType(PartnerAssetTypeRequestDto request) {
@@ -75,8 +77,18 @@ public class PartnerAssetTypeService {
         partnerAssetType.setUpdatedBy(userCurrent.getId());
         partnerAssetTypeRepository.save(partnerAssetType);
         log.debug("PartnerAssetType record updated - {}"+ new Gson().toJson(partnerAssetType));
-        return mapper.map(partnerAssetType, PartnerAssetTypeResponseDto.class);
-    }
+        PartnerAssetTypeResponseDto  partnerAssetTypeResponseDto = mapper.map(partnerAssetType, PartnerAssetTypeResponseDto.class);
+
+        if (request.getAssetTypeId() != null || request.getPartnerId() != null) {
+            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(request.getAssetTypeId());
+            Partner partner  = partnerRepository.getOne(request.getPartnerId());
+
+            partnerAssetTypeResponseDto.setAssetTypeName(assetTypeProperties.getName());
+            partnerAssetTypeResponseDto.setPartnerName(partner.getName());
+
+        }
+        return partnerAssetTypeResponseDto;
+        }
 
     public PartnerAssetTypeResponseDto findPartnerAssetType(Long id){
         PartnerAssetType partnerAssetType  = partnerAssetTypeRepository.findById(id)
@@ -86,8 +98,8 @@ public class PartnerAssetTypeService {
     }
 
 
-    public Page<PartnerAssetType> findAll(long id , PageRequest pageRequest ){
-        Page<PartnerAssetType> partnerAssetType = partnerAssetTypeRepository.findPartnerAssetType(id,pageRequest);
+    public Page<PartnerAssetType> findAll(Long partnerId , Long assetTypeId, PageRequest pageRequest ){
+        Page<PartnerAssetType> partnerAssetType = partnerAssetTypeRepository.findPartnerAssetType(partnerId,assetTypeId,pageRequest);
         if(partnerAssetType == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
