@@ -3,7 +3,6 @@ package com.sabi.logistics.service.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
@@ -15,7 +14,6 @@ import com.sabi.logistics.core.dto.response.CountryResponseDto;
 import com.sabi.logistics.core.models.Country;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.CountryRepository;
-
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -134,8 +132,8 @@ public class CountryService {
     }
 
 
-    public List<Country> getAll(Boolean isActive){
-        List<Country> countries = countryRepository.findByIsActive(isActive);
+    public List<Country> getAll(String name, String code){
+        List<Country> countries = countryRepository.findAllByNameAndCode(name,code);
         return countries;
 
     }

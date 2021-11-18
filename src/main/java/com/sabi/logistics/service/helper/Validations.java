@@ -228,10 +228,10 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "email cannot be empty");
         if (!Utility.validEmail(partner.getEmail().trim()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid Email Address");
-        User user = userRepository.findByEmail(partner.getEmail());
-        if(user !=null){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Email already exist");
-        }
+//        User user = userRepository.findByEmail(partner.getEmail());
+//        if(user !=null){
+//            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Email already exist");
+//        }
         if (partner.getPhone() == null || partner.getPhone().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Phone number cannot be empty");
         if (partner.getPhone().length() < 8 || partner.getPhone().length() > 14)// NAME LENGTH*********

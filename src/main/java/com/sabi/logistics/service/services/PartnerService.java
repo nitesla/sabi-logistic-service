@@ -86,6 +86,8 @@ public class PartnerService {
 
         User exist = userRepository.findByEmailOrPhone(request.getEmail(),request.getPhone());
         if(exist !=null && exist.getPasswordChangedOn()== null){
+
+            Partner partnerExist = repository.findByUserId(exist.getId());
           PartnerSignUpResponseDto partnerSignUpResponseDto= PartnerSignUpResponseDto.builder()
                   .id(exist.getId())
                   .email(exist.getEmail())
@@ -93,6 +95,7 @@ public class PartnerService {
                   .lastName(exist.getLastName())
                   .phone(exist.getPhone())
                   .username(exist.getUsername())
+                  .partnerId(partnerExist.getId())
                   .build();
           return partnerSignUpResponseDto;
 

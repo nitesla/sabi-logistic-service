@@ -129,7 +129,7 @@ public class LGAService {
 
 
     public Page<LGA> findAll(String name, Long stateId, PageRequest pageRequest ) {
-        Page<LGA> lga = lgaRepository.findLgas(name, pageRequest);
+        Page<LGA> lga = lgaRepository.findLgas(name,stateId, pageRequest);
         if (lga == null) {
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
@@ -160,8 +160,8 @@ public class LGAService {
     }
 
 
-    public List<LGA> getAll(Long stateId, Boolean isActive){
-        List<LGA> lga = lgaRepository.findByIsActive(isActive);
+    public List<LGA> getAll(Long stateId){
+        List<LGA> lga = lgaRepository.findByStateId(stateId);
         for (LGA tran : lga
         ) {
             State state = stateRepository.getOne(tran.getStateId());

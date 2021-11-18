@@ -112,8 +112,8 @@ public class StateService {
      * </summary>
      * <remarks>this method is responsible for getting all records in pagination</remarks>
      */
-    public Page<State> findAll(String name, PageRequest pageRequest ){
-        Page<State> state = stateRepository.findStates(name,pageRequest);
+    public Page<State> findAll(String name,Long countryId, PageRequest pageRequest ){
+        Page<State> state = stateRepository.findStates(name,countryId,pageRequest);
             if(state == null){
                 throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
             }
@@ -143,8 +143,8 @@ public class StateService {
     }
 
 
-    public List<State> getAll(Boolean isActive){
-        List<State> states = stateRepository.findByIsActive(isActive);
+    public List<State> getAll(Long countryId){
+        List<State> states = stateRepository.findByCountryId(countryId);
         for (State tran : states
                 ) {
             Country country = countryRepository.getOne(tran.getCountryId());
