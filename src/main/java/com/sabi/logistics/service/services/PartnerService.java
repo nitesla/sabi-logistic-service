@@ -248,11 +248,11 @@ public class PartnerService {
                 .build();
         previousPasswordRepository.save(previousPasswords);
 
-        Partner partner = repository.findByUserId(user.getId());
+        PartnerUser partner = partnerUserRepository.findByUserId(user.getId());
 
         PartnerActivationResponse response = PartnerActivationResponse.builder()
                 .userId(user.getId())
-                .partnerId(partner.getId())
+                .partnerId(partner.getPartnerId())
                 .phone(user.getPhone())
                 .email(user.getEmail())
                 .build();
