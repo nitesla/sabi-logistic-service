@@ -4,11 +4,13 @@ import com.google.gson.Gson;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.PreviousPasswords;
+import com.sabi.framework.models.Role;
 import com.sabi.framework.models.User;
 import com.sabi.framework.notification.requestDto.NotificationRequestDto;
 import com.sabi.framework.notification.requestDto.RecipientRequest;
 import com.sabi.framework.notification.requestDto.SmsRequest;
 import com.sabi.framework.repositories.PreviousPasswordRepository;
+import com.sabi.framework.repositories.RoleRepository;
 import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.service.NotificationService;
 import com.sabi.framework.service.TokenService;
@@ -48,12 +50,14 @@ public class PartnerUserService {
     private PreviousPasswordRepository previousPasswordRepository;
     private final PartnerUserRepository partnerUserRepository;
     private DriverRepository driverRepository;
+    private RoleRepository roleRepository;
     private NotificationService notificationService;
     private final ModelMapper mapper;
     private final Validations validations;
 
     public PartnerUserService(PartnerRepository partnerRepository,UserRepository userRepository,PreviousPasswordRepository previousPasswordRepository,
                               PartnerUserRepository partnerUserRepository,DriverRepository driverRepository,
+                              RoleRepository roleRepository,
                               NotificationService notificationService,
                               ModelMapper mapper, Validations validations) {
         this.partnerRepository = partnerRepository;
@@ -61,6 +65,7 @@ public class PartnerUserService {
         this.previousPasswordRepository = previousPasswordRepository;
         this.partnerUserRepository = partnerUserRepository;
         this.driverRepository = driverRepository;
+        this.roleRepository = roleRepository;
         this.notificationService = notificationService;
         this.mapper = mapper;
         this.validations = validations;
@@ -170,6 +175,13 @@ public class PartnerUserService {
         if(users == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
+        users.getContent().forEach(partnerUsers ->{
+            User user = userRepository.getOne(partnerUsers.getId());
+            if(user.getRoleId() !=null){
+                Role role = roleRepository.getOne(user.getRoleId());
+                partnerUsers.setRoleName(role.getName());
+            }
+        });
         return users;
 
     }
@@ -186,6 +198,10 @@ public class PartnerUserService {
         partnerUsers.getContent().forEach(users -> {
 
          User user = userRepository.getOne(users.getUserId());
+            if(user.getRoleId() !=null){
+                Role role = roleRepository.getOne(user.getRoleId());
+             users.setRoleName(role.getName());
+         }
          users.setEmail(user.getEmail());
          users.setFirstName(user.getFirstName());
          users.setLastName(user.getLastName());
@@ -213,6 +229,15 @@ public class PartnerUserService {
 
         PartnerUser partner = partnerUserRepository.findByUserId(userCurrent.getId());
         List<User> users = userRepository.findByIsActiveAndClientId(isActive,partner.getPartnerId());
+        for (User partnerUsers : users
+                ) {
+
+            if(partnerUsers.getRoleId() !=null){
+                Role role = roleRepository.getOne(partnerUsers.getRoleId());
+                partnerUsers.setRoleName(role.getName());
+            }
+        }
+
         return users;
 
     }
@@ -229,6 +254,11 @@ public class PartnerUserService {
                 ) {
             User user = userRepository.getOne(users.getUserId());
 
+            if(user.getRoleId() !=null){
+                Role role = roleRepository.getOne(user.getRoleId());
+                users.setRoleName(role.getName());
+            }
+
             users.setEmail(user.getEmail());
             users.setFirstName(user.getFirstName());
             users.setLastName(user.getLastName());
@@ -236,6 +266,7 @@ public class PartnerUserService {
             users.setMiddleName(user.getMiddleName());
             users.setUsername(user.getUsername());
             users.setRoleId(user.getRoleId());
+
             users.setLoginAttempts(user.getLoginAttempts());
             users.setFailedLoginDate(user.getFailedLoginDate());
             users.setLastLogin(user.getLastLogin());

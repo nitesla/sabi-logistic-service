@@ -264,10 +264,6 @@ public class PartnerService {
 
 
 
-
-
-
-
     public PartnerResponseDto createPartnerProperties(PartnerDto request) {
         validations.validatePartnerProperties(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
