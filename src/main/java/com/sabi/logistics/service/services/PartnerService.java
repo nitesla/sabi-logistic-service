@@ -262,7 +262,7 @@ public class PartnerService {
 
 
 
-    
+
 
     public PartnerResponseDto createPartnerProperties(PartnerDto request) {
         validations.validatePartnerProperties(request);

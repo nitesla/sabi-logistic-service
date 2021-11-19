@@ -4,7 +4,9 @@ package com.sabi.logistics.service.helper;
 import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
+import com.sabi.framework.models.Role;
 import com.sabi.framework.models.User;
+import com.sabi.framework.repositories.RoleRepository;
 import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.framework.utils.Utility;
@@ -23,7 +25,7 @@ import java.util.Base64;
 public class Validations {
 
 
-
+    private RoleRepository roleRepository;
     private CountryRepository countryRepository;
     private StateRepository stateRepository;
     private LGARepository lgaRepository;
@@ -54,11 +56,12 @@ public class Validations {
 
 
 
-    public Validations(CountryRepository countryRepository,StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository,
+    public Validations(RoleRepository roleRepository,CountryRepository countryRepository,StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository,
                        PartnerRepository partnerRepository, CategoryRepository categoryRepository,
                        AssetTypePropertiesRepository assetTypePropertiesRepository, PartnerAssetRepository partnerAssetRepository,
                        PartnerAssetTypeRepository partnerAssetTypeRepository, DriverRepository driverRepository,
                        BrandRepository brandRepository) {
+        this.roleRepository = roleRepository;
         this.countryRepository = countryRepository;
         this.stateRepository = stateRepository;
         this.lgaRepository = lgaRepository;
@@ -286,6 +289,13 @@ public class Validations {
                     && !PartnerConstants.PARTNER_USER.equals(request.getUserType()))
                 throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid User category type");
         }
+
+//        if(request.getRoleId() == null )
+//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Role id cannot be empty");
+
+        Role role = roleRepository.findById(request.getRoleId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid role id!"));
 
     }
 
