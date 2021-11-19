@@ -534,15 +534,15 @@ public class Validations {
 //            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
 
 
-        partnerRepository.findById(request.getPartnerID()).orElseThrow(() ->
-                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " partnerID does not Exist!")
-        );
-
-        partnerAssetRepository.findById(request.getPartnerAssetID()).orElseThrow(() ->
-                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " partnerAssetID does not Exist!")
-        );
+//        partnerRepository.findById(request.getPartnerID()).orElseThrow(() ->
+//                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                        " partnerID does not Exist!")
+//        );
+//
+//        partnerAssetRepository.findById(request.getPartnerAssetID()).orElseThrow(() ->
+//                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                        " partnerAssetID does not Exist!")
+//        );
 
         driverRepository.findById(request.getDriverID()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,

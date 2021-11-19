@@ -2,7 +2,6 @@ package com.sabi.logistics.service.services;
 
 import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
-import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
@@ -56,10 +55,10 @@ public class TripRequestService {
         TripRequest tripRequest = mapper.map(request,TripRequest.class);
 
         tripRequest.setReferenceNo(validations.generateReferenceNumber(10));
-        TripRequest tripRequestExists = tripRequestRepository.findByPartnerAssetIDAndPartnerID(tripRequest.getPartnerID(), tripRequest.getPartnerAssetID());
-        if(tripRequestExists != null){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Trip Request already exist");
-        }
+//        TripRequest tripRequestExists = tripRequestRepository.findByPartnerAssetIDAndPartnerID(tripRequest.getPartnerID(), tripRequest.getPartnerAssetID());
+//        if(tripRequestExists != null){
+//            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Trip Request already exist");
+//        }
 
         tripRequest.setBarCode(validations.generateCode(tripRequest.getReferenceNo()));
         tripRequest.setQrCode(validations.generateCode(tripRequest.getReferenceNo()));
@@ -109,7 +108,7 @@ public class TripRequestService {
         TripResponseDto tripResponseDto = mapper.map(tripRequest, TripResponseDto.class);
         tripResponseDto.setTripItem(getAllTripItems(id));
         tripResponseDto.setTripRequestResponse(getAllRequestResponse(id));
-        tripResponseDto.setPickUp(tripResponseDto.getTripItem().size());
+        tripResponseDto.setDropOff(tripResponseDto.getTripItem().size());
 
         return tripResponseDto;
     }

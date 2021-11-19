@@ -75,6 +75,13 @@ public class PartnerAssetTypeService {
                         "Requested PartnerAssetType Id does not exist!"));
         mapper.map(request, partnerAssetType);
         partnerAssetType.setUpdatedBy(userCurrent.getId());
+
+        if (request.getAssetTypeId() != null || request.getPartnerId() != null) {
+            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(request.getAssetTypeId());
+            Partner partner  = partnerRepository.getOne(request.getPartnerId());
+            partnerAssetType.setAssetTypeName(assetTypeProperties.getName());
+            partnerAssetType.setPartnerName(partner.getName());
+        }
         partnerAssetTypeRepository.save(partnerAssetType);
         log.debug("PartnerAssetType record updated - {}"+ new Gson().toJson(partnerAssetType));
         PartnerAssetTypeResponseDto  partnerAssetTypeResponseDto = mapper.map(partnerAssetType, PartnerAssetTypeResponseDto.class);
