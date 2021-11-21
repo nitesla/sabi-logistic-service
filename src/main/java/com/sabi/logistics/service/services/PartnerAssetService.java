@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@SuppressWarnings("ALL")
 @Service
 @Slf4j
 public class PartnerAssetService {
@@ -84,14 +85,16 @@ public class PartnerAssetService {
         Brand brand = brandRepository.getOne(request.getBrandId());
         Color color = colorRepository.getOne(request.getColorId());
         Driver driver = driverRepository.getOne(request.getDriverId());
+        Driver driver2 = driverRepository.getOne(request.getDriverAssistantId());
         User user = userRepository.getOne(driver.getUserId());
+        User user2 = userRepository.getOne(driver2.getUserId());
 
         partnerAsset.setBrandName(brand.getName());
         partnerAsset.setColorName(color.getName());
         partnerAsset.setDriverName(user.getLastName() + " " + user.getFirstName());
 
         partnerAsset.setAssetTypeName(assetTypeProperties.getName());
-        partnerAsset.setDriverAssistantName(user.getLastName() + " " + user.getFirstName());
+        partnerAsset.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
         partnerAsset.setCreatedBy(userCurrent.getId());
         partnerAsset.setIsActive(true);
         partnerAsset = partnerAssetRepository.save(partnerAsset);
@@ -102,6 +105,7 @@ public class PartnerAssetService {
         partnerAssetResponseDto.setBrandName(brand.getName());
         partnerAssetResponseDto.setColorName(color.getName());
         partnerAssetResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
+        partnerAssetResponseDto.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
         partnerAssetResponseDto.setAssetTypeName(assetTypeProperties.getName());
         partnerAssetResponseDto.setAssetTypeName(partner.getName());
         log.info("Check assset ::::::::::::::::::::::::::::::::::::::::::::::::::::::: " + partnerAsset);
@@ -151,12 +155,16 @@ public class PartnerAssetService {
             Brand brand = brandRepository.getOne(request.getBrandId());
             Color color = colorRepository.getOne(request.getColorId());
             Driver driver = driverRepository.getOne(request.getDriverId());
+            Driver driver2 = driverRepository.getOne(request.getDriverAssistantId());
+
             User user = userRepository.getOne(driver.getUserId());
+            User user2 = userRepository.getOne(driver2.getUserId());
 
             partnerAssetResponseDto.setPartnerName(partner.getName());
             partnerAssetResponseDto.setBrandName(brand.getName());
             partnerAssetResponseDto.setColorName(color.getName());
             partnerAssetResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
+            partnerAssetResponseDto.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
             partnerAssetResponseDto.setAssetTypeName(assetTypeProperties.getName());
 
         }
@@ -191,12 +199,15 @@ public class PartnerAssetService {
         Brand brand = brandRepository.getOne(partnerAssetResponseDto.getBrandId());
         Color color = colorRepository.getOne(partnerAssetResponseDto.getColorId());
         Driver driver = driverRepository.getOne(partnerAssetResponseDto.getDriverId());
+        Driver driver2 = driverRepository.getOne(partnerAssetResponseDto.getDriverAssistantId());
         User user = userRepository.getOne(driver.getUserId());
+        User user2 = userRepository.getOne(driver2.getUserId());
 
         partnerAssetResponseDto.setPartnerName(partner.getName());
         partnerAssetResponseDto.setBrandName(brand.getName());
         partnerAssetResponseDto.setColorName(color.getName());
         partnerAssetResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
+        partnerAssetResponseDto.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
         partnerAssetResponseDto.setAssetTypeName(assetTypeProperties.getName());
 
 
@@ -226,6 +237,11 @@ public class PartnerAssetService {
             Driver driver = driverRepository.getOne(partnerAsset.getDriverId());
             User user = userRepository.getOne(driver.getUserId());
             asset.setDriverName(user.getLastName() + " " + user.getFirstName());
+
+            Driver driver2 = driverRepository.getOne(partnerAsset.getDriverAssistantId());
+            User user2 = userRepository.getOne(driver2.getUserId());
+            asset.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
+
         });
 
         return partnerAssets;
@@ -259,6 +275,10 @@ public class PartnerAssetService {
             Color color = colorRepository.getOne(asset.getColorId());
             Driver driver = driverRepository.getOne(asset.getDriverId());
             User user = userRepository.getOne(driver.getUserId());
+            Driver driver2 = driverRepository.getOne(asset.getDriverAssistantId());
+            User user2 = userRepository.getOne(driver2.getUserId());
+            asset.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
+
 
             asset.setPartnerName(partner.getName());
             asset.setBrandName(brand.getName());
