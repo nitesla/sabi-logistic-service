@@ -13,14 +13,19 @@ import java.util.List;
 @Repository
 public interface DriverAssetRepository extends JpaRepository<DriverAsset, Long> {
 
-    DriverAsset findByName (String name);
+//    DriverAsset findByName (String name);
 
     List<DriverAsset> findByIsActive(Boolean isActive);
+    DriverAsset findByDriverIdAndPartnerAssetId(Long driverId, Long partnerAssestId);
+    DriverAsset findByPartnerAssetIdAndId(Long partnerAssetId,Long id);
+    DriverAsset findByPartnerAssetId(Long partnerAssetId);
 
-    @Query("SELECT d FROM DriverAsset d WHERE ((:name IS NULL) OR (:name IS NOT NULL AND d.name = :name))" +
-            " AND ((:driverId IS NULL) OR (:driverId IS NOT NULL AND d.driverId = :driverId))" +
-            " AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND d.partnerId = :partnerId))" +
-            " AND ((:partnerAssetTypeId IS NULL) OR (:partnerAssetTypeId IS NOT NULL AND d.partnerAssetTypeId = :partnerAssetTypeId))"
+    @Query("SELECT d FROM DriverAsset d WHERE ((:driverId IS NULL) OR (:driverId IS NOT NULL AND d.driverId = :driverId))" +
+//            " AND ((:driverId IS NULL) OR (:driverId IS NOT NULL AND d.driverId = :driverId))" +
+            " AND ((:partnerAssetId IS NULL) OR (:partnerAssetId IS NOT NULL AND d.partnerAssetId = :partnerAssetId))"
+//            " AND ((:partnerAssetTypeId IS NULL) OR (:partnerAssetTypeId IS NOT NULL AND d.partnerAssetTypeId = :partnerAssetTypeId))"
     )
-    Page<DriverAsset> findDriverAssets(@Param("name") String name, Long driverId, Long partnerId, Long partnerAssetTypeId, Pageable pageable);
+    Page<DriverAsset> findDriverAssets(@Param("driverId") Long driverId,
+                                       @Param("partnerAssetId") Long partnerAssetId,
+                                       Pageable pageable);
 }

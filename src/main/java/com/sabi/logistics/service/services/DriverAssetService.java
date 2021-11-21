@@ -6,16 +6,19 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
+import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.DriverAssetDto;
 import com.sabi.logistics.core.dto.response.DriverAssetResponseDto;
 import com.sabi.logistics.core.models.DriverAsset;
 import com.sabi.logistics.core.models.PartnerAsset;
+import com.sabi.logistics.core.models.PartnerAssetType;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.DriverAssetRepository;
 import com.sabi.logistics.service.repositories.DriverRepository;
 import com.sabi.logistics.service.repositories.PartnerAssetRepository;
+import com.sabi.logistics.service.repositories.PartnerAssetTypeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +43,12 @@ public class DriverAssetService {
     @Autowired
     private DriverRepository driverRepository;
 
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    PartnerAssetTypeRepository partnerAssetTypeRepository;
+
     public DriverAssetService(DriverAssetRepository repository, ModelMapper mapper, ObjectMapper objectMapper,Validations validations) {
         this.repository = repository;
         this.mapper = mapper;
@@ -52,7 +61,7 @@ public class DriverAssetService {
         validations.validateDriverAsset(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         DriverAsset driverAsset = mapper.map(request,DriverAsset.class);
-        DriverAsset exist = repository.findByName(request.getName());
+        DriverAsset exist = repository.findByDriverIdAndPartnerAssetId(request.getDriverId(),request.getPartnerAssetId());
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Driver asset already exist");
         }
@@ -85,12 +94,6 @@ public class DriverAssetService {
             driverAsset.setPartnerName(partnerAsset.getPartnerName());
             driverAsset.setPartnerAssetName(partnerAsset.getName());
         }
-
-//        if(request.getDriverId() != null ) {
-//            Driver driver = driverRepository.getOne(request.getDriverId());
-//            driverAsset.setDriverName(driver.getName());
-//        }
-
         driverAsset.setUpdatedBy(userCurrent.getId());
         repository.save(driverAsset);
         log.debug("Driver asset record updated - {}"+ new Gson().toJson(driverAsset));
@@ -103,16 +106,44 @@ public class DriverAssetService {
         DriverAsset driverAsset  = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested driver asset id does not exist!"));
+        User savedUser = userRepository.findById(driverAsset.getDriverId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Requested driver id (user) does not exist!"));
+        PartnerAsset partnerAsset = partnerAssetRepository.findById(driverAsset.getId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Requested partner asset id does not exist!"));
+        driverAsset.setFirstName(savedUser.getFirstName());
+        driverAsset.setLastName(savedUser.getLastName());
+        driverAsset.setEmail(savedUser.getEmail());
+        driverAsset.setPhoneNumber(savedUser.getPhone());
+        driverAsset.setAssetTypeName(partnerAsset.getName());
+        driverAsset.setAssetType(partnerAsset.getName());
         return mapper.map(driverAsset,DriverAssetResponseDto.class);
     }
 
-
-
-    public Page<DriverAsset> findAll(String name, Long driverId, Long partnerId, Long partnerAssetTypeId, PageRequest pageRequest ){
-        Page<DriverAsset> drivers = repository.findDriverAssets(name, driverId, partnerId, partnerAssetTypeId,pageRequest);
+    public Page<DriverAsset> findAll(Long driverId, Long partnerAssestId, PageRequest pageRequest ){
+        Page<DriverAsset> drivers = repository.findDriverAssets(driverId, partnerAssestId,pageRequest);
         if(drivers == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
+        drivers.getContent().forEach(driver ->{
+            User savedUser = userRepository.findById(driver.getDriverId())
+                    .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                            "Requested driver id (user) does not exist!"));
+            log.info("Checking {} ::::::::::::::::::::::::::::::::::::::::::::" + savedUser);
+            PartnerAsset partnerAsset = partnerAssetRepository.findById(driver.getId())
+                    .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                            "Requested partner asset id does not exist!"));
+            driver.setFirstName(savedUser.getFirstName());
+            driver.setLastName(savedUser.getLastName());
+            driver.setEmail(savedUser.getEmail());
+            driver.setPhoneNumber(savedUser.getPhone());
+          driver.setAssetTypeName(partnerAsset.getName());
+            driver.setAssetType(partnerAsset.getName());
+//        driver.setAssetTypeId(partnerAsset.getAssetTypeName());
+
+        });
+
         return drivers;
     }
 
