@@ -91,8 +91,7 @@ public class PartnerAssetService {
         partnerAsset.setDriverName(user.getLastName() + " " + user.getFirstName());
 
         partnerAsset.setAssetTypeName(assetTypeProperties.getName());
-        partnerAsset.setDriverAssistantName(user.getFirstName() + " " + user.getMiddleName() + " " + user.getLastName());
-//        partnerAsset.setAssetTypeName(partnerAssetType.getAssetTypeName());
+        partnerAsset.setDriverAssistantName(user.getLastName() + " " + user.getFirstName());
         partnerAsset.setCreatedBy(userCurrent.getId());
         partnerAsset.setIsActive(true);
         partnerAsset = partnerAssetRepository.save(partnerAsset);
@@ -105,7 +104,6 @@ public class PartnerAssetService {
         partnerAssetResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
         partnerAssetResponseDto.setAssetTypeName(assetTypeProperties.getName());
         partnerAssetResponseDto.setAssetTypeName(partner.getName());
-//        partnerAsset.setDriverAssistantName(user.getFirstName()+ " " + user.getMiddleName() + " " + user.getLastName());
         log.info("Check assset ::::::::::::::::::::::::::::::::::::::::::::::::::::::: " + partnerAsset);
         DriverAsset driverAssetDto = new DriverAsset();
         DriverAssetDto processDriver = new DriverAssetDto();
