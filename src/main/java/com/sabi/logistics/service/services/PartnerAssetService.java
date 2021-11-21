@@ -8,8 +8,11 @@ import com.sabi.framework.models.User;
 import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabi.logistics.core.dto.request.DriverAssetDto;
 import com.sabi.logistics.core.dto.request.PartnerAssetRequestDto;
+import com.sabi.logistics.core.dto.response.DriverAssetResponseDto;
 import com.sabi.logistics.core.dto.response.PartnerAssetResponseDto;
+import com.sabi.logistics.core.enums.DriverType;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.*;
@@ -45,6 +48,11 @@ public class PartnerAssetService {
     @Autowired
     private PartnerAssetPictureRepository partnerAssetPictureRepository;
 
+    @Autowired
+    private DriverAssetRepository driverAssetRepository;
+    @Autowired
+    private DriverAssetService driverAssetService;
+
     public PartnerAssetService(PartnerAssetRepository partnerAssetRepository, PartnerAssetTypeRepository partnerAssetTypeRepository, ModelMapper mapper, Validations validations) {
         this.partnerAssetRepository = partnerAssetRepository;
         this.partnerAssetTypeRepository = partnerAssetTypeRepository;
@@ -53,31 +61,58 @@ public class PartnerAssetService {
     }
 
     public PartnerAssetResponseDto createPartnerAsset(PartnerAssetRequestDto request) {
+        log.info("Request ::::::::::::::::::::::::::::::::: {} " + request);
         validations.validatePartnerAsset(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-        PartnerAsset partnerAsset = mapper.map(request,PartnerAsset.class);
+        PartnerAsset partnerAsset = mapper.map(request, PartnerAsset.class);
         PartnerAsset PartnerAssetExists = partnerAssetRepository.findByPlateNo(request.getPlateNo());
-        if(PartnerAssetExists !=null){
+        DriverAssetResponseDto responseDto = new DriverAssetResponseDto();
+        if (PartnerAssetExists != null) {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " partnerAsset already exist");
         }
         PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(request.getPartnerAssetTypeId());
         partnerAsset.setPartnerName(partnerAssetType.getPartnerName());
+//        partnerAsset.setOwner(request.getIsOwner());
         Brand brand = brandRepository.getOne(request.getBrandId());
         Color color = colorRepository.getOne(request.getColorId());
         Driver driver = driverRepository.getOne(request.getDriverId());
         User user = userRepository.getOne(driver.getUserId());
-
-
+        partnerAsset.setDriverAssistantName(user.getFirstName() + " " + user.getMiddleName() + " " + user.getLastName());
         partnerAsset.setAssetTypeName(partnerAssetType.getAssetTypeName());
         partnerAsset.setCreatedBy(userCurrent.getId());
         partnerAsset.setIsActive(true);
+//        partnerAsset.setOwner(request.getIsOwner());
+        log.info("Request  22222 ::::::::::::::::::::::::::::::::: {} " + partnerAsset);
         partnerAsset = partnerAssetRepository.save(partnerAsset);
-        log.debug("Create new PartnerAsset - {}"+ new Gson().toJson(partnerAsset));
+        log.info("Request kKKKKKK ::::::::::::::::::::::::::::::::: {} " + partnerAsset);
+
+        log.debug("Create new PartnerAsset - {}" + new Gson().toJson(partnerAsset));
         PartnerAssetResponseDto partnerAssetResponseDto = mapper.map(partnerAsset, PartnerAssetResponseDto.class);
         partnerAssetResponseDto.setBrandName(brand.getName());
         partnerAssetResponseDto.setColorName(color.getName());
         partnerAssetResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
+//        partnerAsset.setDriverAssistantName(user.getFirstName()+ " " + user.getMiddleName() + " " + user.getLastName());
+        log.info("Check assset ::::::::::::::::::::::::::::::::::::::::::::::::::::::: " + partnerAsset);
+        DriverAsset driverAssetDto = new DriverAsset();
+        DriverAssetDto processDriver = new DriverAssetDto();
+        DriverAsset saveDrivedAsset = new DriverAsset();
 
+        driverAssetDto = driverAssetRepository.findByDriverIdAndPartnerAssetId(driverAssetDto.getDriverId(), driverAssetDto.getPartnerAssetId());
+        if (driverAssetDto == null) {
+            processDriver.setPartnerAssetId(partnerAsset.getId());
+            processDriver.setDriverType(DriverType.DRIVER);
+            processDriver.setDriverId(partnerAsset.getDriverId());
+            processDriver.setAssestTypeName(partnerAsset.getAssetTypeName());
+           responseDto =  driverAssetService.createDriverAsset(processDriver);
+        }
+        saveDrivedAsset = driverAssetRepository.findByPartnerAssetIdAndId(responseDto.getPartnerAssetId(),responseDto.getId());
+        if (saveDrivedAsset == null){
+            processDriver.setPartnerAssetId(partnerAsset.getId());
+            processDriver.setDriverType(DriverType.DRIVER_ASSISTANT);
+            processDriver.setDriverId(partnerAsset.getDriverId());
+            processDriver.setAssestTypeName(partnerAsset.getAssetTypeName());
+            driverAssetService.createDriverAsset(processDriver);
+        }
         return partnerAssetResponseDto;
 
 
@@ -110,9 +145,22 @@ public class PartnerAssetService {
             partnerAssetResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
 
         }
-
+        log.info("Check assset ::::::::::::::::::::::::::::::::::::::::::::::::::::::: " +partnerAsset);
+        DriverAsset driverAssetDto = new DriverAsset();
+        DriverAssetDto processDriver = new DriverAssetDto();
+        driverAssetDto = driverAssetRepository.findByPartnerAssetId(partnerAsset.getId());
+        log.info("Check assset ::::::::::::::::::::::::::::::::::::::::::::::::::::::: " +driverAssetDto);
+        processDriver.setPartnerAssetId(partnerAsset.getId());
+        processDriver.setDriverType(DriverType.DRIVER);
+        processDriver.setDriverId(partnerAsset.getDriverId());
+        processDriver.setAssestTypeName(partnerAsset.getAssetTypeName());
+        driverAssetDto = driverAssetRepository.findByPartnerAssetId(partnerAsset.getId());
+        processDriver.setId(driverAssetDto.getId());
+        log.info("Driver assset ::::::::::::::::::::::::::::::::::::::::::::::::::::::: " + processDriver);
+        driverAssetService.updateDriverAsset(processDriver);
         return partnerAssetResponseDto;
     }
+
 
     public PartnerAssetResponseDto findPartnerAsset(Long id){
         PartnerAsset partnerAsset  = partnerAssetRepository.findById(id)
