@@ -61,12 +61,16 @@ public class PartnerAssetService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " partnerAsset already exist");
         }
         PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(request.getPartnerAssetTypeId());
-        partnerAsset.setPartnerName(partnerAssetType.getPartnerName());
+        partnerAsset.setAssetTypeName(partnerAssetType.getAssetTypeName());
+
         Brand brand = brandRepository.getOne(request.getBrandId());
         Color color = colorRepository.getOne(request.getColorId());
         Driver driver = driverRepository.getOne(request.getDriverId());
         User user = userRepository.getOne(driver.getUserId());
 
+        partnerAsset.setBrandName(brand.getName());
+        partnerAsset.setColorName(color.getName());
+        partnerAsset.setDriverName(user.getLastName() + " " + user.getFirstName());
 
         partnerAsset.setAssetTypeName(partnerAssetType.getAssetTypeName());
         partnerAsset.setCreatedBy(userCurrent.getId());
@@ -77,6 +81,7 @@ public class PartnerAssetService {
         partnerAssetResponseDto.setBrandName(brand.getName());
         partnerAssetResponseDto.setColorName(color.getName());
         partnerAssetResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
+        partnerAssetResponseDto.setAssetTypeName(partnerAssetType.getAssetTypeName());
 
         return partnerAssetResponseDto;
 
@@ -108,6 +113,7 @@ public class PartnerAssetService {
             partnerAssetResponseDto.setBrandName(brand.getName());
             partnerAssetResponseDto.setColorName(color.getName());
             partnerAssetResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
+            partnerAssetResponseDto.setAssetTypeName(partnerAssetType.getAssetTypeName());
 
         }
 
