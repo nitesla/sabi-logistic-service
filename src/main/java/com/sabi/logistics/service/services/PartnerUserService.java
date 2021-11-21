@@ -35,6 +35,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,19 +92,18 @@ public class PartnerUserService {
         user.setClientId(partner.getPartnerId());
         user.setIsActive(false);
         user.setLoginAttempts(0l);
-//        user.setResetToken(Utility.registrationCode("HHmmss"));
-//        user.setResetTokenExpirationDate(Utility.tokenExpiration());
         user = userRepository.save(user);
         log.debug("Create new partner user - {}"+ new Gson().toJson(user));
 
         PreviousPasswords previousPasswords = PreviousPasswords.builder()
                 .userId(user.getId())
                 .password(user.getPassword())
+                .createdDate(LocalDateTime.now())
                 .build();
         previousPasswordRepository.save(previousPasswords);
 
         PartnerUser partnerUser = new PartnerUser();
-        partnerUser.setPartnerId(user.getClientId());
+        partnerUser.setPartnerId(partner.getPartnerId());
         partnerUser.setUserId(user.getId());
         partnerUser.setCreatedBy(userCurrent.getId());
         partnerUser.setUserType(request.getUserType());
@@ -112,10 +112,11 @@ public class PartnerUserService {
         log.debug("save to partner user table - {}"+ new Gson().toJson(partnerUser));
 
         if(request.getUserType().equalsIgnoreCase(PartnerConstants.DRIVER_USER)){
-            Driver driver = Driver.builder()
-                    .partnerId(user.getClientId())
-                    .userId(user.getId())
-                    .build();
+            Driver driver = new Driver();
+            driver.setPartnerId(partner.getPartnerId());
+            driver.setUserId(user.getId());
+            driver.setIsActive(true);
+            driver.setCreatedBy(userCurrent.getId());
             driverRepository.save(driver);
         }
         return mapper.map(user, PartnerUserResponseDto.class);
@@ -151,7 +152,6 @@ public class PartnerUserService {
             notificationRequestDto.setRecipient(recipient);
             notificationService.emailNotificationRequest(notificationRequestDto);
 
-
             SmsRequest smsRequest = SmsRequest.builder()
                     .message("Activation Otp " + " " + user.getResetToken())
                     .phoneNumber(emailRecipient.getPhone())
@@ -169,7 +169,6 @@ public class PartnerUserService {
     public Page<User> findByClientId(String firstName, String phone, String email, String username,
                                                    Long roleId, String lastName, PageRequest pageRequest ){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-
         PartnerUser partner = partnerUserRepository.findByUserId(userCurrent.getId());
         Page<User> users = userRepository.findByClientId(firstName,phone,email,username,roleId,partner.getPartnerId(),lastName,pageRequest);
         if(users == null){
@@ -196,7 +195,6 @@ public class PartnerUserService {
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
         partnerUsers.getContent().forEach(users -> {
-
          User user = userRepository.getOne(users.getUserId());
             if(user.getRoleId() !=null){
                 Role role = roleRepository.getOne(user.getRoleId());
@@ -213,11 +211,8 @@ public class PartnerUserService {
          users.setFailedLoginDate(user.getFailedLoginDate());
          users.setLastLogin(user.getLastLogin());
          users.setLockedDate(user.getLockedDate());
-
         });
-
             return partnerUsers;
-
     }
 
 
@@ -231,15 +226,12 @@ public class PartnerUserService {
         List<User> users = userRepository.findByIsActiveAndClientId(isActive,partner.getPartnerId());
         for (User partnerUsers : users
                 ) {
-
             if(partnerUsers.getRoleId() !=null){
                 Role role = roleRepository.getOne(partnerUsers.getRoleId());
                 partnerUsers.setRoleName(role.getName());
             }
         }
-
         return users;
-
     }
 
 
@@ -249,16 +241,13 @@ public class PartnerUserService {
 
         PartnerUser partner = partnerUserRepository.findByUserId(userCurrent.getId());
         List<PartnerUser> partnerUsers = partnerUserRepository.findPartnerUsersList(partner.getPartnerId(),userType);
-
         for (PartnerUser users : partnerUsers
                 ) {
             User user = userRepository.getOne(users.getUserId());
-
             if(user.getRoleId() !=null){
                 Role role = roleRepository.getOne(user.getRoleId());
                 users.setRoleName(role.getName());
             }
-
             users.setEmail(user.getEmail());
             users.setFirstName(user.getFirstName());
             users.setLastName(user.getLastName());
@@ -266,7 +255,6 @@ public class PartnerUserService {
             users.setMiddleName(user.getMiddleName());
             users.setUsername(user.getUsername());
             users.setRoleId(user.getRoleId());
-
             users.setLoginAttempts(user.getLoginAttempts());
             users.setFailedLoginDate(user.getFailedLoginDate());
             users.setLastLogin(user.getLastLogin());
