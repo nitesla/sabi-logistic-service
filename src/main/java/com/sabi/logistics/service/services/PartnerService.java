@@ -115,6 +115,7 @@ public class PartnerService {
         PreviousPasswords previousPasswords = PreviousPasswords.builder()
                 .userId(user.getId())
                 .password(user.getPassword())
+                .createdDate(LocalDateTime.now())
                 .build();
         previousPasswordRepository.save(previousPasswords);
 
@@ -245,6 +246,7 @@ public class PartnerService {
         PreviousPasswords previousPasswords = PreviousPasswords.builder()
                 .userId(user.getId())
                 .password(user.getPassword())
+                .createdDate(LocalDateTime.now())
                 .build();
         previousPasswordRepository.save(previousPasswords);
 

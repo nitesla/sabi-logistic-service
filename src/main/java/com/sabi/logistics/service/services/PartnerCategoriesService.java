@@ -3,6 +3,7 @@ package com.sabi.logistics.service.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
+import com.sabi.framework.dto.responseDto.PartnersCategoryReturn;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -114,10 +116,19 @@ public class PartnerCategoriesService {
     }
 
 
-//    public List<PartnerCategories> findAllByPartnerId(Long partnerId){
-//        List<PartnerCategories> partnerCategories = repository.findAllByPartnerId(partnerId);
-//        return partnerCategories;
-//
-//    }
 
+    public List<PartnersCategoryReturn> partnerCategoryReturn(Long partnerId) {
+        List<PartnersCategoryReturn> resultLists = new ArrayList<>();
+        List<Object[]> result = repository.findAllByPartnerId(partnerId);
+        try {
+            result.forEach(r -> {
+                PartnersCategoryReturn partnersCategoryReturn = new PartnersCategoryReturn();
+                partnersCategoryReturn.setCategoryId((Long) r[0]);
+                resultLists.add(partnersCategoryReturn);
+            });
+        } catch (Exception e) {
+            log.info("Error in returning object list" +e);
+        }
+        return resultLists;
+    }
 }

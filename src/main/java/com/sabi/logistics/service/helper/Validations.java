@@ -629,6 +629,9 @@ public class Validations {
         throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Brand Name cannot be empty");
     }
     }
+
+
+
 }
 
 
