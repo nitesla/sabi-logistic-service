@@ -45,6 +45,12 @@ public class PartnerAssetService {
     @Autowired
     private PartnerAssetPictureRepository partnerAssetPictureRepository;
 
+    @Autowired
+    private PartnerRepository partnerRepository;
+
+    @Autowired
+    private AssetTypePropertiesRepository assetTypePropertiesRepository;
+
     public PartnerAssetService(PartnerAssetRepository partnerAssetRepository, PartnerAssetTypeRepository partnerAssetTypeRepository, ModelMapper mapper, Validations validations) {
         this.partnerAssetRepository = partnerAssetRepository;
         this.partnerAssetTypeRepository = partnerAssetTypeRepository;
@@ -61,7 +67,9 @@ public class PartnerAssetService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " partnerAsset already exist");
         }
         PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(request.getPartnerAssetTypeId());
-        partnerAsset.setAssetTypeName(partnerAssetType.getAssetTypeName());
+        Partner partner = partnerRepository.getOne(partnerAssetType.getPartnerId());
+        AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(partnerAssetType.getAssetTypeId());
+        partnerAsset.setAssetTypeName(partner.getName());
 
         Brand brand = brandRepository.getOne(request.getBrandId());
         Color color = colorRepository.getOne(request.getColorId());
@@ -72,7 +80,7 @@ public class PartnerAssetService {
         partnerAsset.setColorName(color.getName());
         partnerAsset.setDriverName(user.getLastName() + " " + user.getFirstName());
 
-        partnerAsset.setAssetTypeName(partnerAssetType.getAssetTypeName());
+        partnerAsset.setAssetTypeName(assetTypeProperties.getName());
         partnerAsset.setCreatedBy(userCurrent.getId());
         partnerAsset.setIsActive(true);
         partnerAsset = partnerAssetRepository.save(partnerAsset);
@@ -81,7 +89,8 @@ public class PartnerAssetService {
         partnerAssetResponseDto.setBrandName(brand.getName());
         partnerAssetResponseDto.setColorName(color.getName());
         partnerAssetResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
-        partnerAssetResponseDto.setAssetTypeName(partnerAssetType.getAssetTypeName());
+        partnerAssetResponseDto.setAssetTypeName(assetTypeProperties.getName());
+        partnerAssetResponseDto.setAssetTypeName(partner.getName());
 
         return partnerAssetResponseDto;
 
@@ -104,16 +113,18 @@ public class PartnerAssetService {
 
         if ((request.getPartnerAssetTypeId() != null || request.getBrandId() != null || request.getColorId() != null || request.getDriverId() != null)) {
             PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(request.getPartnerAssetTypeId());
+            Partner partner = partnerRepository.getOne(partnerAssetType.getPartnerId());
+            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(partnerAssetType.getAssetTypeId());
             Brand brand = brandRepository.getOne(request.getBrandId());
             Color color = colorRepository.getOne(request.getColorId());
             Driver driver = driverRepository.getOne(request.getDriverId());
             User user = userRepository.getOne(driver.getUserId());
 
-            partnerAssetResponseDto.setPartnerName(partnerAssetType.getPartnerName());
+            partnerAssetResponseDto.setPartnerName(partner.getName());
             partnerAssetResponseDto.setBrandName(brand.getName());
             partnerAssetResponseDto.setColorName(color.getName());
             partnerAssetResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
-            partnerAssetResponseDto.setAssetTypeName(partnerAssetType.getAssetTypeName());
+            partnerAssetResponseDto.setAssetTypeName(assetTypeProperties.getName());
 
         }
 
@@ -126,16 +137,52 @@ public class PartnerAssetService {
                         "Requested PartnerAsset Id does not exist!"));
         PartnerAssetResponseDto partnerAssetResponseDto = mapper.map(partnerAsset, PartnerAssetResponseDto.class);
         partnerAssetResponseDto.setPartnerAssetPictures(getAllPartnerAssetPicture(id));
+
+        PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(partnerAssetResponseDto.getPartnerAssetTypeId());
+        Partner partner = partnerRepository.getOne(partnerAssetType.getPartnerId());
+        AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(partnerAssetType.getAssetTypeId());
+
+        Brand brand = brandRepository.getOne(partnerAssetResponseDto.getBrandId());
+        Color color = colorRepository.getOne(partnerAssetResponseDto.getColorId());
+        Driver driver = driverRepository.getOne(partnerAssetResponseDto.getDriverId());
+        User user = userRepository.getOne(driver.getUserId());
+
+        partnerAssetResponseDto.setPartnerName(partner.getName());
+        partnerAssetResponseDto.setBrandName(brand.getName());
+        partnerAssetResponseDto.setColorName(color.getName());
+        partnerAssetResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
+        partnerAssetResponseDto.setAssetTypeName(assetTypeProperties.getName());
+
+
         return partnerAssetResponseDto;
     }
 
 
     public Page<PartnerAsset> findAll(String name,Long brandId, String status, Long driverId,Long partnerId, Long partnerAssetTypeId, Boolean isActive, PageRequest pageRequest ){
-        Page<PartnerAsset> PartnerAssets = partnerAssetRepository.findPartnerAsset(name,brandId,status,driverId,partnerId,partnerAssetTypeId,isActive,pageRequest);
-        if(PartnerAssets == null){
+        Page<PartnerAsset> partnerAssets = partnerAssetRepository.findPartnerAsset(name,brandId,status,driverId,partnerId,partnerAssetTypeId,isActive,pageRequest);
+        if(partnerAssets == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
-        return PartnerAssets;
+        partnerAssets.getContent().forEach(asset ->{
+            PartnerAsset partnerAsset = partnerAssetRepository.getOne(asset.getId());
+            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(partnerAsset.getPartnerAssetTypeId());
+            Partner partner = partnerRepository.getOne(partnerAssetType.getPartnerId());
+            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(partnerAssetType.getAssetTypeId());
+            asset.setPartnerName(partner.getName());
+            asset.setAssetTypeName(assetTypeProperties.getName());
+
+            Brand brand = brandRepository.getOne(partnerAsset.getBrandId());
+            asset.setBrandName(brand.getName());
+
+            Color color = colorRepository.getOne(partnerAsset.getColorId());
+            asset.setColorName(color.getName());
+
+            Driver driver = driverRepository.getOne(partnerAsset.getDriverId());
+            User user = userRepository.getOne(driver.getUserId());
+            asset.setDriverName(user.getLastName() + " " + user.getFirstName());
+        });
+
+        return partnerAssets;
 
     }
 
@@ -155,6 +202,26 @@ public class PartnerAssetService {
 
     public List<PartnerAsset> getAll(Long partnerId,Boolean isActive){
         List<PartnerAsset> partnerAssets = partnerAssetRepository.findByIsActiveAndId(partnerId,isActive);
+
+        for (PartnerAsset asset : partnerAssets) {
+
+            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(asset.getPartnerAssetTypeId());
+            Partner partner = partnerRepository.getOne(partnerAssetType.getPartnerId());
+            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(partnerAssetType.getAssetTypeId());
+
+            Brand brand = brandRepository.getOne(asset.getBrandId());
+            Color color = colorRepository.getOne(asset.getColorId());
+            Driver driver = driverRepository.getOne(asset.getDriverId());
+            User user = userRepository.getOne(driver.getUserId());
+
+            asset.setPartnerName(partner.getName());
+            asset.setBrandName(brand.getName());
+            asset.setColorName(color.getName());
+            asset.setDriverName(user.getLastName() + " " + user.getFirstName());
+            asset.setAssetTypeName(assetTypeProperties.getName());
+
+        }
+
         return partnerAssets;
 
     }
