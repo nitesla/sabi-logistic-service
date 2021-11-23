@@ -334,10 +334,10 @@ public class Validations {
     public void validatePartnerAsset(PartnerAssetRequestDto request) {
         partnerAssetTypeRepository.findById(request.getPartnerAssetTypeId()).orElseThrow(()-> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                 " Enter a valid Partner Asset Type!"));
-        Driver driver = driverRepository.findByUserId(request.getDriverId());
-        if(driver ==null || driver.equals("")){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " user Id does not exist!");
-        }
+//        Driver driver = driverRepository.findByUserId(request.getDriverId());
+//        if(driver ==null || driver.equals("")){
+//            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " user Id does not exist!");
+//        }
         if (request.getDriverId().equals(request.getDriverAssistantId())){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " driver Id and driver assistant id can not be same!");
         }

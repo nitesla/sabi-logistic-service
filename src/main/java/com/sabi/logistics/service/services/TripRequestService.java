@@ -76,6 +76,10 @@ public class TripRequestService {
         tripRequest.setBarCode(validations.generateCode(tripRequest.getReferenceNo()));
         tripRequest.setQrCode(validations.generateCode(tripRequest.getReferenceNo()));
 
+        Driver driver = driverRepository.findByUserId(request.getDriverID());
+        User user = userRepository.getOne(driver.getUserId());
+        tripRequest.setDriverID(driver.getId());
+
         tripRequest.setCreatedBy(userCurrent.getId());
         tripRequest.setIsActive(true);
         tripRequest = tripRequestRepository.save(tripRequest);
@@ -85,8 +89,8 @@ public class TripRequestService {
         if ((request.getPartnerAssetID() != null || request.getPartnerID() != null)) {
             Partner partner = partnerRepository.getOne(request.getPartnerID());
             PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetID());
-            Driver driver = driverRepository.getOne(request.getDriverID());
-            User user = userRepository.getOne(driver.getUserId());
+//            Driver driver = driverRepository.findByUserId(request.getDriverID());
+//            User user = userRepository.getOne(driver.getUserId());
 
             tripResponseDto.setPartnerName(partner.getName());
             tripResponseDto.setPartnerAssetName(partnerAsset.getName());
@@ -102,7 +106,15 @@ public class TripRequestService {
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Trip Request ID does not exist!"));
         mapper.map(request, tripRequest);
+        if (request.getDriverID() != null) {
 
+            Driver driver = driverRepository.findByUserId(request.getDriverID());
+            User user = userRepository.getOne(driver.getUserId());
+            tripRequest.setDriverID(driver.getId());
+            tripRequest.setDriverName(user.getLastName() + " " + user.getFirstName());
+
+
+        }
         tripRequest.setUpdatedBy(userCurrent.getId());
         tripRequestRepository.save(tripRequest);
         log.debug("tripRequest record updated - {}"+ new Gson().toJson(tripRequest));
@@ -113,9 +125,9 @@ public class TripRequestService {
             tripResponseDto.setPartnerName(partner.getName());
             PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetID());
             tripResponseDto.setPartnerAssetName(partnerAsset.getName());
-            Driver driver = driverRepository.getOne(request.getDriverID());
-            User user = userRepository.getOne(driver.getUserId());
-            tripResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
+//            Driver driver = driverRepository.findByUserId(request.getDriverID());
+//            User user = userRepository.getOne(driver.getUserId());
+//            tripResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
         }
         return tripResponseDto;
     }
