@@ -4,7 +4,9 @@ package com.sabi.logistics.service.helper;
 import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
+import com.sabi.framework.models.Role;
 import com.sabi.framework.models.User;
+import com.sabi.framework.repositories.RoleRepository;
 import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.framework.utils.Utility;
@@ -23,7 +25,7 @@ import java.util.Base64;
 public class Validations {
 
 
-
+    private RoleRepository roleRepository;
     private CountryRepository countryRepository;
     private StateRepository stateRepository;
     private LGARepository lgaRepository;
@@ -57,11 +59,12 @@ public class Validations {
 
 
 
-    public Validations(CountryRepository countryRepository,StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository,
+    public Validations(RoleRepository roleRepository,CountryRepository countryRepository,StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository,
                        PartnerRepository partnerRepository, CategoryRepository categoryRepository,
                        AssetTypePropertiesRepository assetTypePropertiesRepository, PartnerAssetRepository partnerAssetRepository,
                        PartnerAssetTypeRepository partnerAssetTypeRepository, DriverRepository driverRepository,
                        BrandRepository brandRepository) {
+        this.roleRepository = roleRepository;
         this.countryRepository = countryRepository;
         this.stateRepository = stateRepository;
         this.lgaRepository = lgaRepository;
@@ -294,6 +297,13 @@ public class Validations {
                 throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid User category type");
         }
 
+//        if(request.getRoleId() == null )
+//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Role id cannot be empty");
+
+        Role role = roleRepository.findById(request.getRoleId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid role id!"));
+
     }
 
 
@@ -324,10 +334,10 @@ public class Validations {
     public void validatePartnerAsset(PartnerAssetRequestDto request) {
         partnerAssetTypeRepository.findById(request.getPartnerAssetTypeId()).orElseThrow(()-> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                 " Enter a valid Partner Asset Type!"));
-        Driver driver = driverRepository.findByUserId(request.getDriverId());
-        if(driver ==null || driver.equals("")){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " user Id does not exist!");
-        }
+//        Driver driver = driverRepository.findByUserId(request.getDriverId());
+//        if(driver ==null || driver.equals("")){
+//            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " user Id does not exist!");
+//        }
         if (request.getDriverId().equals(request.getDriverAssistantId())){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " driver Id and driver assistant id can not be same!");
         }
@@ -541,15 +551,15 @@ public class Validations {
 //            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
 
 
-        partnerRepository.findById(request.getPartnerID()).orElseThrow(() ->
-                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " partnerID does not Exist!")
-        );
-
-        partnerAssetRepository.findById(request.getPartnerAssetID()).orElseThrow(() ->
-                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " partnerAssetID does not Exist!")
-        );
+//        partnerRepository.findById(request.getPartnerID()).orElseThrow(() ->
+//                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                        " partnerID does not Exist!")
+//        );
+//
+//        partnerAssetRepository.findById(request.getPartnerAssetID()).orElseThrow(() ->
+//                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                        " partnerAssetID does not Exist!")
+//        );
 
         driverRepository.findById(request.getDriverID()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
@@ -623,9 +633,12 @@ public class Validations {
 
     public void validateInventory(InventoryDto request) {
         if (request.getPartnerId().equals("") || request.getPartnerId() == null){
-        throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Brand Name cannot be empty");
+        throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "PartnerId cannot be empty");
     }
     }
+
+
+
 }
 
 

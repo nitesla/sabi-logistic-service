@@ -9,9 +9,7 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.TripItemRequestDto;
 import com.sabi.logistics.core.dto.response.TripItemResponseDto;
-import com.sabi.logistics.core.models.Order;
-import com.sabi.logistics.core.models.OrderItem;
-import com.sabi.logistics.core.models.TripItem;
+import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
@@ -74,7 +72,10 @@ public class TripItemService {
 
         TripItemResponseDto tripItemResponseDto = mapper.map(tripItem, TripItemResponseDto.class);
         tripItemResponseDto.setOrderItemName(orderItem.getName());
+        tripItemResponseDto.setQty(orderItem.getQty());
         tripItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
+        tripItemResponseDto.setCustomerName(order.getCustomerName());
+        tripItemResponseDto.setCustomerPhone(order.getCustomerPhone());
 
         return tripItemResponseDto;
 
@@ -96,7 +97,10 @@ public class TripItemService {
             OrderItem orderItem = orderItemRepository.getOne(request.getOrderItemID());
             Order order = orderRepository.getOne(orderItem.getOrderID());
             tripItemResponseDto.setOrderItemName(orderItem.getName());
+            tripItemResponseDto.setQty(orderItem.getQty());
             tripItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
+            tripItemResponseDto.setCustomerName(order.getCustomerName());
+            tripItemResponseDto.setCustomerPhone(order.getCustomerPhone());
         }
 
         return tripItemResponseDto;
@@ -106,7 +110,18 @@ public class TripItemService {
         TripItem tripItem  = tripItemRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested trip item Id does not exist!"));
-        return mapper.map(tripItem, TripItemResponseDto.class);
+        TripItemResponseDto tripItemResponseDto = mapper.map(tripItem, TripItemResponseDto.class);
+        OrderItem orderItem = orderItemRepository.getOne(tripItem.getOrderItemID());
+
+        Order order = orderRepository.getOne(orderItem.getOrderID());
+
+        tripItemResponseDto.setOrderItemName(orderItem.getName());
+        tripItemResponseDto.setQty(orderItem.getQty());
+        tripItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
+        tripItemResponseDto.setCustomerName(order.getCustomerName());
+        tripItemResponseDto.setCustomerPhone(order.getCustomerPhone());
+
+        return tripItemResponseDto;
     }
 
 
@@ -136,6 +151,24 @@ public class TripItemService {
         if(tripItems == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
+        tripItems.getContent().forEach(item ->{
+            TripItem tripItem = tripItemRepository.getOne(item.getId());
+
+
+            OrderItem orderItem = orderItemRepository.getOne(tripItem.getOrderItemID());
+
+            Order order = orderRepository.getOne(orderItem.getOrderID());
+
+            item.setOrderItemName(orderItem.getName());
+            item.setQty(orderItem.getQty());
+            item.setDeliveryAddress(order.getDeliveryAddress());
+            item.setCustomerName(order.getCustomerName());
+            item.setCustomerPhone(order.getCustomerPhone());
+
+        });
+
+
+
         return tripItems;
 
     }
@@ -156,6 +189,19 @@ public class TripItemService {
 
     public List<TripItem> getAll(Boolean isActive){
         List<TripItem> tripItems = tripItemRepository.findByIsActive(isActive);
+
+        for (TripItem item : tripItems) {
+            OrderItem orderItem = orderItemRepository.getOne(item.getOrderItemID());
+
+            Order order = orderRepository.getOne(orderItem.getOrderID());
+
+            item.setOrderItemName(orderItem.getName());
+            item.setQty(orderItem.getQty());
+            item.setDeliveryAddress(order.getDeliveryAddress());
+            item.setCustomerName(order.getCustomerName());
+            item.setCustomerPhone(order.getCustomerPhone());
+
+        }
         return tripItems;
 
     }

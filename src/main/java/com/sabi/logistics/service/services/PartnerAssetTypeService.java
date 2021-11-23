@@ -10,9 +10,7 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.PartnerAssetTypeRequestDto;
 import com.sabi.logistics.core.dto.response.PartnerAssetTypeResponseDto;
-import com.sabi.logistics.core.models.AssetTypeProperties;
-import com.sabi.logistics.core.models.Partner;
-import com.sabi.logistics.core.models.PartnerAssetType;
+import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.AssetTypePropertiesRepository;
 import com.sabi.logistics.service.repositories.PartnerAssetTypeRepository;
@@ -75,6 +73,13 @@ public class PartnerAssetTypeService {
                         "Requested PartnerAssetType Id does not exist!"));
         mapper.map(request, partnerAssetType);
         partnerAssetType.setUpdatedBy(userCurrent.getId());
+
+        if (request.getAssetTypeId() != null || request.getPartnerId() != null) {
+            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(request.getAssetTypeId());
+            Partner partner  = partnerRepository.getOne(request.getPartnerId());
+            partnerAssetType.setAssetTypeName(assetTypeProperties.getName());
+            partnerAssetType.setPartnerName(partner.getName());
+        }
         partnerAssetTypeRepository.save(partnerAssetType);
         log.debug("PartnerAssetType record updated - {}"+ new Gson().toJson(partnerAssetType));
         PartnerAssetTypeResponseDto  partnerAssetTypeResponseDto = mapper.map(partnerAssetType, PartnerAssetTypeResponseDto.class);
@@ -94,16 +99,36 @@ public class PartnerAssetTypeService {
         PartnerAssetType partnerAssetType  = partnerAssetTypeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested PartnerAssetType Id does not exist!"));
-        return mapper.map(partnerAssetType, PartnerAssetTypeResponseDto.class);
+        PartnerAssetTypeResponseDto partnerAssetTypeResponseDto = mapper.map(partnerAssetType, PartnerAssetTypeResponseDto.class);
+
+        AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(partnerAssetTypeResponseDto.getAssetTypeId());
+        Partner partner  = partnerRepository.getOne(partnerAssetTypeResponseDto.getPartnerId());
+
+        partnerAssetTypeResponseDto.setAssetTypeName(assetTypeProperties.getName());
+        partnerAssetTypeResponseDto.setPartnerName(partner.getName());
+
+        return partnerAssetTypeResponseDto;
+
     }
 
 
     public Page<PartnerAssetType> findAll(Long partnerId , Long assetTypeId, PageRequest pageRequest ){
-        Page<PartnerAssetType> partnerAssetType = partnerAssetTypeRepository.findPartnerAssetType(partnerId,assetTypeId,pageRequest);
-        if(partnerAssetType == null){
+        Page<PartnerAssetType> partnerAssetTypes = partnerAssetTypeRepository.findPartnerAssetType(partnerId,assetTypeId,pageRequest);
+        if(partnerAssetTypes == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
-        return partnerAssetType;
+
+        partnerAssetTypes.getContent().forEach(type ->{
+            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(type.getId());
+            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(partnerAssetType.getAssetTypeId());
+            Partner partner  = partnerRepository.getOne(partnerAssetType.getPartnerId());
+
+            type.setAssetTypeName(assetTypeProperties.getName());
+            type.setPartnerName(partner.getName());
+
+
+        });
+        return partnerAssetTypes;
 
     }
 
@@ -123,6 +148,16 @@ public class PartnerAssetTypeService {
 
     public List<PartnerAssetType> getAll(Boolean isActive){
         List<PartnerAssetType> partnerAssetTypes = partnerAssetTypeRepository.findByIsActive(isActive);
+
+        for (PartnerAssetType type : partnerAssetTypes) {
+
+            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(type.getAssetTypeId());
+            Partner partner = partnerRepository.getOne(type.getPartnerId());
+
+            type.setAssetTypeName(assetTypeProperties.getName());
+            type.setPartnerName(partner.getName());
+
+        }
         return partnerAssetTypes;
     }
 }
