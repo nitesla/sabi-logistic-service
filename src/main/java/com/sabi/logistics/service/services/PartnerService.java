@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.ChangePasswordDto;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
+import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.PreviousPasswords;
@@ -88,6 +89,7 @@ public class PartnerService {
         if(exist !=null && exist.getPasswordChangedOn()== null){
 
             Partner partnerExist = repository.findByUserId(exist.getId());
+            if(partnerExist !=null){
           PartnerSignUpResponseDto partnerSignUpResponseDto= PartnerSignUpResponseDto.builder()
                   .id(exist.getId())
                   .email(exist.getEmail())
@@ -98,6 +100,9 @@ public class PartnerService {
                   .partnerId(partnerExist.getId())
                   .build();
           return partnerSignUpResponseDto;
+            }else {
+                throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " Partner id does not exist");
+            }
 
         }else if(exist !=null && exist.getPasswordChangedOn() !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Partner user already exist");
