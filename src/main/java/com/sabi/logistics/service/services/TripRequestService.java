@@ -201,14 +201,18 @@ public class TripRequestService {
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
         tripRequests.getContent().forEach(request ->{
+
             Partner partner = partnerRepository.getOne(request.getPartnerID());
-            request.setPartnerName(partner.getName());
             PartnerAsset partnerAsset = partnerAssetRepository.getOne(request.getPartnerAssetID());
-            request.setPartnerAssetName(partnerAsset.getName());
             Driver driver = driverRepository.getOne(request.getDriverID());
             User user = userRepository.getOne(driver.getUserId());
-            request.setDriverName(user.getLastName() + " " + user.getFirstName());
 
+            if ((partner.getName() != null || partnerAsset.getName() != null || user.getFirstName() != null || user.getLastName() != null
+            || !(partner.getName().isEmpty() || partnerAsset.getName().isEmpty() || user.getFirstName().isEmpty() || user.getLastName().isEmpty()))) {
+                request.setPartnerName(partner.getName());
+                request.setPartnerAssetName(partnerAsset.getName());
+                request.setDriverName(user.getLastName() + " " + user.getFirstName());
+            }
 
         });
         return tripRequests;

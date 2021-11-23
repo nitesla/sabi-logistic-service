@@ -92,12 +92,12 @@ public class PartnerAssetService {
         partnerAsset.setDriverId(driver.getId());
         partnerAsset.setDriverAssistantId(driver2.getId());
 
-        partnerAsset.setBrandName(brand.getName());
-        partnerAsset.setColorName(color.getName());
-        partnerAsset.setDriverName(user.getLastName() + " " + user.getFirstName());
+//        partnerAsset.setBrandName(brand.getName());
+//        partnerAsset.setColorName(color.getName());
+//        partnerAsset.setDriverName(user.getLastName() + " " + user.getFirstName());
 
         partnerAsset.setAssetTypeName(assetTypeProperties.getName());
-        partnerAsset.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
+//        partnerAsset.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
         partnerAsset.setCreatedBy(userCurrent.getId());
         partnerAsset.setIsActive(true);
         partnerAsset = partnerAssetRepository.save(partnerAsset);
