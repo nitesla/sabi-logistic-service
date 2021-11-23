@@ -93,10 +93,4 @@ public class BrandService {
 
     }
 
-
-    public List<Brand> getAll(Boolean isActive){
-        List<Brand> brands = brandRepository.findByIsActive(isActive);
-        return brands;
-
-    }
 }

@@ -79,7 +79,7 @@ public class LGAService {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         LGA lga = lgaRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        "Requested State Id does not exist!"));
+                        "Requested LGA Id does not exist!"));
         mapper.map(request, lga);
         lga.setUpdatedBy(userCurrent.getId());
         lgaRepository.save(lga);
