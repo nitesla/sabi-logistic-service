@@ -633,7 +633,7 @@ public class Validations {
 
     public void validateInventory(InventoryDto request) {
         if (request.getPartnerId().equals("") || request.getPartnerId() == null){
-        throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Brand Name cannot be empty");
+        throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "PartnerId cannot be empty");
     }
     }
 

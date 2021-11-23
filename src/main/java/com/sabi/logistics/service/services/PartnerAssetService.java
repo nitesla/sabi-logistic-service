@@ -72,9 +72,9 @@ public class PartnerAssetService {
         validations.validatePartnerAsset(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PartnerAsset partnerAsset = mapper.map(request, PartnerAsset.class);
-        PartnerAsset PartnerAssetExists = partnerAssetRepository.findByPlateNo(request.getPlateNo());
+        PartnerAsset partnerAssetExists = partnerAssetRepository.findByPlateNo(request.getPlateNo());
         DriverAssetResponseDto responseDto = new DriverAssetResponseDto();
-        if (PartnerAssetExists != null) {
+        if (partnerAssetExists != null) {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " partnerAsset already exist");
         }
         PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(request.getPartnerAssetTypeId());
