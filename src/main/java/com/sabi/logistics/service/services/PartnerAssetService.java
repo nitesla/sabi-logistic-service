@@ -75,9 +75,22 @@ public class PartnerAssetService {
 //        partnerAsset.setOwner(request.getIsOwner());
         Brand brand = brandRepository.getOne(request.getBrandId());
         Color color = colorRepository.getOne(request.getColorId());
-        Driver driver = driverRepository.getOne(request.getDriverId());
+//
+//        User user = userRepository.getOne(request.getDriverId());
+//        Driver driver = driverRepository.getOne(user.getId());
+
+        Driver driver = driverRepository.findByUserId(request.getDriverId());
+
+        Driver driver2 = driverRepository.findByUserId(request.getDriverAssistantId());
+
         User user = userRepository.getOne(driver.getUserId());
+        User user2 = userRepository.getOne(driver2.getUserId());
+        partnerAsset.setDriverId(driver.getId());
+
+        partnerAsset.setDriverAssistantId(driver2.getId());
+
         partnerAsset.setDriverAssistantName(user.getFirstName() + " " + user.getMiddleName() + " " + user.getLastName());
+
         partnerAsset.setAssetTypeName(partnerAssetType.getAssetTypeName());
         partnerAsset.setCreatedBy(userCurrent.getId());
         partnerAsset.setIsActive(true);
