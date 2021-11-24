@@ -16,6 +16,8 @@ public interface AssetTypePropertiesRepository extends JpaRepository<AssetTypePr
 
     AssetTypeProperties findByName(String name);
 
+    AssetTypeProperties findAssetTypePropertiesById(Long Id);
+
     List<AssetTypeProperties> findByIsActive(Boolean isActive);
 
     @Query("SELECT a FROM AssetTypeProperties a WHERE ((:name IS NULL) OR (:name IS NOT NULL AND a.name = :name))")

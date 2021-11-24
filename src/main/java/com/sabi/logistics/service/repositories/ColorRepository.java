@@ -13,6 +13,8 @@ import java.util.List;
 public interface ColorRepository extends JpaRepository<Color, Long> {
     Color findByName(String name);
 
+    Color findColorById(Long Id);
+
     @Query("SELECT c FROM Color c WHERE ((:name IS NULL) OR (:name IS NOT NULL AND c.name = :name))")
     Page<Color> findColor(String name, Pageable pageRequest);
 

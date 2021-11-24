@@ -19,5 +19,7 @@ public interface TripItemRepository extends JpaRepository<TripItem, Long>, JpaSp
 
     List<TripItem> findByTripRequestID(Long ID);
 
+    Integer countTripItemByTripRequestID(Long ID);
+
 
 }

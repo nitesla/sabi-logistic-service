@@ -23,6 +23,7 @@ public interface PartnerRepository extends JpaRepository<Partner, Long> {
 
     Partner findByUserId(Long userId);
 
+    Partner findPartnerById(Long id);
     Partner findPartnerPropertiesById(Long id);
 
     Partner findByPhone(String phone);

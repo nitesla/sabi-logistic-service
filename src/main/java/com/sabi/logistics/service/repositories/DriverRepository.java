@@ -10,6 +10,6 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
 
     Driver findByUserId(Long userId);
 
-
+    Driver findDriverById(Long Id);
 
 }

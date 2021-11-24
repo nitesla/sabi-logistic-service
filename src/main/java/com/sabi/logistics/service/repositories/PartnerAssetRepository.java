@@ -14,6 +14,8 @@ import java.util.List;
 public interface PartnerAssetRepository extends JpaRepository<PartnerAsset, Long> {
     PartnerAsset findByPlateNo(String plateNo);
 
+    PartnerAsset findPartnerAssetById(Long Id);
+
     List<PartnerAsset> findByIsActive(Boolean isActive);
 
 @Query("SELECT pa from PartnerAsset pa inner join PartnerAssetType pt on pa.partnerAssetTypeId = pt.id  where ((:partnerId IS NULL) OR (pt.partnerId = :partnerId)) and ((:isActive IS NULL) OR(pa.isActive = :isActive))")

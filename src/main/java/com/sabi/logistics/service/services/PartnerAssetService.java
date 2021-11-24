@@ -75,17 +75,38 @@ public class PartnerAssetService {
         PartnerAsset partnerAssetExists = partnerAssetRepository.findByPlateNo(request.getPlateNo());
         DriverAssetResponseDto responseDto = new DriverAssetResponseDto();
         if (partnerAssetExists != null) {
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " partnerAsset already exist");
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Plate Number already exist");
         }
-        PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(request.getPartnerAssetTypeId());
-        Partner partner = partnerRepository.getOne(partnerAssetType.getPartnerId());
-        AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(partnerAssetType.getAssetTypeId());
+        PartnerAssetType partnerAssetType = partnerAssetTypeRepository.findPartnerAssetTypeById(request.getPartnerAssetTypeId());
+        if (partnerAssetType == null) {
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAssetType Id");
+        }
+        Partner partner = partnerRepository.findPartnerById(partnerAssetType.getPartnerId());
+        if (partner == null) {
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Partner Id");
+        }
+        AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
+        if (assetTypeProperties == null) {
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid AssetTypeProperties Id");
+        }
         partnerAsset.setPartnerName(partner.getName());
 
-        Brand brand = brandRepository.getOne(request.getBrandId());
-        Color color = colorRepository.getOne(request.getColorId());
+        Brand brand = brandRepository.findBrandById(request.getBrandId());
+        if (brand == null) {
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Brand Id");
+        }
+        Color color = colorRepository.findColorById(request.getColorId());
+        if (color == null) {
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Color Id");
+        }
         Driver driver = driverRepository.findByUserId(request.getDriverId());
+        if (driver == null) {
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Id");
+        }
         Driver driver2 = driverRepository.findByUserId(request.getDriverAssistantId());
+        if (driver2 == null) {
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Assistant Id");
+        }
         User user = userRepository.getOne(driver.getUserId());
         User user2 = userRepository.getOne(driver2.getUserId());
 
@@ -149,7 +170,13 @@ public class PartnerAssetService {
         partnerAsset.setUpdatedBy(userCurrent.getId());
         if (request.getDriverId() != null || request.getDriverAssistantId() != null) {
             Driver driver = driverRepository.findByUserId(request.getDriverId());
+            if (driver == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Id");
+            }
             Driver driver2 = driverRepository.findByUserId(request.getDriverAssistantId());
+            if (driver2 == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Assistant Id");
+            }
             User user = userRepository.getOne(driver.getUserId());
             User user2 = userRepository.getOne(driver2.getUserId());
 
@@ -163,11 +190,26 @@ public class PartnerAssetService {
         PartnerAssetResponseDto partnerAssetResponseDto = mapper.map(partnerAsset, PartnerAssetResponseDto.class);
 
         if ((request.getPartnerAssetTypeId() != null || request.getBrandId() != null || request.getColorId() != null )) {
-            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(request.getPartnerAssetTypeId());
-            Partner partner = partnerRepository.getOne(partnerAssetType.getPartnerId());
-            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(partnerAssetType.getAssetTypeId());
-            Brand brand = brandRepository.getOne(request.getBrandId());
-            Color color = colorRepository.getOne(request.getColorId());
+            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.findPartnerAssetTypeById(request.getPartnerAssetTypeId());
+            if (partnerAssetType == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAssetType Id");
+            }
+            Partner partner = partnerRepository.findPartnerById(partnerAssetType.getPartnerId());
+            if (partner == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Partner Id");
+            }
+            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
+            if (assetTypeProperties == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid AssetTypeProperties Id");
+            }
+            Brand brand = brandRepository.findBrandById(request.getBrandId());
+            if (brand == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Brand Id");
+            }
+            Color color = colorRepository.findColorById(request.getColorId());
+            if (color == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Color Id");
+            }
             partnerAssetResponseDto.setPartnerName(partner.getName());
             partnerAssetResponseDto.setBrandName(brand.getName());
             partnerAssetResponseDto.setColorName(color.getName());
@@ -200,14 +242,34 @@ public class PartnerAssetService {
         PartnerAssetResponseDto partnerAssetResponseDto = mapper.map(partnerAsset, PartnerAssetResponseDto.class);
         partnerAssetResponseDto.setPartnerAssetPictures(getAllPartnerAssetPicture(id));
 
-        PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(partnerAssetResponseDto.getPartnerAssetTypeId());
-        Partner partner = partnerRepository.getOne(partnerAssetType.getPartnerId());
-        AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(partnerAssetType.getAssetTypeId());
-
-        Brand brand = brandRepository.getOne(partnerAssetResponseDto.getBrandId());
-        Color color = colorRepository.getOne(partnerAssetResponseDto.getColorId());
-        Driver driver = driverRepository.getOne(partnerAssetResponseDto.getDriverId());
-        Driver driver2 = driverRepository.getOne(partnerAssetResponseDto.getDriverAssistantId());
+        PartnerAssetType partnerAssetType = partnerAssetTypeRepository.findPartnerAssetTypeById(partnerAssetResponseDto.getPartnerAssetTypeId());
+        if (partnerAssetType == null) {
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " PartnerAssetType does not exist");
+        }
+        Partner partner = partnerRepository.findPartnerById(partnerAssetType.getPartnerId());
+        if (partner == null) {
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Partner does not exist");
+        }
+        AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
+        if (assetTypeProperties == null) {
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " AssetTypeProperties does not exist");
+        }
+        Brand brand = brandRepository.findBrandById(partnerAssetResponseDto.getBrandId());
+        if (brand == null) {
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Brand does not exist");
+        }
+        Color color = colorRepository.findColorById(partnerAssetResponseDto.getColorId());
+        if (color == null) {
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Color does not exist");
+        }
+        Driver driver = driverRepository.findDriverById(partnerAssetResponseDto.getDriverId());
+        if (driver == null) {
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Driver does not exist");
+        }
+        Driver driver2 = driverRepository.findDriverById(partnerAssetResponseDto.getDriverAssistantId());
+        if (driver2 == null) {
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Driver Assistant does not exist");
+        }
         User user = userRepository.getOne(driver.getUserId());
         User user2 = userRepository.getOne(driver2.getUserId());
 
@@ -230,23 +292,44 @@ public class PartnerAssetService {
         }
         partnerAssets.getContent().forEach(asset ->{
             PartnerAsset partnerAsset = partnerAssetRepository.getOne(asset.getId());
-            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(partnerAsset.getPartnerAssetTypeId());
-            Partner partner = partnerRepository.getOne(partnerAssetType.getPartnerId());
-            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(partnerAssetType.getAssetTypeId());
+            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.findPartnerAssetTypeById(partnerAsset.getPartnerAssetTypeId());
+            if (partnerAssetType == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAssetType Id");
+            }
+            Partner partner = partnerRepository.findPartnerById(partnerAssetType.getPartnerId());
+            if (partner == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Partner Id");
+            }
+            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
+            if (assetTypeProperties == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid AssetTypeProperties Id");
+            }
             asset.setPartnerName(partner.getName());
             asset.setAssetTypeName(assetTypeProperties.getName());
 
-            Brand brand = brandRepository.getOne(partnerAsset.getBrandId());
+            Brand brand = brandRepository.findBrandById(partnerAsset.getBrandId());
+            if (brand == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Brand Id");
+            }
             asset.setBrandName(brand.getName());
 
-            Color color = colorRepository.getOne(partnerAsset.getColorId());
+            Color color = colorRepository.findColorById(partnerAsset.getColorId());
+            if (color == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Color Id");
+            }
             asset.setColorName(color.getName());
 
-            Driver driver = driverRepository.getOne(partnerAsset.getDriverId());
+            Driver driver = driverRepository.findDriverById(partnerAsset.getDriverId());
+            if (driver == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Id");
+            }
             User user = userRepository.getOne(driver.getUserId());
             asset.setDriverName(user.getLastName() + " " + user.getFirstName());
 
-            Driver driver2 = driverRepository.getOne(partnerAsset.getDriverAssistantId());
+            Driver driver2 = driverRepository.findDriverById(partnerAsset.getDriverAssistantId());
+            if (driver2 == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Assistant Id");
+            }
             User user2 = userRepository.getOne(driver2.getUserId());
             asset.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
 
@@ -275,15 +358,36 @@ public class PartnerAssetService {
 
         for (PartnerAsset asset : partnerAssets) {
 
-            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(asset.getPartnerAssetTypeId());
-            Partner partner = partnerRepository.getOne(partnerAssetType.getPartnerId());
-            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(partnerAssetType.getAssetTypeId());
+            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.findPartnerAssetTypeById(asset.getPartnerAssetTypeId());
+            if (partnerAssetType == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAssetType Id");
+            }
+            Partner partner = partnerRepository.findPartnerById(partnerAssetType.getPartnerId());
+            if (partner == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Partner Id");
+            }
+            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
+            if (assetTypeProperties == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid AssetTypeProperties Id");
+            }
 
-            Brand brand = brandRepository.getOne(asset.getBrandId());
-            Color color = colorRepository.getOne(asset.getColorId());
-            Driver driver = driverRepository.getOne(asset.getDriverId());
+            Brand brand = brandRepository.findBrandById(asset.getBrandId());
+            if (brand == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Brand Id");
+            }
+            Color color = colorRepository.findColorById(asset.getColorId());
+            if (color == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Color Id");
+            }
+            Driver driver = driverRepository.findDriverById(asset.getDriverId());
+            if (driver == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Id");
+            }
             User user = userRepository.getOne(driver.getUserId());
-            Driver driver2 = driverRepository.getOne(asset.getDriverAssistantId());
+            Driver driver2 = driverRepository.findDriverById(asset.getDriverAssistantId());
+            if (driver2 == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Assistant Id");
+            }
             User user2 = userRepository.getOne(driver2.getUserId());
             asset.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
 
