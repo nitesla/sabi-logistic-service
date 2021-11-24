@@ -81,6 +81,11 @@ public class Validations {
     public void validateState(StateDto stateDto) {
         if (stateDto.getName() == null || stateDto.getName().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+        String valName = stateDto.getName();
+        char valCharName = valName.charAt(0);
+        if (Character.isDigit(valCharName)){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name can not start with a number");
+        }
         Country country = countryRepository.findById(stateDto.getCountryId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " Enter a valid Country id!"));
@@ -90,6 +95,12 @@ public class Validations {
     public void validateLGA (LGADto lgaDto){
         if (lgaDto.getName() == null || lgaDto.getName().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+
+        String valName = lgaDto.getName();
+        char valCharName = valName.charAt(0);
+        if (Character.isDigit(valCharName)){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name can not start with a number");
+        }
 
         State state = stateRepository.findById(lgaDto.getStateId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
@@ -125,6 +136,11 @@ public class Validations {
     public void validateAssetTypeProperties(AssetTypePropertiesDto assetTypePropertiesDto) {
         if (assetTypePropertiesDto.getName() == null || assetTypePropertiesDto.getName().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+        String valName = assetTypePropertiesDto.getName();
+        char valCharName = valName.charAt(0);
+        if (Character.isDigit(valCharName)){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name can not start with a number");
+        }
         if (assetTypePropertiesDto.getDescription() == null || assetTypePropertiesDto.getDescription().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Description cannot be empty");
 
@@ -133,6 +149,11 @@ public class Validations {
     public void validatePartnerProperties(PartnerDto partnerPropertiesDto) {
         if (partnerPropertiesDto.getName() == null || partnerPropertiesDto.getName().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+        String valName = partnerPropertiesDto.getName();
+        char valCharName = valName.charAt(0);
+        if (Character.isDigit(valCharName)){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name can not start with a number");
+        }
         if (partnerPropertiesDto.getAddress() == null || partnerPropertiesDto.getAddress().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Address cannot be empty");
         LGA lga = lgaRepository.findById(partnerPropertiesDto.getLgaId())
@@ -152,6 +173,11 @@ public class Validations {
     public void validateBlockType(BlockTypeDto blockTypeDto) {
         if (blockTypeDto.getName() == null || blockTypeDto.getName().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+        String valName = blockTypeDto.getName();
+        char valCharName = valName.charAt(0);
+        if (Character.isDigit(valCharName)){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name can not start with a number");
+        }
         if (blockTypeDto.getLength() <= 0.0)
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Length cannot be empty");
         if (blockTypeDto.getHeight() <= 0.0)
@@ -193,6 +219,14 @@ public class Validations {
 
     public void validateDriverAsset(DriverAssetDto driverAssetDto) {
 
+        if (!driverAssetDto.getName().isEmpty() ){
+            String valName = driverAssetDto.getName();
+            char valCharName = valName.charAt(0);
+            if (Character.isDigit(valCharName)){
+                throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name can not start with a number");
+            }
+        }
+
 //        if (driverAssetDto.getName() == null || driverAssetDto.getName().isEmpty())
 //            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
         if(driverAssetDto.getPartnerAssetId()==null)
@@ -228,7 +262,6 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "First name cannot be empty");
         if (partner.getFirstName().length() < 2 || partner.getFirstName().length() > 100)// NAME LENGTH*********
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid first name  length");
-
         if (partner.getLastName() == null || partner.getLastName().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Last name cannot be empty");
         if (partner.getLastName().length() < 2 || partner.getLastName().length() > 100)// NAME LENGTH*********
@@ -290,12 +323,15 @@ public class Validations {
         if(request.getUserType() == null || request.getUserType().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "User type cannot be empty");
 
-        if (request.getUserType() != null || !request.getUserType().isEmpty()) {
-
-            if (!PartnerConstants.DRIVER_USER.equals(request.getUserType())
-                    && !PartnerConstants.PARTNER_USER.equals(request.getUserType()))
-                throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid User category type");
-        }
+//        if (request.getUserType() != null || !request.getUserType().isEmpty()) {
+//            if ((!request.getUserType().equals(PartnerConstants.DRIVER_USER))
+//                    || (!request.getUserType().equals(PartnerConstants.PARTNER_USER)))
+//                throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid User category type");
+//
+////            if (!PartnerConstants.DRIVER_USER.equals(request.getUserType())
+////                    || (!PartnerConstants.PARTNER_USER.equals(request.getUserType())))
+////                throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid User category type");
+//        }
 
 //        if(request.getRoleId() == null )
 //            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Role id cannot be empty");
