@@ -130,7 +130,11 @@ public class Validations {
     public void validateCategory(CategoryDto categoryDto) {
         if (categoryDto.getName() == null || categoryDto.getName().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
-
+        String valName = categoryDto.getName();
+        char valCharName = valName.charAt(0);
+        if (Character.isDigit(valCharName)){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name can not start with a number");
+        }
     }
 
     public void validateAssetTypeProperties(AssetTypePropertiesDto assetTypePropertiesDto) {
@@ -143,7 +147,11 @@ public class Validations {
         }
         if (assetTypePropertiesDto.getDescription() == null || assetTypePropertiesDto.getDescription().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Description cannot be empty");
-
+        String valDescription = assetTypePropertiesDto.getDescription();
+        char valCharDescription = valDescription.charAt(0);
+        if (Character.isDigit(valCharDescription)){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Description can not start with a number");
+        }
     }
 
     public void validatePartnerProperties(PartnerDto partnerPropertiesDto) {
@@ -626,6 +634,18 @@ public class Validations {
         throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "PartnerId cannot be empty");
     }
     }
+
+    public void validateColor(ColorRequestDto request) {
+        if (request.getName().equals("") || request.getName() == null){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "name cannot be empty");
+        }
+        String valName = request.getName();
+        char valCharName = valName.charAt(0);
+        if (Character.isDigit(valCharName)){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name can not start with a number");
+        }
+    }
+
 
 
 
