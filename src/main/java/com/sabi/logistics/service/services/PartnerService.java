@@ -57,6 +57,7 @@ public class PartnerService {
     private final Validations validations;
     private NotificationService notificationService;
     private final PartnerUserRepository partnerUserRepository;
+    private LGARepository lgaRepository;
 
 
     public PartnerService(PartnerRepository repository,PartnerAssetTypeRepository partnerAssetTypeRepository,
@@ -64,7 +65,7 @@ public class PartnerService {
                           UserRepository userRepository,PreviousPasswordRepository previousPasswordRepository,
                           ModelMapper mapper, ObjectMapper objectMapper,
                           Validations validations,NotificationService notificationService,
-                          PartnerUserRepository partnerUserRepository) {
+                          PartnerUserRepository partnerUserRepository,LGARepository lgaRepository) {
         this.repository = repository;
         this.partnerAssetTypeRepository = partnerAssetTypeRepository;
         this.partnerCategoriesRepository = partnerCategoriesRepository;
@@ -76,6 +77,7 @@ public class PartnerService {
         this.validations = validations;
         this.notificationService = notificationService;
         this.partnerUserRepository = partnerUserRepository;
+        this.lgaRepository = lgaRepository;
     }
 
 
@@ -314,6 +316,10 @@ public class PartnerService {
         if(partnerProperties == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
+        partnerProperties.getContent().forEach(partner ->{
+            LGA lga = lgaRepository.findLGAById(partner.getLgaId());
+            partner.setLga(lga.getName());
+        });
         return partnerProperties;
 
     }
@@ -334,6 +340,12 @@ public class PartnerService {
 
     public List<Partner> getAll(Boolean isActive){
         List<Partner> partnerProperties = repository.findByIsActive(isActive);
+        for (Partner part : partnerProperties
+                ) {
+            LGA lga = lgaRepository.findLGAById(part.getLgaId());
+            part.setLga(lga.getName());
+
+        }
         return partnerProperties;
 
     }

@@ -165,8 +165,7 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Email cannot be empty");
         if (partnerPropertiesDto.getWebSite() == null || partnerPropertiesDto.getWebSite().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Website cannot be empty");
-//        if (partnerPropertiesDto.getEmployeeCount() < 0 )
-//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Employee count cannot be empty");
+
 
     }
 
@@ -227,27 +226,14 @@ public class Validations {
             }
         }
 
-//        if (driverAssetDto.getName() == null || driverAssetDto.getName().isEmpty())
-//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
         if(driverAssetDto.getPartnerAssetId()==null)
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Partner asset id cannot be empty");
         if(driverAssetDto.getDriverId()==null)
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Driver id cannot be empty");
 
-//       DriverAsset savedDriver = driverAssetRepository.findByDriverIdAndPartnerAssetId(driverAssetDto.getDriverId(),driverAssetDto.getPartnerAssetId());
-//            if(savedDriver != null){
-//                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"Driver Assest can not be saved succesfully, Record exist!");
-//        }
     }
     
     public void validatePartnerPicture(PartnerAssetPictureDto partnerAssetPictureDto) {
-
-//        if(partnerAssetPictureDto.getPartnerAssetId()==null)
-//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Partner asset id cannot be empty");
-//        PartnerAsset partnerAsset = partnerAssetRepository.getOne(partnerAssetPictureDto.getPartnerAssetId());
-//        if (partnerAsset == null){
-//
-//        }
 
         PartnerAsset partnerAsset = partnerAssetRepository.findById(partnerAssetPictureDto.getPartnerAssetId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
@@ -271,10 +257,6 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "email cannot be empty");
         if (!Utility.validEmail(partner.getEmail().trim()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid Email Address");
-//        User user = userRepository.findByEmail(partner.getEmail());
-//        if(user !=null){
-//            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Email already exist");
-//        }
         if (partner.getPhone() == null || partner.getPhone().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Phone number cannot be empty");
         if (partner.getPhone().length() < 8 || partner.getPhone().length() > 14)// NAME LENGTH*********
@@ -323,18 +305,16 @@ public class Validations {
         if(request.getUserType() == null || request.getUserType().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "User type cannot be empty");
 
-//        if (request.getUserType() != null || !request.getUserType().isEmpty()) {
-//            if ((!request.getUserType().equals(PartnerConstants.DRIVER_USER))
-//                    || (!request.getUserType().equals(PartnerConstants.PARTNER_USER)))
-//                throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid User category type");
-//
-////            if (!PartnerConstants.DRIVER_USER.equals(request.getUserType())
-////                    || (!PartnerConstants.PARTNER_USER.equals(request.getUserType())))
-////                throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid User category type");
-//        }
+        if (request.getUserType() != null || !request.getUserType().isEmpty()) {
 
-//        if(request.getRoleId() == null )
-//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Role id cannot be empty");
+            if (!PartnerConstants.DRIVER_USER.equals(request.getUserType())
+                    && !PartnerConstants.PARTNER_USER.equals(request.getUserType()))
+                throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid User category type");
+        }
+
+        if(request.getRoleId() == null){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Role id cannot be empty");
+        }
 
         Role role = roleRepository.findById(request.getRoleId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
@@ -350,7 +330,6 @@ public class Validations {
 
 
     public void validateWarehouse(WarehouseRequestDto request) {
-//        if(request.getPartnerId().)
         lgaRepository.findById(request.getLgaId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                 " Enter a valid lga id!"));
         //todo check for existing partner id
@@ -370,10 +349,6 @@ public class Validations {
     public void validatePartnerAsset(PartnerAssetRequestDto request) {
         partnerAssetTypeRepository.findById(request.getPartnerAssetTypeId()).orElseThrow(()-> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                 " Enter a valid Partner Asset Type!"));
-//        Driver driver = driverRepository.findByUserId(request.getDriverId());
-//        if(driver ==null || driver.equals("")){
-//            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " user Id does not exist!");
-//        }
         if (request.getDriverId().equals(request.getDriverAssistantId())){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " driver Id and driver assistant id can not be same!");
         }
@@ -493,7 +468,6 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
 
 
-
         tripRequestRepository.findById(request.getTripRequestID()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " tripRequestID does not Exist!")
@@ -561,44 +535,24 @@ public class Validations {
 
     public void validateTripRequest (TripRequestDto request){
 
-//        if(request.getPartnerID() == null)
-//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " partnerID can not be null");
         if (!Utility.isNumeric(request.getPartnerID().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerID ");
 
-//        if (request.getPartnerAssetID() == null )
-//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "partnerAssetID cannot be empty");
         if (!Utility.isNumeric(request.getPartnerAssetID().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerAssetID ");
 
-//        if (request.getDriverID() == null )
-//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "driverID cannot be empty");
         if (!Utility.isNumeric(request.getDriverID().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for driverID ");
 
         if (request.getStatus() == null || request.getStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
-//        if (!("Accepted".equalsIgnoreCase(request.getStatus()) || "Rejected".equalsIgnoreCase(request.getStatus()) || "Pending".equalsIgnoreCase(request.getStatus())))
-//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
 
         if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
-//        if (!("Completed".equalsIgnoreCase(request.getStatus()) || "Partially Completed".equalsIgnoreCase(request.getStatus()) || "Cancelled".equalsIgnoreCase(request.getStatus())))
-//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
 
-
-//        partnerRepository.findById(request.getPartnerID()).orElseThrow(() ->
-//                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-//                        " partnerID does not Exist!")
-//        );
-//
-//        partnerAssetRepository.findById(request.getPartnerAssetID()).orElseThrow(() ->
-//                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-//                        " partnerAssetID does not Exist!")
-//        );
 
         driverRepository.findById(request.getDriverID()).orElseThrow(() ->
-                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+              new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " driverID does not Exist!")
         );
         warehouseRepository.findById(request.getWareHouseId()).orElseThrow(() ->
