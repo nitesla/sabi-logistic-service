@@ -16,11 +16,17 @@ public interface PaymentTermsRepository extends JpaRepository<PaymentTerms, Long
 
     PaymentTerms findByPartnerAssetTypeIdAndDays (Long partnerAssetTypeId, Integer days);
 
-    List<PaymentTerms> findByIsActive(Boolean isActive);
 
-    @Query("SELECT b FROM PaymentTerms b WHERE ((:partnerAssetTypeId IS NULL) OR (:partnerAssetTypeId IS NOT NULL AND b.partnerAssetTypeId = :partnerAssetTypeId))" +
-            " AND ((:days IS NULL) OR (:days IS NOT NULL AND b.days = :days))")
+
+    @Query("SELECT pa FROM PaymentTerms pa inner join PartnerAssetType pt on pa.partnerAssetTypeId = pt.id  WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND pt.partnerId = :partnerId))" +
+            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND pa.isActive = :isActive))")
+    List<PaymentTerms> findByPartnerIdAndIsActive(@Param("partnerId") Long partnerId, @Param("isActive") Boolean isActive);
+
+    @Query("SELECT pa FROM PaymentTerms pa inner join PartnerAssetType pt on pa.partnerAssetTypeId = pt.id WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND pt.partnerId = :partnerId))" +
+            " AND ((:days IS NULL) OR (:days IS NOT NULL AND pa.days = :days))" +
+            " AND ((:partnerAssetTypeId IS NULL) OR (:partnerAssetTypeId IS NOT NULL AND pa.partnerAssetTypeId = :partnerAssetTypeId))")
     Page<PaymentTerms> findPaymentTerms(@Param("partnerAssetTypeId")Long partnerAssetTypeId,
                                         @Param("days")Integer days,
+                                        @Param("partnerId") Long partnerId,
                                         Pageable pageable);
     }

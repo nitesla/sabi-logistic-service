@@ -119,8 +119,8 @@ public class PaymentTermsService {
      * </summary>
      * <remarks>this method is responsible for getting all records in pagination</remarks>
      */
-    public Page<PaymentTerms> findAll(Long partnerAssetTypeId, Integer days, PageRequest pageRequest ){
-        Page<PaymentTerms> paymentTerms = paymentTermsRepository.findPaymentTerms(partnerAssetTypeId,days, pageRequest);
+    public Page<PaymentTerms> findAll(Long partnerAssetTypeId, Integer days, Long partnerId, PageRequest pageRequest ){
+        Page<PaymentTerms> paymentTerms = paymentTermsRepository.findPaymentTerms(partnerAssetTypeId,days,partnerId, pageRequest);
         if(paymentTerms == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
@@ -146,8 +146,8 @@ public class PaymentTermsService {
     }
 
 
-    public List<PaymentTerms> getAll(Boolean isActive){
-        List<PaymentTerms> paymentTerms = paymentTermsRepository.findByIsActive(isActive);
+    public List<PaymentTerms> getAll(Long partnerId, Boolean isActive){
+        List<PaymentTerms> paymentTerms = paymentTermsRepository.findByPartnerIdAndIsActive(partnerId, isActive);
         return paymentTerms;
 
     }
