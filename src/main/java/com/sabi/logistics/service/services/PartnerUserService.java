@@ -81,11 +81,8 @@ public class PartnerUserService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " User already exist");
         }
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-        log.info("user  {} :::::::::::::::::::::::::::::::::::::::::::::::::::::::: " + userCurrent.getId());
-
 
         PartnerUser partner = partnerUserRepository.findByUserId(userCurrent.getId());
-        log.info("Partner {} :::::::::::::::::::::::::::::::::::::::::::::::::::::::: " + partner);
 
         String password = Utility.getSaltString();
         user.setPassword(passwordEncoder.encode(password));
