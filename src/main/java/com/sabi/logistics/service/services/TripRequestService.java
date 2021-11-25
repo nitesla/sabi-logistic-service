@@ -69,10 +69,7 @@ public class TripRequestService {
         TripRequest tripRequest = mapper.map(request,TripRequest.class);
 
         tripRequest.setReferenceNo(validations.generateReferenceNumber(10));
-//        TripRequest tripRequestExists = tripRequestRepository.findByPartnerAssetIDAndPartnerID(tripRequest.getPartnerID(), tripRequest.getPartnerAssetID());
-//        if(tripRequestExists != null){
-//            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Trip Request already exist");
-//        }
+
 
         tripRequest.setBarCode(validations.generateCode(tripRequest.getReferenceNo()));
         tripRequest.setQrCode(validations.generateCode(tripRequest.getReferenceNo()));
@@ -133,9 +130,7 @@ public class TripRequestService {
         if (request.getDriverID() != null) {
 
             Driver driver = driverRepository.findByUserId(request.getDriverID());
-//            if (driver == null) {
-//                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Id");
-//            }
+
             User user = userRepository.getOne(driver.getUserId());
             tripRequest.setDriverID(driver.getId());
             tripRequest.setDriverName(user.getLastName() + " " + user.getFirstName());
@@ -143,9 +138,7 @@ public class TripRequestService {
         if (request.getDriverAssistantID() != null) {
 
             Driver driver2 = driverRepository.findByUserId(request.getDriverAssistantID());
-//            if (driver2 == null) {
-//                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Assistant Id");
-//            }
+
             User user2 = userRepository.getOne(driver2.getUserId());
             tripRequest.setDriverAssistantID(driver2.getId());
             tripRequest.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
@@ -167,9 +160,7 @@ public class TripRequestService {
                 throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAsset Id");
             };
             tripResponseDto.setPartnerAssetName(partnerAsset.getName());
-//            Driver driver = driverRepository.findByUserId(request.getDriverID());
-//            User user = userRepository.getOne(driver.getUserId());
-//            tripResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
+
         }
         return tripResponseDto;
     }
@@ -194,16 +185,12 @@ public class TripRequestService {
         };
         tripResponseDto.setPartnerAssetName(partnerAsset.getName());
         Driver driver = driverRepository.findDriverById(tripResponseDto.getDriverID());
-//        if (driver == null) {
-//            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Id");
-//        }
+
         User user = userRepository.getOne(driver.getUserId());
         tripResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
 
         Driver driver2 = driverRepository.findDriverById(tripResponseDto.getDriverAssistantID());
-//        if (driver2 == null) {
-//            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Assistant Id");
-//        }
+
         User user2 = userRepository.getOne(driver2.getUserId());
         tripResponseDto.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
         return tripResponseDto;
@@ -267,15 +254,11 @@ public class TripRequestService {
                 throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAsset Id");
             };
             Driver driver = driverRepository.findDriverById(request.getDriverID());
-//            if (driver == null) {
-//                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Id");
-//            }
+
             User user = userRepository.getOne(driver.getUserId());
 
             Driver driver2 = driverRepository.findDriverById(request.getDriverAssistantID());
-//            if (driver2 == null) {
-//                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Assistant Id");
-//            }
+
             User user2 = userRepository.getOne(driver2.getUserId());
 
             request.setDropOff(getDropOff(request.getId()));
@@ -321,16 +304,12 @@ public class TripRequestService {
             };
             request.setPartnerAssetName(partnerAsset.getName());
             Driver driver = driverRepository.findDriverById(request.getDriverID());
-//            if (driver == null) {
-//                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Id");
-//            }
+
             User user = userRepository.getOne(driver.getUserId());
             request.setDriverName(user.getLastName() + " " + user.getFirstName());
 
             Driver driver2 = driverRepository.findDriverById(request.getDriverAssistantID());
-//            if (driver2 == null) {
-//                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Assistant Id");
-//            }
+
             User user2 = userRepository.getOne(driver2.getUserId());
             request.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
 
