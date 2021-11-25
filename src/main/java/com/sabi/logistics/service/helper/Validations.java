@@ -219,13 +219,13 @@ public class Validations {
 
     public void validateDriverAsset(DriverAssetDto driverAssetDto) {
 
-        if (!driverAssetDto.getName().isEmpty() ){
-            String valName = driverAssetDto.getName();
-            char valCharName = valName.charAt(0);
-            if (Character.isDigit(valCharName)){
-                throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name can not start with a number");
-            }
-        }
+//        if (!driverAssetDto.getName().isEmpty() ){
+//            String valName = driverAssetDto.getName();
+//            char valCharName = valName.charAt(0);
+//            if (Character.isDigit(valCharName)){
+//                throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name can not start with a number");
+//            }
+//        }
 
 //        if (driverAssetDto.getName() == null || driverAssetDto.getName().isEmpty())
 //            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
@@ -374,8 +374,8 @@ public class Validations {
 //        if(driver ==null || driver.equals("")){
 //            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " user Id does not exist!");
 //        }
-        if (request.getDriverId().equals(request.getDriverAssistantId())){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " driver Id and driver assistant id can not be same!");
+        if (request.getDriverUserId().equals(request.getDriverAssistantUserId())){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " driverUser Id and driverAssistantUser Id can not be same!");
         }
         brandRepository.findById(request.getBrandId()).orElseThrow(()-> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                 " Enter a valid Brand!"));
@@ -573,8 +573,8 @@ public class Validations {
 
 //        if (request.getDriverID() == null )
 //            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "driverID cannot be empty");
-        if (!Utility.isNumeric(request.getDriverID().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for driverID ");
+//        if (!Utility.isNumeric(request.getDriverID().toString()))
+//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for driverID ");
 
         if (request.getStatus() == null || request.getStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
@@ -597,10 +597,10 @@ public class Validations {
 //                        " partnerAssetID does not Exist!")
 //        );
 
-        driverRepository.findById(request.getDriverID()).orElseThrow(() ->
-                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " driverID does not Exist!")
-        );
+//        driverRepository.findById(request.getDriverID()).orElseThrow(() ->
+//                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                        " driverID does not Exist!")
+//        );
         warehouseRepository.findById(request.getWareHouseId()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " wareHouseId does not Exist!")

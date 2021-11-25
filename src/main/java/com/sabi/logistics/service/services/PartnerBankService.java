@@ -156,8 +156,8 @@ public class PartnerBankService {
     }
 
 
-    public List<PartnerBank> getAll(Boolean isActive){
-        List<PartnerBank> partnerBanks = partnerBankRepository.findByIsActive(isActive);
+    public List<PartnerBank> getAll(Boolean isActive, Long partnerId){
+        List<PartnerBank> partnerBanks = partnerBankRepository.findByIsActiveAndPartnerId(isActive, partnerId);
         return partnerBanks;
 
     }

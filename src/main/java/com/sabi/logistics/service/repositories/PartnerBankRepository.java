@@ -18,6 +18,8 @@ public interface PartnerBankRepository extends JpaRepository<PartnerBank, Long>,
 
     List<PartnerBank> findByIsActive(Boolean isActive);
 
+    List<PartnerBank> findByIsActiveAndPartnerId(Boolean isActive, Long partnerId);
+
     @Query("SELECT b FROM PartnerBank b WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND b.partnerId = :partnerId))" +
             " AND ((:bankId IS NULL) OR (:bankId IS NOT NULL AND b.bankId = :bankId))" +
             " AND ((:accountNumber IS NULL) OR (:accountNumber IS NOT NULL AND b.accountNumber = :accountNumber))")
