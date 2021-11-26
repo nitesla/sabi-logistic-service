@@ -5,6 +5,7 @@ public class PartnerConstants {
 
     public static final String DRIVER_USER = "driver";
     public static final String PARTNER_USER = "user";
+    public static final String WAREHOUSE_USER = "warehouse";
 
 
 

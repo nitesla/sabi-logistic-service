@@ -22,11 +22,11 @@ import com.sabi.logistics.core.dto.request.PartnerUserRequestDto;
 import com.sabi.logistics.core.dto.response.PartnerUserResponseDto;
 import com.sabi.logistics.core.models.Driver;
 import com.sabi.logistics.core.models.PartnerUser;
+import com.sabi.logistics.core.models.Warehouse;
+import com.sabi.logistics.core.models.WarehouseUser;
 import com.sabi.logistics.service.helper.PartnerConstants;
 import com.sabi.logistics.service.helper.Validations;
-import com.sabi.logistics.service.repositories.DriverRepository;
-import com.sabi.logistics.service.repositories.PartnerRepository;
-import com.sabi.logistics.service.repositories.PartnerUserRepository;
+import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +56,12 @@ public class PartnerUserService {
     private final ModelMapper mapper;
     private final Validations validations;
 
+    @Autowired
+    private WarehouseRepository wareHouseRepository;
+
+    @Autowired
+    private WarehouseUserRepository wareHouseUserRepository;
+
     public PartnerUserService(PartnerRepository partnerRepository,UserRepository userRepository,PreviousPasswordRepository previousPasswordRepository,
                               PartnerUserRepository partnerUserRepository,DriverRepository driverRepository,
                               RoleRepository roleRepository,
@@ -83,6 +89,7 @@ public class PartnerUserService {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
 
         PartnerUser partner = partnerUserRepository.findByUserId(userCurrent.getId());
+        Warehouse warehouse = wareHouseRepository.findByUserId(userCurrent.getId());
 
         String password = Utility.getSaltString();
         user.setPassword(passwordEncoder.encode(password));
@@ -90,6 +97,7 @@ public class PartnerUserService {
         user.setCreatedBy(userCurrent.getId());
         user.setUserCategory(Constants.OTHER_USER);
         user.setClientId(partner.getPartnerId());
+        user.setWareHouseId(warehouse.getId());
         user.setIsActive(false);
         user.setLoginAttempts(0l);
         user = userRepository.save(user);
@@ -119,6 +127,15 @@ public class PartnerUserService {
             driver.setCreatedBy(userCurrent.getId());
             driverRepository.save(driver);
         }
+        if(request.getUserType().equalsIgnoreCase(PartnerConstants.WAREHOUSE_USER)){
+            WarehouseUser warehouseUser = new WarehouseUser();
+            warehouseUser.setWareHouseId(warehouse.getId());
+            warehouseUser.setUserId(user.getId());
+            warehouseUser.setIsActive(true);
+            warehouseUser.setCreatedBy(userCurrent.getId());
+            wareHouseUserRepository.save(warehouseUser);
+        }
+
         return mapper.map(user, PartnerUserResponseDto.class);
     }
 

@@ -263,9 +263,9 @@ public class TripRequestService {
                 throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Partner Id");
             }
             PartnerAsset partnerAsset = partnerAssetRepository.findPartnerAssetById(request.getPartnerAssetID());
-            if (partnerAsset == null) {
-                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAsset Id");
-            };
+//            if (partnerAsset == null) {
+//                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAsset Id");
+//            };
             Driver driver = driverRepository.findDriverById(request.getDriverID());
 //            if (driver == null) {
 //                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Id");
@@ -369,6 +369,38 @@ public class TripRequestService {
         Integer dropOff = tripItemRepository.countTripItemByTripRequestID(tripRequestID);
 
         return dropOff;
+
+    }
+
+    public Page<TripRequest> getDeliveries(Long partnerID, String deliveryStatus,
+                                      Long partnerAssetID, PageRequest pageRequest ){
+        GenericSpecification<TripRequest> genericSpecification = new GenericSpecification<TripRequest>();
+
+        if (partnerID != null)
+        {
+            genericSpecification.add(new SearchCriteria("partnerID", partnerID, SearchOperation.EQUAL));
+        }
+
+        if (deliveryStatus != null)
+        {
+            genericSpecification.add(new SearchCriteria("deliveryStatus", deliveryStatus, SearchOperation.MATCH));
+        }
+
+
+        if (partnerAssetID != null)
+        {
+            genericSpecification.add(new SearchCriteria("partnerAssetID", partnerAssetID, SearchOperation.EQUAL));
+        }
+
+        String status = "Accepted";
+        genericSpecification.add(new SearchCriteria("status", status, SearchOperation.MATCH));
+
+        Page<TripRequest> tripRequests = tripRequestRepository.findAll(genericSpecification, pageRequest);
+        if (tripRequests == null) {
+            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No Accepted Delivery Available!");
+        }
+
+        return tripRequests;
 
     }
 }
