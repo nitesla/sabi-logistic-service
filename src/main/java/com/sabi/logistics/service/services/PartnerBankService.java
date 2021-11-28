@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -104,6 +105,25 @@ public class PartnerBankService {
         }
         if(request.getBankId() != null ) {
             Bank bank = bankRepository.findBankById(request.getBankId());
+            partnerBankResponseDto.setBankName(bank.getName());
+        }
+        return partnerBankResponseDto;
+    }
+
+    @Transactional
+    public PartnerBankResponseDto setDefalult(long id) {
+        PartnerBank partnerBank = partnerBankRepository.findById(id).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                "Requested Agent Bank does not exist!"));
+        partnerBankRepository.updateIsDefault();
+        partnerBank.setIsDefault(true);
+        partnerBankRepository.save(partnerBank);
+        PartnerBankResponseDto partnerBankResponseDto = mapper.map(partnerBank, PartnerBankResponseDto.class);
+        if(partnerBank.getPartnerId() != null ) {
+            Partner partner = partnerRepository.findPartnerById(partnerBank.getPartnerId());
+            partnerBankResponseDto.setPartnerName(partner.getName());
+        }
+        if(partnerBank.getBankId() != null ) {
+            Bank bank = bankRepository.findBankById(partnerBank.getBankId());
             partnerBankResponseDto.setBankName(bank.getName());
         }
         return partnerBankResponseDto;
