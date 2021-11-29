@@ -10,9 +10,11 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.PaymentTermsDto;
 import com.sabi.logistics.core.dto.response.PaymentTermsResponseDto;
+import com.sabi.logistics.core.models.AssetTypeProperties;
 import com.sabi.logistics.core.models.PartnerAssetType;
 import com.sabi.logistics.core.models.PaymentTerms;
 import com.sabi.logistics.service.helper.Validations;
+import com.sabi.logistics.service.repositories.AssetTypePropertiesRepository;
 import com.sabi.logistics.service.repositories.PartnerAssetTypeRepository;
 import com.sabi.logistics.service.repositories.PaymentTermsRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +26,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-;
 
+@SuppressWarnings("All")
 @Slf4j
 @Service
 public class PaymentTermsService {
@@ -37,6 +39,9 @@ public class PaymentTermsService {
 
     @Autowired
     PartnerAssetTypeRepository partnerAssetTypeRepository;
+
+    @Autowired
+    private AssetTypePropertiesRepository assetTypePropertiesRepository;
 
 
     public PaymentTermsService(PaymentTermsRepository paymentTermsRepository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
@@ -148,6 +153,19 @@ public class PaymentTermsService {
 
     public List<PaymentTerms> getAll(Long partnerId, Boolean isActive){
         List<PaymentTerms> paymentTerms = paymentTermsRepository.findByPartnerIdAndIsActive(partnerId, isActive);
+
+        for (PaymentTerms term : paymentTerms) {
+
+            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.findPartnerAssetTypeById(term.getPartnerAssetTypeId());
+            if (partnerAssetType == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAssetType Id");
+            }
+            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
+
+            term.setPartnerAssetTypeName(assetTypeProperties.getName());
+
+        }
+
         return paymentTerms;
 
     }
