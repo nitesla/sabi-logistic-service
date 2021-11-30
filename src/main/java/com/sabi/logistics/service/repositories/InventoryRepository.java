@@ -27,6 +27,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
             " AND ((:deliveryPartnerEmail IS NULL) OR (:deliveryPartnerEmail IS NOT NULL AND c.deliveryPartnerEmail = :deliveryPartnerEmail))" +
             " AND ((:deliveryPartnerPhone IS NULL) OR (:deliveryPartnerPhone IS NOT NULL AND c.deliveryPartnerPhone = :deliveryPartnerPhone))" +
             " AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND c.partnerId = :partnerId))" +
+            " AND ((:wareHouseId IS NULL) OR (:wareHouseId IS NOT NULL AND c.wareHouseId = :wareHouseId))" +
             " AND ((:shippingId IS NULL) OR (:shippingId IS NOT NULL AND c.shippingId = :shippingId))"
     )
     Page<Inventory> findInventory(@Param("thirdPartyId") Long thirdPartyId,
@@ -38,6 +39,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
                                   @Param("deliveryPartnerEmail") String deliveryPartnerEmail,
                                   @Param("deliveryPartnerPhone") String deliveryPartnerPhone,
                                   @Param("partnerId") Long partnerId,
+                                  @Param("wareHouseId") Long wareHouseId,
                                   @Param("shippingId") Long shippingId,
                                   Pageable pageable);
 }

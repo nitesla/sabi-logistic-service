@@ -12,9 +12,11 @@ import com.sabi.logistics.core.dto.request.InventoryDto;
 import com.sabi.logistics.core.dto.response.InventoryResponseDto;
 import com.sabi.logistics.core.models.Inventory;
 import com.sabi.logistics.core.models.Partner;
+import com.sabi.logistics.core.models.Warehouse;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.InventoryRepository;
 import com.sabi.logistics.service.repositories.PartnerRepository;
+import com.sabi.logistics.service.repositories.WarehouseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +33,7 @@ public class InventoryService {
     @Autowired
     private InventoryRepository repository;
     @Autowired
-    private PartnerRepository partnerRepository;
+    private WarehouseRepository warehouseRepository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
     private final Validations validations;
@@ -53,12 +55,21 @@ public class InventoryService {
         validations.validateInventory(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Inventory inventory = mapper.map(request,Inventory.class);
-        Inventory countryExist = repository.findByShippingId(request.getShippingId());
-        if(countryExist !=null){
+        Inventory inventoryExist = repository.findByShippingId(request.getShippingId());
+        if(inventoryExist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " inventory already exist");
         }
+        Warehouse warehouse = warehouseRepository.findWarehouseById(request.getWareHouseId());
+        log.info("Checking ware house ::::::::::::::::::::::::: " + warehouse);
+        if(warehouse ==null){
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " warehouse not found");
+        }
+//        Warehouse warehouse = warehouseRepository.findById(request.getId())
+//                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                        "Requested warehouse Id does not exist!"));
         inventory.setCreatedBy(userCurrent.getId());
         inventory.setIsActive(true);
+//        inventory.setWareHouseName(warehouse.getName());
         inventory = repository.save(inventory);
         log.debug("Create new inventory - {}"+ new Gson().toJson(inventory));
         return mapper.map(inventory, InventoryResponseDto.class);
@@ -71,8 +82,13 @@ public class InventoryService {
         Inventory inventory = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested inventory Id does not exist!"));
+        Warehouse warehouse = warehouseRepository.findWarehouseById(request.getWareHouseId());
+        if(warehouse ==null){
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " warehouse not found");
+        }
         mapper.map(request, inventory);
         inventory.setUpdatedBy(userCurrent.getId());
+//        inventory.setWareHouseName(warehouse.getName());
         repository.save(inventory);
         log.debug("Country record updated - {}"+ new Gson().toJson(inventory));
         return mapper.map(inventory, InventoryResponseDto.class);
@@ -82,38 +98,46 @@ public class InventoryService {
 
 
     public InventoryResponseDto findInventoryById(Long id){
-        Inventory country  = repository.findById(id)
+        Inventory inventory  = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested inventory Id does not exist!"));
-        return mapper.map(country,InventoryResponseDto.class);
+        Warehouse savedWarehouse = warehouseRepository.findWarehouseById(inventory.getWareHouseId());
+        inventory.setWarehouseName(savedWarehouse.getName());
+        log.info("fetched inventory ::::::::::::::::::::::::::::: " + inventory);
+        return mapper.map(inventory,InventoryResponseDto.class);
     }
 
 
 
-    public Page<Inventory> findAll(Long thirdPartyId, String productName,  BigDecimal totalAmount, String status, String deliveryPartnerName,String deliveryPartnerEmail, String deliveryPartnerPhone, Long partnerId, Long shippingId, PageRequest pageRequest ){
-        Page<Inventory> country = repository.findInventory(thirdPartyId,productName,totalAmount,status,deliveryPartnerName,deliveryPartnerEmail,deliveryPartnerPhone,partnerId,shippingId,pageRequest);
-        if(country == null){
+    public Page<Inventory> findAll(Long thirdPartyId, String productName,  BigDecimal totalAmount, String status, String deliveryPartnerName,String deliveryPartnerEmail, String deliveryPartnerPhone, Long partnerId, Long shippingId,Long wareHouseId, PageRequest pageRequest ){
+        Page<Inventory> inventories = repository.findInventory(thirdPartyId,productName,totalAmount,status,deliveryPartnerName,deliveryPartnerEmail,deliveryPartnerPhone,partnerId,shippingId,wareHouseId,pageRequest);
+        if(inventories == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
-        return country;
+        inventories.forEach(inventory -> {
+            Warehouse savedWareHouse = warehouseRepository.findWarehouseById(inventory.getWareHouseId());
+            inventory.setWarehouseName(savedWareHouse.getName());
+        });
+        return inventories;
 
     }
 
     public void enableDisEnableState (EnableDisEnableDto request){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-        Inventory country = repository.findById(request.getId())
+        Inventory inventory = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Country Id does not exist!"));
-        country.setIsActive(request.isActive());
-        country.setUpdatedBy(userCurrent.getId());
-        repository.save(country);
+        inventory.setIsActive(request.isActive());
+        inventory.setUpdatedBy(userCurrent.getId());
+        repository.save(inventory);
 
     }
 
 
     public List<Inventory> getAll(Boolean isActive){
-        List<Inventory> countries = repository.findByIsActive(isActive);
-        return countries;
+        List<Inventory> inventories = repository.findByIsActive(isActive);
+
+        return inventories;
 
     }
 }
