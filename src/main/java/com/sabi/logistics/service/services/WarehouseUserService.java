@@ -2,7 +2,6 @@ package com.sabi.logistics.service.services;
 
 import com.google.gson.Gson;
 import com.sabi.framework.exceptions.NotFoundException;
-import com.sabi.framework.models.Role;
 import com.sabi.framework.models.User;
 import com.sabi.framework.repositories.RoleRepository;
 import com.sabi.framework.repositories.UserRepository;
@@ -62,50 +61,19 @@ public class WarehouseUserService {
 
 
 
-    public Page<User> findByWareHouseId(String firstName, String phone, String email, String username,
-                                                   Long roleId, String lastName, PageRequest pageRequest ){
+    public Page<WarehouseUser> findAll(Long wareHouseId, PageRequest pageRequest ){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-        WarehouseUser warehouse = wareHouseUserRepository.findByUserId(userCurrent.getId());
-        Page<User> users = userRepository.findByWarehouseId(firstName,phone,email,username,warehouse.getWareHouseId(),lastName,pageRequest);
-        if(users == null){
+        Page<WarehouseUser> warehouseUsers = wareHouseUserRepository.findByWareHouseId(wareHouseId, pageRequest);
+        if(warehouseUsers == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
-        users.getContent().forEach(wareHouseUsers ->{
-            User user = userRepository.getOne(wareHouseUsers.getId());
-            if(user.getRoleId() !=null){
-                Role role = roleRepository.getOne(user.getRoleId());
-                wareHouseUsers.setRoleName(role.getName());
-            }
-        });
-        return users;
+        return warehouseUsers;
 
     }
 
 
 
-
-
-
-
-
-    public List<User> getAllUsers(Boolean isActive){
-        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-
-        WarehouseUser wareHouse = wareHouseUserRepository.findByUserId(userCurrent.getId());
-        List<User> users = userRepository.findByWareHouseIdAndIsActive(wareHouse.getWareHouseId(), isActive);
-        for (User wareHouseUsers : users
-                ) {
-            if(wareHouseUsers.getRoleId() !=null){
-                Role role = roleRepository.getOne(wareHouseUsers.getRoleId());
-                wareHouseUsers.setRoleName(role.getName());
-            }
-        }
-        return users;
-    }
-
-
-
-    public List<WarehouseUser> findWareHouseUsers(Long wareHouseId, Boolean isActive){
+    public List<WarehouseUser> getAll(Long wareHouseId, Boolean isActive){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
 
         List<WarehouseUser> warehouseUsers = wareHouseUserRepository.findByWareHouseIdAndIsActive(wareHouseId, isActive);
