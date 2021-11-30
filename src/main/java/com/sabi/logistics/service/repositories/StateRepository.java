@@ -23,6 +23,8 @@ public interface StateRepository extends JpaRepository<State, Long> {
 
     State findByName(String name);
 
+    State findStateById(Long Id);
+
     @Query("SELECT s FROM State s WHERE ((:countryId IS NULL) OR (:countryId IS NOT NULL AND s.countryId = :countryId))")
     List<State> findByCountryId(Long countryId);
     List<State> findByIsActive(Boolean isActive);

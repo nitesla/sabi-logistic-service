@@ -99,11 +99,11 @@ public class PartnerAssetService {
         if (color == null) {
             throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Color Id");
         }
-        Driver driver = driverRepository.findByUserId(request.getDriverId());
+        Driver driver = driverRepository.findByUserId(request.getDriverUserId());
         if (driver == null) {
             throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Id");
         }
-        Driver driver2 = driverRepository.findByUserId(request.getDriverAssistantId());
+        Driver driver2 = driverRepository.findByUserId(request.getDriverAssistantUserId());
         if (driver2 == null) {
             throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Assistant Id");
         }
@@ -168,12 +168,12 @@ public class PartnerAssetService {
                         "Requested partnerAsset Id does not exist!"));
         mapper.map(request, partnerAsset);
         partnerAsset.setUpdatedBy(userCurrent.getId());
-        if (request.getDriverId() != null || request.getDriverAssistantId() != null) {
-            Driver driver = driverRepository.findByUserId(request.getDriverId());
+        if (request.getDriverUserId() != null || request.getDriverAssistantUserId() != null) {
+            Driver driver = driverRepository.findByUserId(request.getDriverUserId());
             if (driver == null) {
                 throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Id");
             }
-            Driver driver2 = driverRepository.findByUserId(request.getDriverAssistantId());
+            Driver driver2 = driverRepository.findByUserId(request.getDriverAssistantUserId());
             if (driver2 == null) {
                 throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Assistant Id");
             }
@@ -181,6 +181,8 @@ public class PartnerAssetService {
             User user2 = userRepository.getOne(driver2.getUserId());
 
             partnerAsset.setDriverId(driver.getId());
+            partnerAsset.setDriverUserId(request.getDriverUserId());
+            partnerAsset.setDriverAssistantUserId(request.getDriverAssistantUserId());
             partnerAsset.setDriverAssistantId(driver2.getId());
             partnerAsset.setDriverName(user.getLastName() + " " + user.getFirstName());
             partnerAsset.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
@@ -276,6 +278,8 @@ public class PartnerAssetService {
         partnerAssetResponseDto.setPartnerName(partner.getName());
         partnerAssetResponseDto.setBrandName(brand.getName());
         partnerAssetResponseDto.setColorName(color.getName());
+        partnerAssetResponseDto.setDriverUserId(driver.getUserId());
+        partnerAssetResponseDto.setDriverAssistantUserId(driver2.getUserId());
         partnerAssetResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
         partnerAssetResponseDto.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
         partnerAssetResponseDto.setAssetTypeName(assetTypeProperties.getName());
@@ -332,6 +336,9 @@ public class PartnerAssetService {
             }
             User user2 = userRepository.getOne(driver2.getUserId());
             asset.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
+
+            asset.setDriverUserId(driver.getUserId());
+            asset.setDriverAssistantUserId(driver2.getUserId());
 
         });
 
@@ -397,6 +404,8 @@ public class PartnerAssetService {
             asset.setColorName(color.getName());
             asset.setDriverName(user.getLastName() + " " + user.getFirstName());
             asset.setAssetTypeName(assetTypeProperties.getName());
+            asset.setDriverUserId(driver.getUserId());
+            asset.setDriverAssistantUserId(driver2.getUserId());
 
         }
 

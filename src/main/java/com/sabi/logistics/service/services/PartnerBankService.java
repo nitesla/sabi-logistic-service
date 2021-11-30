@@ -23,11 +23,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-;
 
+@SuppressWarnings("All")
 @Slf4j
 @Service
 public class PartnerBankService {
@@ -67,8 +68,8 @@ public class PartnerBankService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Partner Bank already exist");
         }
 
-        Partner partner = partnerRepository.getOne(request.getPartnerId());
-        Bank bank = bankRepository.getOne(request.getBankId());
+        Partner partner = partnerRepository.findPartnerById(request.getPartnerId());
+        Bank bank = bankRepository.findBankById(request.getBankId());
         partnerBank.setCreatedBy(userCurrent.getId());
         partnerBank.setIsActive(true);
         partnerBank = partnerBankRepository.save(partnerBank);
@@ -99,11 +100,30 @@ public class PartnerBankService {
         log.debug("PartnerBank record updated - {}"+ new Gson().toJson(partnerBank));
         PartnerBankResponseDto partnerBankResponseDto = mapper.map(partnerBank, PartnerBankResponseDto.class);
         if(request.getPartnerId() != null ) {
-            Partner partner = partnerRepository.getOne(request.getPartnerId());
+            Partner partner = partnerRepository.findPartnerById(request.getPartnerId());
             partnerBankResponseDto.setPartnerName(partner.getName());
         }
         if(request.getBankId() != null ) {
-            Bank bank = bankRepository.getOne(request.getBankId());
+            Bank bank = bankRepository.findBankById(request.getBankId());
+            partnerBankResponseDto.setBankName(bank.getName());
+        }
+        return partnerBankResponseDto;
+    }
+
+    @Transactional
+    public PartnerBankResponseDto setDefalult(long id) {
+        PartnerBank partnerBank = partnerBankRepository.findById(id).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                "Requested Agent Bank does not exist!"));
+        partnerBankRepository.updateIsDefault();
+        partnerBank.setIsDefault(true);
+        partnerBankRepository.save(partnerBank);
+        PartnerBankResponseDto partnerBankResponseDto = mapper.map(partnerBank, PartnerBankResponseDto.class);
+        if(partnerBank.getPartnerId() != null ) {
+            Partner partner = partnerRepository.findPartnerById(partnerBank.getPartnerId());
+            partnerBankResponseDto.setPartnerName(partner.getName());
+        }
+        if(partnerBank.getBankId() != null ) {
+            Bank bank = bankRepository.findBankById(partnerBank.getBankId());
             partnerBankResponseDto.setBankName(bank.getName());
         }
         return partnerBankResponseDto;
@@ -156,8 +176,18 @@ public class PartnerBankService {
     }
 
 
-    public List<PartnerBank> getAll(Boolean isActive){
-        List<PartnerBank> partnerBanks = partnerBankRepository.findByIsActive(isActive);
+    public List<PartnerBank> getAll(Long partnerId, Boolean  isActive){
+        List<PartnerBank> partnerBanks = partnerBankRepository.findByPartnerIdAndIsActive(partnerId, isActive);
+
+        for (PartnerBank pbank : partnerBanks) {
+
+            Bank bank = bankRepository.findBankById(pbank.getBankId());
+            if (bank == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid bankId");
+            }
+            pbank.setBankName(bank.getName());
+
+        }
         return partnerBanks;
 
     }
