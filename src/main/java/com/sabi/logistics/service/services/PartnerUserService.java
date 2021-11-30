@@ -82,7 +82,7 @@ public class PartnerUserService {
         validations.validatePartnerUser(request);
         User user = mapper.map(request,User.class);
 
-        User userExist = userRepository.findByFirstNameAndLastName(request.getFirstName(), request.getLastName());
+        User userExist = userRepository.findByEmailOrPhone(request.getEmail(),request.getPhone());
         if(userExist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " User already exist");
         }
