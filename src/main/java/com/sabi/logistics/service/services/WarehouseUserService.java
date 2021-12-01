@@ -87,9 +87,9 @@ public class WarehouseUserService {
         }
 
         warehouseUsers.getContent().forEach(users -> {
-            User user = userRepository.findUserById(users.getUserId());
+            User user = userRepository.getOne(users.getUserId());
             if(user.getRoleId() !=null){
-                Role role = roleRepository.findRoleById(user.getRoleId());
+                Role role = roleRepository.getOne(user.getRoleId());
                 users.setRoleName(role.getName());
             }
 
@@ -116,7 +116,7 @@ public class WarehouseUserService {
         List<WarehouseUser> warehouseUsers = wareHouseUserRepository.findByWareHouseIdAndIsActive(wareHouseId, isActive);
         for (WarehouseUser users : warehouseUsers
                 ) {
-            User user = userRepository.findUserById(users.getUserId());
+            User user = userRepository.getOne(users.getUserId());
             users.setEmail(user.getEmail());
             users.setFirstName(user.getFirstName());
             users.setLastName(user.getLastName());
@@ -124,7 +124,7 @@ public class WarehouseUserService {
             users.setMiddleName(user.getMiddleName());
             users.setUsername(user.getUsername());
             if(user.getRoleId() !=null){
-                Role role = roleRepository.findRoleById(user.getRoleId());
+                Role role = roleRepository.getOne(user.getRoleId());
                 users.setRoleName(role.getName());
             }
             users.setRoleId(user.getRoleId());
