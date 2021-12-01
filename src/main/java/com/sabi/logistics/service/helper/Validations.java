@@ -381,11 +381,6 @@ public class Validations {
 
     public void validateOrder (OrderRequestDto request){
 
-        if(request.getWareHouseID() == null)
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " wareHouseID can not be null");
-        if (!Utility.isNumeric(request.getWareHouseID().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for wareHouseID ");
-
         if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
         if (!("Pending".equalsIgnoreCase(request.getDeliveryStatus()) || "Ongoing".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus())))
@@ -418,15 +413,14 @@ public class Validations {
         if (!Utility.isNumeric(request.getTotalQuantity().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Qty");
 
-
-
-        warehouseRepository.findById(request.getWareHouseID()).orElseThrow(() ->
-                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " Warehouse ID does not Exist!")
-        );
     }
 
     public void validateOrderItem (OrderItemRequestDto request){
+
+        if(request.getWareHouseID() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " wareHouseID can not be null");
+        if (!Utility.isNumeric(request.getWareHouseID().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for wareHouseID ");
 
         if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
@@ -455,6 +449,11 @@ public class Validations {
         orderRepository.findById(request.getOrderID()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " orderID does not Exist!")
+        );
+
+        warehouseRepository.findById(request.getWareHouseID()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Warehouse ID does not Exist!")
         );
     }
 

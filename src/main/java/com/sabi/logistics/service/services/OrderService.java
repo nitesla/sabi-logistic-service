@@ -11,14 +11,12 @@ import com.sabi.logistics.core.dto.request.OrderRequestDto;
 import com.sabi.logistics.core.dto.response.OrderResponseDto;
 import com.sabi.logistics.core.models.Order;
 import com.sabi.logistics.core.models.OrderItem;
-import com.sabi.logistics.core.models.Warehouse;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.OrderItemRepository;
 import com.sabi.logistics.service.repositories.OrderRepository;
-import com.sabi.logistics.service.repositories.WarehouseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +33,6 @@ public class OrderService {
     private final ModelMapper mapper;
     @Autowired
     private Validations validations;
-
-    @Autowired
-    private WarehouseRepository warehouseRepository;
 
     @Autowired
     private OrderItemRepository orderItemRepository;
@@ -62,7 +57,6 @@ public class OrderService {
         if(orderExists != null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order already exist");
         }
-        Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseID());
 
         order.setBarCode(validations.generateCode(order.getReferenceNo()));
         order.setQrCode(validations.generateCode(order.getReferenceNo()));
@@ -72,7 +66,6 @@ public class OrderService {
         order = orderRepository.save(order);
         log.debug("Create new order - {}"+ new Gson().toJson(order));
         OrderResponseDto orderResponseDto = mapper.map(order, OrderResponseDto.class);
-        orderResponseDto.setWareHouseName(warehouse.getName());
         return orderResponseDto;
     }
 
@@ -88,11 +81,6 @@ public class OrderService {
         orderRepository.save(order);
         log.debug("order record updated - {}"+ new Gson().toJson(order));
         OrderResponseDto orderResponseDto = mapper.map(order, OrderResponseDto.class);
-        if(request.getWareHouseID() != null ) {
-            Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseID());
-            orderResponseDto.setWareHouseName(warehouse.getName());
-        }
-
         return orderResponseDto;
     }
 
@@ -108,15 +96,10 @@ public class OrderService {
     }
 
 
-    public Page<Order> findAll(Long wareHouseID, String referenceNo, String deliveryStatus,
+    public Page<Order> findAll( String referenceNo, String deliveryStatus,
                                String customerName, String customerPhone, String deliveryAddress,
                                String barCode, String qrCode, PageRequest pageRequest ){
         GenericSpecification<Order> genericSpecification = new GenericSpecification<Order>();
-
-        if (wareHouseID != null)
-        {
-            genericSpecification.add(new SearchCriteria("wareHouseID", wareHouseID, SearchOperation.EQUAL));
-        }
 
         if (referenceNo != null && !referenceNo.isEmpty())
         {
