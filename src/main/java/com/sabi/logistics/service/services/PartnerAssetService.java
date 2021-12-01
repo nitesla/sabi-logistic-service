@@ -146,10 +146,10 @@ public class PartnerAssetService {
            responseDto =  driverAssetService.createDriverAsset(processDriver);
         }
         saveDrivedAsset = driverAssetRepository.findByPartnerAssetIdAndId(responseDto.getPartnerAssetId(),responseDto.getId());
-        if (saveDrivedAsset == null){
+        if (saveDrivedAsset != null){
             processDriver.setPartnerAssetId(partnerAsset.getId());
             processDriver.setDriverType(DriverType.DRIVER_ASSISTANT);
-            processDriver.setDriverId(partnerAsset.getDriverId());
+            processDriver.setDriverId(partnerAsset.getDriverAssistantId());
             processDriver.setAssestTypeName(partnerAsset.getAssetTypeName());
             driverAssetService.createDriverAsset(processDriver);
         }

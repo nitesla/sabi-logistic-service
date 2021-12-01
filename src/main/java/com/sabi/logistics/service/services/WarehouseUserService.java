@@ -2,6 +2,7 @@ package com.sabi.logistics.service.services;
 
 import com.google.gson.Gson;
 import com.sabi.framework.exceptions.NotFoundException;
+import com.sabi.framework.models.Role;
 import com.sabi.framework.models.User;
 import com.sabi.framework.repositories.RoleRepository;
 import com.sabi.framework.repositories.UserRepository;
@@ -9,6 +10,7 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.WareHouseUserRequestDto;
 import com.sabi.logistics.core.dto.response.WareHouseUserResponseDto;
+import com.sabi.logistics.core.models.Warehouse;
 import com.sabi.logistics.core.models.WarehouseUser;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.WarehouseRepository;
@@ -21,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("ALL")
@@ -46,6 +49,21 @@ public class WarehouseUserService {
         this.validations = validations;
     }
 
+    public List<WareHouseUserResponseDto> createWareHouseUser(List<WareHouseUserRequestDto> requests) {
+
+        List<WareHouseUserResponseDto> warehouseUsers = new ArrayList<>();
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        requests.forEach(request->{;
+            WarehouseUser warehouseUser =  mapper.map(request, WarehouseUser.class);
+            warehouseUser.setUpdatedBy(userCurrent.getId());
+            warehouseUser.setIsActive(true);
+            wareHouseUserRepository.save(warehouseUser);
+            log.debug("warehouseUser record updated - {}" + new Gson().toJson(warehouseUser));
+            warehouseUsers.add(mapper.map(warehouseUser, WareHouseUserResponseDto.class));
+
+        });
+        return warehouseUsers;
+    }
 
     public WareHouseUserResponseDto updateWareHouseUser(WareHouseUserRequestDto request) {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
@@ -67,6 +85,25 @@ public class WarehouseUserService {
         if(warehouseUsers == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
+
+        warehouseUsers.getContent().forEach(users -> {
+            User user = userRepository.findUserById(users.getUserId());
+            if(user.getRoleId() !=null){
+                Role role = roleRepository.findRoleById(user.getRoleId());
+                users.setRoleName(role.getName());
+            }
+
+            Warehouse warehouse = wareHouseRepository.findWarehouseById(wareHouseId);
+            users.setWareHouseName(warehouse.getName());
+            users.setEmail(user.getEmail());
+            users.setFirstName(user.getFirstName());
+            users.setLastName(user.getLastName());
+            users.setPhone(user.getPhone());
+            users.setMiddleName(user.getMiddleName());
+            users.setUsername(user.getUsername());
+            users.setRoleId(user.getRoleId());
+        });
+
         return warehouseUsers;
 
     }
@@ -79,13 +116,20 @@ public class WarehouseUserService {
         List<WarehouseUser> warehouseUsers = wareHouseUserRepository.findByWareHouseIdAndIsActive(wareHouseId, isActive);
         for (WarehouseUser users : warehouseUsers
                 ) {
-            User user = userRepository.getOne(users.getUserId());
+            User user = userRepository.findUserById(users.getUserId());
             users.setEmail(user.getEmail());
             users.setFirstName(user.getFirstName());
             users.setLastName(user.getLastName());
             users.setPhone(user.getPhone());
             users.setMiddleName(user.getMiddleName());
             users.setUsername(user.getUsername());
+            if(user.getRoleId() !=null){
+                Role role = roleRepository.findRoleById(user.getRoleId());
+                users.setRoleName(role.getName());
+            }
+            users.setRoleId(user.getRoleId());
+            Warehouse warehouse = wareHouseRepository.findWarehouseById(wareHouseId);
+            users.setWareHouseName(warehouse.getName());
         }
         return warehouseUsers;
 

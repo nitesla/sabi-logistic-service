@@ -10,12 +10,13 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.OrderItemRequestDto;
 import com.sabi.logistics.core.dto.response.OrderItemResponseDto;
 import com.sabi.logistics.core.models.OrderItem;
+import com.sabi.logistics.core.models.Warehouse;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.OrderItemRepository;
-import com.sabi.logistics.service.repositories.OrderRepository;
+import com.sabi.logistics.service.repositories.WarehouseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,7 @@ public class OrderItemService {
     @Autowired
     private Validations validations;
     @Autowired
-    private OrderRepository orderRepository;
+    private WarehouseRepository warehouseRepository;
 
 
     public OrderItemService(OrderItemRepository orderItemRepository, ModelMapper mapper) {
@@ -51,12 +52,14 @@ public class OrderItemService {
         if(orderItemExists !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order Item already exist");
         }
-
+        Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseID());
         orderItem.setCreatedBy(userCurrent.getId());
         orderItem.setIsActive(true);
         orderItem = orderItemRepository.save(orderItem);
         log.debug("Create new order item - {}"+ new Gson().toJson(orderItem));
-        return mapper.map(orderItem, OrderItemResponseDto.class);
+        OrderItemResponseDto orderItemResponseDto = mapper.map(orderItem, OrderItemResponseDto.class);
+        orderItemResponseDto.setWareHouseName(warehouse.getName());
+        return orderItemResponseDto;
     }
 
     public OrderItemResponseDto updateOrderItem(OrderItemRequestDto request) {
@@ -70,7 +73,13 @@ public class OrderItemService {
         orderItem.setUpdatedBy(userCurrent.getId());
         orderItemRepository.save(orderItem);
         log.debug("color record updated - {}"+ new Gson().toJson(orderItem));
-        return mapper.map(orderItem, OrderItemResponseDto.class);
+        OrderItemResponseDto orderItemResponseDto = mapper.map(orderItem, OrderItemResponseDto.class);
+        if(request.getWareHouseID() != null ) {
+            Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseID());
+            orderItemResponseDto.setWareHouseName(warehouse.getName());
+        }
+
+        return orderItemResponseDto;
     }
 
     public OrderItemResponseDto findOrderItem(Long id){
@@ -81,10 +90,15 @@ public class OrderItemService {
     }
 
 
-    public Page<OrderItem> findAll(String referenceNo, String deliveryStatus, Long partnerAssetID,
+    public Page<OrderItem> findAll(Long wareHouseID, String referenceNo, String deliveryStatus, Long partnerAssetID,
                                    String name, Integer qty, PageRequest pageRequest ){
 
         GenericSpecification<OrderItem> genericSpecification = new GenericSpecification<OrderItem>();
+
+        if (wareHouseID != null)
+        {
+            genericSpecification.add(new SearchCriteria("wareHouseID", wareHouseID, SearchOperation.EQUAL));
+        }
 
         if (referenceNo != null && !referenceNo.isEmpty())
         {
@@ -136,6 +150,30 @@ public class OrderItemService {
     public List<OrderItem> getAll(Boolean isActive){
         List<OrderItem> Colors = orderItemRepository.findByIsActive(isActive);
         return Colors;
+
+    }
+
+    public Page<OrderItem> getAllDeliveries(Long partnerID, String deliveryStatus, PageRequest pageRequest ){
+        GenericSpecification<OrderItem> genericSpecification = new GenericSpecification<OrderItem>();
+
+        Warehouse warehouse = warehouseRepository.findByPartnerId(partnerID);
+
+        if (warehouse.getId() != null)
+        {
+            genericSpecification.add(new SearchCriteria("wareHouseID", warehouse.getId(), SearchOperation.EQUAL));
+        }
+
+        if (deliveryStatus != null)
+        {
+            genericSpecification.add(new SearchCriteria("deliveryStatus", deliveryStatus, SearchOperation.MATCH));
+        }
+
+        Page<OrderItem> orderItems = orderItemRepository.findAll(genericSpecification, pageRequest);
+        if (orderItems == null) {
+            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No Accepted Delivery Available!");
+        }
+
+        return orderItems;
 
     }
 }
