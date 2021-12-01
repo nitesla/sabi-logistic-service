@@ -46,14 +46,9 @@ public class ProductService {
 
         Product productExists = productRepository.findByNameAndThirdPartyId(product.getName(), product.getThirdPartyId());
 
-
         if(productExists != null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Product already exist");
         }
-
-
-
-
         product.setCreatedBy(userCurrent.getId());
         product.setIsActive(true);
         product = productRepository.save(product);
