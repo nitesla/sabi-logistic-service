@@ -21,10 +21,10 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
                                   @Param("partnerId") Long partnerId,
                                   @Param("lgaId") Long lgaId,
                                   Pageable pageable);
+    Warehouse findWarehouseById (Long id);
 
     List<Warehouse> findByIsActive(Boolean isActive);
 
-    Warehouse findWarehouseById(Long wareHouseId);
 
     Warehouse findByPartnerId(Long partnerId);
 }

@@ -10,6 +10,7 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.StateDto;
 import com.sabi.logistics.core.dto.response.StateResponseDto;
+import com.sabi.logistics.core.models.Color;
 import com.sabi.logistics.core.models.Country;
 import com.sabi.logistics.core.models.State;
 import com.sabi.logistics.service.helper.Validations;
@@ -143,7 +144,7 @@ public class StateService {
     }
 
 
-    public List<State> getAll(Long countryId){
+    public List<State> getAllByCountryId(Long countryId){
         List<State> states = stateRepository.findByCountryId(countryId);
         for (State tran : states
                 ) {
@@ -151,6 +152,12 @@ public class StateService {
             tran.setCountryName(country.getName());
         }
         return states;
+
+    }
+
+    public List<State> getAll(Boolean isActive){
+        List<State> Colors = stateRepository.findByIsActive(isActive);
+        return Colors;
 
     }
 

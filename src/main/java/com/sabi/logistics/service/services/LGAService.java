@@ -160,7 +160,7 @@ public class LGAService {
     }
 
 
-    public List<LGA> getAll(Long stateId){
+    public List<LGA> getAllByStateId(Long stateId){
         List<LGA> lga = lgaRepository.findByStateId(stateId);
         for (LGA tran : lga
         ) {
@@ -168,6 +168,12 @@ public class LGAService {
             tran.setStateName(state.getName());
         }
         return lga;
+
+    }
+
+    public List<LGA> getAll(Boolean isActive){
+        List<LGA> Colors = lgaRepository.findByIsActive(isActive);
+        return Colors;
 
     }
 }

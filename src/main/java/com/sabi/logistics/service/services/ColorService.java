@@ -10,6 +10,7 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.ColorRequestDto;
 import com.sabi.logistics.core.dto.response.ColorResponseDto;
 import com.sabi.logistics.core.models.Color;
+import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.ColorRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -24,14 +25,18 @@ import java.util.List;
 public class ColorService {
     private final ColorRepository colorRepository;
     private final ModelMapper mapper;
+    private final Validations validations;
 
 
-    public ColorService(ColorRepository colorRepository, ModelMapper mapper) {
+
+    public ColorService(ColorRepository colorRepository, ModelMapper mapper, Validations validations) {
         this.colorRepository = colorRepository;
         this.mapper = mapper;
+        this.validations = validations;
     }
 
     public ColorResponseDto createColor(ColorRequestDto request) {
+        validations.validateColor(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Color color = mapper.map(request,Color.class);
         Color colorExists = colorRepository.findByName(request.getName());
@@ -46,6 +51,7 @@ public class ColorService {
     }
 
     public ColorResponseDto updateColor(ColorRequestDto request) {
+        validations.validateColor(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Color color = colorRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,

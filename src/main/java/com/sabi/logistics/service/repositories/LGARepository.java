@@ -27,6 +27,8 @@ public interface LGARepository extends JpaRepository<LGA, Long> {
 
        @Query("SELECT l FROM LGA l WHERE ((:stateId IS NULL) OR (:stateId IS NOT NULL AND l.stateId = :stateId))")
        List<LGA> findByStateId(Long stateId);
+       List<LGA> findByIsActive(Boolean isActive);
+
 
 
        @Query("SELECT l FROM LGA l WHERE ((:name IS NULL) OR (:name IS NOT NULL AND l.name = :name))" +
