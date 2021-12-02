@@ -11,9 +11,9 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.DriverAssetDto;
 import com.sabi.logistics.core.dto.response.DriverAssetResponseDto;
+import com.sabi.logistics.core.models.Driver;
 import com.sabi.logistics.core.models.DriverAsset;
 import com.sabi.logistics.core.models.PartnerAsset;
-import com.sabi.logistics.core.models.PartnerAssetType;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.DriverAssetRepository;
 import com.sabi.logistics.service.repositories.DriverRepository;
@@ -127,20 +127,23 @@ public class DriverAssetService {
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
         drivers.getContent().forEach(driver ->{
-            User savedUser = userRepository.findById(driver.getDriverId())
+            Driver nigga = driverRepository.findById(driver.getDriverId())
                     .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                             "Requested driver id (user) does not exist!"));
+            if (nigga == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Id");
+            }
+            User savedUser = userRepository.getOne(nigga.getUserId());
             log.info("Checking {} ::::::::::::::::::::::::::::::::::::::::::::" + savedUser);
-            PartnerAsset partnerAsset = partnerAssetRepository.findById(driver.getId())
+            PartnerAsset partnerAsset = partnerAssetRepository.findById(driver.getPartnerAssetId())
                     .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                             "Requested partner asset id does not exist!"));
             driver.setFirstName(savedUser.getFirstName());
             driver.setLastName(savedUser.getLastName());
             driver.setEmail(savedUser.getEmail());
             driver.setPhoneNumber(savedUser.getPhone());
-          driver.setAssetTypeName(partnerAsset.getName());
-            driver.setAssetType(partnerAsset.getName());
-//        driver.setAssetTypeId(partnerAsset.getAssetTypeName());
+            driver.setAssetTypeName(partnerAsset.getAssetTypeName());
+            driver.setPartnerAssetName(partnerAsset.getName());
 
         });
 
