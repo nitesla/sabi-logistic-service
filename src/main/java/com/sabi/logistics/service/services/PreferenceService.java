@@ -98,13 +98,13 @@ public class PreferenceService {
 
     }
 
-    public PreferenceResponseDto findPreferenceByPartnerId(Long id){
+    public Preference findPreferenceByPartnerId(Long id){
         Preference preference  = repository.findByPartnerId(id);
-        if (preference == null){
-            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                    "Requested Preference for partner id does not exist!");
-        }
-        PreferenceResponseDto productResponseDto =  mapper.map(preference, PreferenceResponseDto.class);
-        return productResponseDto;
+//        if (preference == null){
+//            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                    "Requested Preference for partner id does not exist!");
+//        }
+//        PreferenceResponseDto productResponseDto =  mapper.map(preference, PreferenceResponseDto.class);
+        return preference;
     }
 }
