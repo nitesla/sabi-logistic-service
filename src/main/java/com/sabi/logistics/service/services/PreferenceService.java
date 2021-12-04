@@ -15,7 +15,6 @@ import com.sabi.logistics.service.repositories.PartnerRepository;
 import com.sabi.logistics.service.repositories.PreferenceRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 @SuppressWarnings("ALL")
 @Slf4j
@@ -24,14 +23,15 @@ public class PreferenceService {
 
     private final PartnerRepository partnerRepository;
     private final ModelMapper mapper;
-    @Autowired
-    private Validations validations;
-    @Autowired
-    private PreferenceRepository repository;
+    private final Validations validations;
+    private final PreferenceRepository repository;
 
-    public PreferenceService(PartnerRepository partnerRepository, ModelMapper mapper) {
+    public PreferenceService(PartnerRepository partnerRepository, ModelMapper mapper,Validations validations,
+                             PreferenceRepository repository) {
         this.partnerRepository = partnerRepository;
         this.mapper = mapper;
+        this.validations = validations;
+        this.repository = repository;
     }
 
 
