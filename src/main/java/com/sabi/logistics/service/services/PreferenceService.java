@@ -34,29 +34,7 @@ public class PreferenceService {
         this.mapper = mapper;
     }
 
-//    public PreferenceResponseDto createPreference(PreferenceDto request) {
-//        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-//        Preference preference = mapper.map(request, Preference.class);
-//        Partner savedPartner = partnerRepository.findPartnerById(request.getPartnerId());
-//        if (savedPartner == null) {
-//            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-//                    "Requested partner Id does not exist!");
-//        }
-//        Preference preferenceExists = repository.findByPartnerId(request.getPartnerId());
-//        if (preferenceExists != null) {
-//            updatePreference(request);
-//            preference.setUpdatedBy(userCurrent.getId());
-//
-//        } else if (preferenceExists == null) {
-//            preference.setCreatedBy(userCurrent.getId());
-//            preference.setIsActive(true);
-//            preference = repository.save(preference);
-//            log.debug("Create new partnerId preference - {}" + new Gson().toJson(preference));
-//
-//        }
-//        PreferenceResponseDto preferenceResponseDto = mapper.map(preference, PreferenceResponseDto.class);
-//        return preferenceResponseDto;
-//    }
+
 
     public PreferenceResponseDto createPreference(PreferenceDto request) {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
@@ -80,7 +58,6 @@ public class PreferenceService {
     }
 
     public PreferenceResponseDto updatePreference(PreferenceDto request) {
-//        validations.validateProduct(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Preference preference = repository.findByPartnerId(request.getPartnerId());
         if (preference == null){
@@ -100,11 +77,6 @@ public class PreferenceService {
 
     public Preference findPreferenceByPartnerId(Long id){
         Preference preference  = repository.findByPartnerId(id);
-//        if (preference == null){
-//            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-//                    "Requested Preference for partner id does not exist!");
-//        }
-//        PreferenceResponseDto productResponseDto =  mapper.map(preference, PreferenceResponseDto.class);
         return preference;
     }
 }
