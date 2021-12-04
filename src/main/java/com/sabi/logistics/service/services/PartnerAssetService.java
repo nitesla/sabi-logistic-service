@@ -113,12 +113,7 @@ public class PartnerAssetService {
         partnerAsset.setDriverId(driver.getId());
         partnerAsset.setDriverAssistantId(driver2.getId());
 
-//        partnerAsset.setBrandName(brand.getName());
-//        partnerAsset.setColorName(color.getName());
-//        partnerAsset.setDriverName(user.getLastName() + " " + user.getFirstName());
-
         partnerAsset.setAssetTypeName(assetTypeProperties.getName());
-//        partnerAsset.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
         partnerAsset.setCreatedBy(userCurrent.getId());
         partnerAsset.setIsActive(true);
         partnerAsset = partnerAssetRepository.save(partnerAsset);
@@ -131,13 +126,12 @@ public class PartnerAssetService {
         partnerAssetResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
         partnerAssetResponseDto.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
         partnerAssetResponseDto.setAssetTypeName(assetTypeProperties.getName());
-        partnerAssetResponseDto.setAssetTypeName(partner.getName());
         log.info("Check assset ::::::::::::::::::::::::::::::::::::::::::::::::::::::: " + partnerAsset);
         DriverAsset driverAssetDto = new DriverAsset();
         DriverAssetDto processDriver = new DriverAssetDto();
         DriverAsset saveDrivedAsset = new DriverAsset();
 
-        driverAssetDto = driverAssetRepository.findByDriverIdAndPartnerAssetId(driverAssetDto.getDriverId(), driverAssetDto.getPartnerAssetId());
+        driverAssetDto = driverAssetRepository.findByDriverIdAndPartnerAssetId(partnerAsset.getDriverId(), partnerAsset.getId());
         if (driverAssetDto == null) {
             processDriver.setPartnerAssetId(partnerAsset.getId());
             processDriver.setDriverType(DriverType.DRIVER);
@@ -145,8 +139,8 @@ public class PartnerAssetService {
             processDriver.setAssestTypeName(partnerAsset.getAssetTypeName());
            responseDto =  driverAssetService.createDriverAsset(processDriver);
         }
-        saveDrivedAsset = driverAssetRepository.findByPartnerAssetIdAndId(responseDto.getPartnerAssetId(),responseDto.getId());
-        if (saveDrivedAsset != null){
+        saveDrivedAsset = driverAssetRepository.findByDriverIdAndPartnerAssetId(partnerAsset.getDriverAssistantId(),partnerAsset.getId());
+        if (saveDrivedAsset == null){
             processDriver.setPartnerAssetId(partnerAsset.getId());
             processDriver.setDriverType(DriverType.DRIVER_ASSISTANT);
             processDriver.setDriverId(partnerAsset.getDriverAssistantId());
@@ -163,6 +157,7 @@ public class PartnerAssetService {
     public PartnerAssetResponseDto updatePartnerAsset(PartnerAssetRequestDto request) {
         validations.validatePartnerAsset(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        DriverAssetResponseDto responseDto = new DriverAssetResponseDto();
         PartnerAsset partnerAsset = partnerAssetRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partnerAsset Id does not exist!"));
@@ -215,24 +210,49 @@ public class PartnerAssetService {
             partnerAssetResponseDto.setPartnerName(partner.getName());
             partnerAssetResponseDto.setBrandName(brand.getName());
             partnerAssetResponseDto.setColorName(color.getName());
-//            partnerAssetResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
-//            partnerAssetResponseDto.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
             partnerAssetResponseDto.setAssetTypeName(assetTypeProperties.getName());
 
         }
         log.info("Check assset ::::::::::::::::::::::::::::::::::::::::::::::::::::::: " +partnerAsset);
         DriverAsset driverAssetDto = new DriverAsset();
         DriverAssetDto processDriver = new DriverAssetDto();
-        driverAssetDto = driverAssetRepository.findByPartnerAssetId(partnerAsset.getId());
-        log.info("Check assset ::::::::::::::::::::::::::::::::::::::::::::::::::::::: " +driverAssetDto);
-        processDriver.setPartnerAssetId(partnerAsset.getId());
-        processDriver.setDriverType(DriverType.DRIVER);
-        processDriver.setDriverId(partnerAsset.getDriverId());
-        processDriver.setAssestTypeName(partnerAsset.getAssetTypeName());
-        driverAssetDto = driverAssetRepository.findByPartnerAssetId(partnerAsset.getId());
-        processDriver.setId(driverAssetDto.getId());
-        log.info("Driver assset ::::::::::::::::::::::::::::::::::::::::::::::::::::::: " + processDriver);
-        driverAssetService.updateDriverAsset(processDriver);
+        DriverAsset saveDrivedAsset = new DriverAsset();
+
+        driverAssetDto = driverAssetRepository.findByDriverIdAndPartnerAssetId(partnerAsset.getDriverId(), partnerAsset.getId());
+        if (driverAssetDto == null) {
+            processDriver.setPartnerAssetId(partnerAsset.getId());
+            processDriver.setDriverType(DriverType.DRIVER);
+            processDriver.setDriverId(partnerAsset.getDriverId());
+            processDriver.setAssestTypeName(partnerAsset.getAssetTypeName());
+
+            responseDto =  driverAssetService.createDriverAsset(processDriver);
+        } else {
+            processDriver.setPartnerAssetId(partnerAsset.getId());
+            processDriver.setDriverType(DriverType.DRIVER);
+            processDriver.setDriverId(partnerAsset.getDriverId());
+            processDriver.setAssestTypeName(partnerAsset.getAssetTypeName());
+            processDriver.setId(driverAssetDto.getId());
+            responseDto =  driverAssetService.updateDriverAsset(processDriver);
+        }
+
+
+        saveDrivedAsset = driverAssetRepository.findByDriverIdAndPartnerAssetId(partnerAsset.getDriverAssistantId(),partnerAsset.getId());
+        if (saveDrivedAsset == null){
+            processDriver.setPartnerAssetId(partnerAsset.getId());
+            processDriver.setDriverType(DriverType.DRIVER_ASSISTANT);
+            processDriver.setDriverId(partnerAsset.getDriverAssistantId());
+            processDriver.setAssestTypeName(partnerAsset.getAssetTypeName());
+
+            driverAssetService.createDriverAsset(processDriver);
+        } else {
+            processDriver.setPartnerAssetId(partnerAsset.getId());
+            processDriver.setDriverType(DriverType.DRIVER_ASSISTANT);
+            processDriver.setDriverId(partnerAsset.getDriverAssistantId());
+            processDriver.setAssestTypeName(partnerAsset.getAssetTypeName());
+            processDriver.setId(saveDrivedAsset.getId());
+            driverAssetService.updateDriverAsset(processDriver);
+        }
+
         return partnerAssetResponseDto;
     }
 

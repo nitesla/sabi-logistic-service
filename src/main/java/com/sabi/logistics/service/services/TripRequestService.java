@@ -74,25 +74,27 @@ public class TripRequestService {
         tripRequest.setBarCode(validations.generateCode(tripRequest.getReferenceNo()));
         tripRequest.setQrCode(validations.generateCode(tripRequest.getReferenceNo()));
 
-        if (request.getDriverID() != null) {
+        if (request.getDriverUserId() != null) {
 
-            Driver driver = driverRepository.findByUserId(request.getDriverID());
+            Driver driver = driverRepository.findByUserId(request.getDriverUserId());
             if (driver == null) {
                 throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Id");
             }
             User user = userRepository.getOne(driver.getUserId());
             tripRequest.setDriverID(driver.getId());
+            tripRequest.setDriverUserId(driver.getUserId());
             tripRequest.setDriverName(user.getLastName() + " " + user.getFirstName());
 
         }
-        if (request.getDriverAssistantID() != null) {
-            Driver driver2 = driverRepository.findByUserId(request.getDriverAssistantID());
+        if (request.getDriverAssistantUserId() != null) {
+            Driver driver2 = driverRepository.findByUserId(request.getDriverAssistantUserId());
             if (driver2 == null) {
             throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Assistant Id");
             }
             User user2 = userRepository.getOne(driver2.getUserId());
             tripRequest.setDriverAssistantID(driver2.getId());
 
+            tripRequest.setDriverAssistantUserId(driver2.getUserId());
 
             tripRequest.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
 
@@ -127,20 +129,22 @@ public class TripRequestService {
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Trip Request ID does not exist!"));
         mapper.map(request, tripRequest);
-        if (request.getDriverID() != null) {
+        if (request.getDriverUserId() != null) {
 
-            Driver driver = driverRepository.findByUserId(request.getDriverID());
+            Driver driver = driverRepository.findByUserId(request.getDriverUserId());
 
             User user = userRepository.getOne(driver.getUserId());
             tripRequest.setDriverID(driver.getId());
+            tripRequest.setDriverUserId(driver.getUserId());
             tripRequest.setDriverName(user.getLastName() + " " + user.getFirstName());
         }
-        if (request.getDriverAssistantID() != null) {
+        if (request.getDriverAssistantUserId() != null) {
 
-            Driver driver2 = driverRepository.findByUserId(request.getDriverAssistantID());
+            Driver driver2 = driverRepository.findByUserId(request.getDriverAssistantUserId());
 
             User user2 = userRepository.getOne(driver2.getUserId());
             tripRequest.setDriverAssistantID(driver2.getId());
+            tripRequest.setDriverAssistantUserId(driver2.getUserId());
             tripRequest.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
 
         }
