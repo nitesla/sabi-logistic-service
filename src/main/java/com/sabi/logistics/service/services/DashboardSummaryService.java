@@ -3,7 +3,6 @@ package com.sabi.logistics.service.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.utils.CustomResponseCode;
-import com.sabi.logistics.core.dto.request.DashboardRequestDto;
 import com.sabi.logistics.core.dto.request.TripAssetDto;
 import com.sabi.logistics.core.dto.response.DashboardResponseDto;
 import com.sabi.logistics.core.models.*;
@@ -71,8 +70,8 @@ public class DashboardSummaryService {
 
 
 
-    public DashboardResponseDto getDashboardSummary(DashboardRequestDto request) {
-        List<DashboardSummary> dashboardSummaries = dashboardSummaryRepository.getAllBetweenDates(request.getStartDate(), request.getEndDate(), request.getPartnerId());
+    public DashboardResponseDto getDashboardSummary(Long partnerId, LocalDateTime startDate, LocalDateTime endDate) {
+        List<DashboardSummary> dashboardSummaries = dashboardSummaryRepository.getAllBetweenDates(startDate, endDate, partnerId);
         Integer totalCompletedTrips = getTotalCompletedTrips(dashboardSummaries);
         Integer outstandingTrips = getOutstandingTrips(dashboardSummaries);
         Double totalEarnings = getTotalEarnings(dashboardSummaries);
@@ -81,14 +80,14 @@ public class DashboardSummaryService {
         Boolean isActive = true;
         LocalDate localDate = LocalDate.now();
         LocalDateTime date = localDate.atStartOfDay();
-        Integer incomingTrip = tripRequestRepository.countByPartnerIDAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(request.getPartnerId(), StatusConstants.PENDING, isActive, date);
-        Integer cancelledTrip = tripRequestRepository.countByPartnerIDAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(request.getPartnerId(), StatusConstants.CANCELLED, isActive, date);
-        Integer completedTrip = tripRequestRepository.countByPartnerIDAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(request.getPartnerId(), StatusConstants.COMPLETED, isActive, date);
-        Integer ongoingTrip = tripRequestRepository.countByPartnerIDAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(request.getPartnerId(), StatusConstants.ONGOING, isActive, date);
+        Integer incomingTrip = tripRequestRepository.countByPartnerIDAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(partnerId, StatusConstants.PENDING, isActive, date);
+        Integer cancelledTrip = tripRequestRepository.countByPartnerIDAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(partnerId, StatusConstants.CANCELLED, isActive, date);
+        Integer completedTrip = tripRequestRepository.countByPartnerIDAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(partnerId, StatusConstants.COMPLETED, isActive, date);
+        Integer ongoingTrip = tripRequestRepository.countByPartnerIDAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(partnerId, StatusConstants.ONGOING, isActive, date);
 
         DashboardResponseDto responseDto = new DashboardResponseDto();
 
-        responseDto.setPartnerId(request.getPartnerId());
+        responseDto.setPartnerId(partnerId);
 
         responseDto.setIncomingTrip(incomingTrip);
         responseDto.setCancelledTrip(cancelledTrip);
@@ -101,7 +100,7 @@ public class DashboardSummaryService {
         responseDto.setTotalEarnings(totalEarnings);
         responseDto.setOutstandingAmount(outstandingAmount);
 
-        responseDto.setTripAsset(getTripToAsset(request.getPartnerId(), isActive));
+        responseDto.setTripAsset(getTripToAsset(partnerId, isActive));
 
 
         return responseDto;
