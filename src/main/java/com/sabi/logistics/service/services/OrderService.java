@@ -24,6 +24,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -169,4 +172,28 @@ public class OrderService {
         return orderItems;
 
     }
+
+    public List<Order> findRecordByDateRange(String date,String endDate,String status) {
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime dateTime = LocalDateTime.parse(date, format);
+        LocalDateTime dateTime2 = LocalDateTime.parse(endDate, format);
+        List<Order> saveInfo = orderRepository.findOrderByCreatedDateAAndDeliveryStatus(dateTime, dateTime2, status);
+        if (saveInfo == null) {
+            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                    "Record Not found");
+        }
+        return saveInfo;
+    }
+
+//        public List<Order> findByPresentDate(String date,String endDate){
+//            DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//            LocalDateTime dateTime = LocalDateTime.parse(date, format);
+//            LocalDateTime dateTime2 = LocalDateTime.parse(endDate, format);
+//            List<Order> saveInfo  = orderRepository.findByDate(dateTime,dateTime2);
+//            if (saveInfo == null) {
+//                throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                        "Record Not found");
+//            }
+//            return saveInfo;
+//}
 }
