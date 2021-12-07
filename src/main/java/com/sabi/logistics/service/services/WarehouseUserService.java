@@ -53,7 +53,7 @@ public class WarehouseUserService {
 
         List<WareHouseUserResponseDto> warehouseUsers = new ArrayList<>();
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-        requests.forEach(request->{;
+        requests.forEach(request->{
             WarehouseUser warehouseUser =  mapper.map(request, WarehouseUser.class);
             warehouseUser.setUpdatedBy(userCurrent.getId());
             warehouseUser.setIsActive(true);

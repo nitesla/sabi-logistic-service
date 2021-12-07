@@ -500,7 +500,7 @@ public class Validations {
 
         if (request.getStatus() == null || request.getStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
-        if (!("Completed".equalsIgnoreCase(request.getStatus()) || "InTransit".equalsIgnoreCase(request.getStatus()) || "Returned".equalsIgnoreCase(request.getStatus())))
+        if (!("Completed".equalsIgnoreCase(request.getStatus()) || "InTransit".equalsIgnoreCase(request.getStatus()) || "Returned".equalsIgnoreCase(request.getStatus())|| "Pending".equalsIgnoreCase(request.getStatus())))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
 
 
