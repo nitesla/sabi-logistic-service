@@ -58,11 +58,12 @@ public class PartnerRoleService {
         coreValidations.validateRole(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Role role = mapper.map(request,Role.class);
-        Role roleExist = roleRepository.findByNameAndClientId(request.getName(),userCurrent.getClientId());
+        PartnerUser partner = partnerUserRepository.findByUserId(userCurrent.getId());
+        Role roleExist = roleRepository.findByNameAndClientId(request.getName(),partner.getPartnerId());
         if(roleExist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Partner Role already exist");
         }
-        PartnerUser partner = partnerUserRepository.findByUserId(userCurrent.getId());
+
         role.setClientId(partner.getPartnerId());
         role.setCreatedBy(userCurrent.getId());
         role.setIsActive(true);
