@@ -94,8 +94,8 @@ public class FulfilmentDashboardService {
             dashboard.setTotalAmount(BigDecimal.valueOf(totalSum));
 
         });
-        List<Order> savedOrder = orderRepository.findByDate(dateTime,dateTime2);
-        log.info("TodayYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY  " +savedOrder);
+//        List<Order> savedOrder = orderRepository.findByDate(dateTime,dateTime2);
+//        log.info("TodayYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY  " +savedOrder);
         dashboard.setProcessedOrders(completedCount);
         dashboard.setPendingDeliveries(pendingCount);
         dashboard.setCanceledRequest(cancelledCount);
