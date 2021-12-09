@@ -71,11 +71,11 @@ public class DashboardSummaryService {
 
 
     public DashboardResponseDto getDashboardSummary(Long partnerId, LocalDateTime startDate, LocalDateTime endDate) {
-        List<DashboardSummary> dashboardSummaries = dashboardSummaryRepository.getAllBetweenDates(startDate, endDate, partnerId);
-        Integer totalCompletedTrips = getTotalCompletedTrips(dashboardSummaries);
-        Integer outstandingTrips = getOutstandingTrips(dashboardSummaries);
-        Double totalEarnings = getTotalEarnings(dashboardSummaries);
-        Double outstandingAmount = getOutstandingAmount(dashboardSummaries);
+        Integer totalCompletedTrips = tripRequestRepository.countByPartnerIDAndStatus(partnerId, StatusConstants.COMPLETED,startDate, endDate);
+        Integer outstandingTrips = tripRequestRepository.countByPartnerIDAndStatus(partnerId, StatusConstants.PENDING, startDate, endDate);
+
+//        Double totalEarnings = getTotalEarnings(dashboardSummaries);
+//        Double outstandingAmount = getOutstandingAmount(dashboardSummaries);
 
         Boolean isActive = true;
         LocalDate localDate = LocalDate.now();
@@ -85,20 +85,29 @@ public class DashboardSummaryService {
         Integer completedTrip = tripRequestRepository.countByPartnerIDAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(partnerId, StatusConstants.COMPLETED, isActive, date);
         Integer ongoingTrip = tripRequestRepository.countByPartnerIDAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(partnerId, StatusConstants.ONGOING, isActive, date);
 
+        Integer availablePartnerAsset = partnerAssetRepository.countByPartnerId(partnerId, StatusConstants.AVAILABLE, isActive);
+        Integer intransitPartnerAsset = partnerAssetRepository.countByPartnerId(partnerId, StatusConstants.INTRANSIT, isActive);
+
+
+
+
         DashboardResponseDto responseDto = new DashboardResponseDto();
 
         responseDto.setPartnerId(partnerId);
 
         responseDto.setIncomingTrip(incomingTrip);
         responseDto.setCancelledTrip(cancelledTrip);
-        responseDto.setOutgoingTrip(ongoingTrip);
+        responseDto.setOngoingTrip(ongoingTrip);
         responseDto.setCompletedTrip(completedTrip);
 
 
         responseDto.setTotalCompletedTrips(totalCompletedTrips);
         responseDto.setOutstandingTrips(outstandingTrips);
-        responseDto.setTotalEarnings(totalEarnings);
-        responseDto.setOutstandingAmount(outstandingAmount);
+//        responseDto.setTotalEarnings(totalEarnings);
+//        responseDto.setOutstandingAmount(outstandingAmount);
+
+        responseDto.setAvailablePartnerAsset(availablePartnerAsset);
+        responseDto.setInTransitPartnerAsset(intransitPartnerAsset);
 
         responseDto.setTripAsset(getTripToAsset(partnerId, isActive));
 
