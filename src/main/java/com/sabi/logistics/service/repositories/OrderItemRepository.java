@@ -24,10 +24,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long>, Jpa
 
     List<OrderItem> findByIsActive(Boolean isActive);
 
-    List<OrderItem>findByWareHouseID(Long warehouseID);
-
     List<OrderItem> findByOrderID(Long orderID);
-
-    OrderItem findOrderItemByWareHouseID(Long wareHouseId);
 
 }

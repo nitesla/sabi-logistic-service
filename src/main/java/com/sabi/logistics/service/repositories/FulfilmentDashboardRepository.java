@@ -12,14 +12,21 @@ import java.util.List;
 @Repository
 public interface FulfilmentDashboardRepository extends JpaRepository<FulfilmentDashboard, Long> {
 
-//    @Query("SELECT l FROM FulfilmentDashboard l WHERE ((:date IS NULL) OR (:date IS NOT NULL AND l.date = :date))"
-////            " AND ((:createdDate IS NULL) OR (:createdDate IS NOT NULL AND l.createdDate >= :createdDate))"
-////            " AND ((:productName IS NULL) OR (:productName IS NOT NULL AND c.productName = :productName))"
-//
-//    )
-@Query(value = "SELECT d FROM FulfilmentDashboard d WHERE ((:startDate IS NULL) OR (:startDate IS NOT NULL AND d.date >= :startDate)) AND ((:endDate IS NULL) OR (:endDate IS NOT NULL AND  d.date <= :endDate))"
+@Query(value = "SELECT d FROM FulfilmentDashboard d WHERE ((:startDate IS NULL) OR (:startDate IS NOT NULL AND d.date >= :startDate)) " +
+        "AND ((:endDate IS NULL) OR (:endDate IS NOT NULL AND  d.date <= :endDate)) " +
+        "AND ((:wareHouseId IS NULL) OR (:wareHouseId IS NOT NULL AND  d.wareHouseId = :wareHouseId)) " +
+        "AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND  d.partnerId = :partnerId))"
         )
-    List<FulfilmentDashboard> findByDate(
+
+
+//@Query("SELECT c FROM FulfilmentDashboard c WHERE ((:startDate IS NULL) OR (:startDate IS NOT NULL AND c.date >= :startDate))" +
+//        " AND ((:endDate IS NULL) OR (:endDate IS NOT NULL AND c.date = :endDate))" +
+//        " AND ((:wareHouseId IS NULL) OR (:wareHouseId IS NOT NULL AND c.wareHouseId = :wareHouseId))" +
+//        " AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND c.partnerId = :partnerId))"
+//)
+    List<FulfilmentDashboard> findFulfilmentDashboardInfo(
                                             @Param("startDate") LocalDateTime startDate,
-                                            @Param("endDate") LocalDateTime endDate);
+                                            @Param("endDate") LocalDateTime endDate,
+                                            @Param("wareHouseId") Long wareHouseId,
+                                             @Param("partnerId") Long partnerId);
 }
