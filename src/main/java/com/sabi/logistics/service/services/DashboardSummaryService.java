@@ -71,11 +71,12 @@ public class DashboardSummaryService {
 
 
     public DashboardResponseDto getDashboardSummary(Long partnerId, LocalDateTime startDate, LocalDateTime endDate) {
+        List<DashboardSummary> dashboardSummaries = dashboardSummaryRepository.getAllBetweenDates(startDate, endDate, partnerId);
         Integer totalCompletedTrips = tripRequestRepository.countByPartnerIDAndStatus(partnerId, StatusConstants.COMPLETED,startDate, endDate);
         Integer outstandingTrips = tripRequestRepository.countByPartnerIDAndStatus(partnerId, StatusConstants.PENDING, startDate, endDate);
 
-//        Double totalEarnings = getTotalEarnings(dashboardSummaries);
-//        Double outstandingAmount = getOutstandingAmount(dashboardSummaries);
+        Double totalEarnings = getTotalEarnings(dashboardSummaries);
+        Double outstandingAmount = getOutstandingAmount(dashboardSummaries);
 
         Boolean isActive = true;
         LocalDate localDate = LocalDate.now();
@@ -103,8 +104,8 @@ public class DashboardSummaryService {
 
         responseDto.setTotalCompletedTrips(totalCompletedTrips);
         responseDto.setOutstandingTrips(outstandingTrips);
-//        responseDto.setTotalEarnings(totalEarnings);
-//        responseDto.setOutstandingAmount(outstandingAmount);
+        responseDto.setTotalEarnings(totalEarnings);
+        responseDto.setOutstandingAmount(outstandingAmount);
 
         responseDto.setAvailablePartnerAsset(availablePartnerAsset);
         responseDto.setInTransitPartnerAsset(intransitPartnerAsset);
