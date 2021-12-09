@@ -1,11 +1,11 @@
 package com.sabi.logistics.service.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sabi.framework.exceptions.ConflictException;
-import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.TripAssetDto;
 import com.sabi.logistics.core.dto.response.DashboardResponseDto;
-import com.sabi.logistics.core.models.*;
+import com.sabi.logistics.core.models.DashboardSummary;
+import com.sabi.logistics.core.models.PartnerAsset;
+import com.sabi.logistics.core.models.TripRequest;
 import com.sabi.logistics.service.helper.StatusConstants;
 import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
@@ -160,17 +160,17 @@ public class DashboardSummaryService {
 
             Integer trip = tripRequestRepository.countByPartnerIDAndPartnerAssetID(partnerId, asset.getId());
 
-            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.findPartnerAssetTypeById(asset.getPartnerAssetTypeId());
-            if (partnerAssetType == null) {
-                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAssetType Id");
-            }
+//            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.findPartnerAssetTypeById(asset.getPartnerAssetTypeId());
+//            if (partnerAssetType == null) {
+//                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAssetType Id");
+//            }
+//
+//            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
+//            if (assetTypeProperties == null) {
+//                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid AssetTypeProperties Id");
+//            }
 
-            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
-            if (assetTypeProperties == null) {
-                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid AssetTypeProperties Id");
-            }
-
-            asset.setAssetTypeName(assetTypeProperties.getName());
+//            asset.setAssetTypeName(asset.getName());
 
             TripAssetDto tripAsset = new TripAssetDto();
 
