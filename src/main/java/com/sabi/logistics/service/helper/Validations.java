@@ -383,7 +383,7 @@ public class Validations {
 
         if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
-        if (!("Pending".equalsIgnoreCase(request.getDeliveryStatus()) || "Ongoing".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus())))
+        if (!("Pending".equalsIgnoreCase(request.getDeliveryStatus()) || "Ongoing".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus()) ||"Cancelled".equalsIgnoreCase(request.getDeliveryStatus())))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Delivery Status");
         if (!Utility.validateName(request.getDeliveryStatus().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Delivery Status ");
@@ -636,6 +636,16 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name can not start with a number");
         }
     }
+
+    public void validateFulfilment(FulfilmentDashboardDto request) {
+        Warehouse warehouse = warehouseRepository.findWarehouseById(request.getWareHouseId());
+        if (warehouse == null){
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " warehouse does not exist");
+
+        }
+    }
+
+
 
 
 

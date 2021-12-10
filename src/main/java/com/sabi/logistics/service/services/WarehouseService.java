@@ -107,8 +107,8 @@ public class WarehouseService {
     }
 
 
-    public Page<Warehouse> findAll(String owner, String name, Long partnerId, Long lgaId, PageRequest pageRequest) {
-        Page<Warehouse> warehouse = warehouseRepository.findWarehouse(owner, name, partnerId, lgaId, pageRequest);
+    public Page<Warehouse> findAll(String owner, String name, Long partnerId, boolean isActive,Long lgaId, PageRequest pageRequest) {
+        Page<Warehouse> warehouse = warehouseRepository.findWarehouse(owner, name, partnerId,isActive, lgaId, pageRequest);
         if (warehouse == null) {
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
@@ -134,8 +134,8 @@ public class WarehouseService {
     }
 
 
-    public List<Warehouse> getAll(Boolean isActive) {
-        List<Warehouse> warehouses = warehouseRepository.findByIsActive(isActive);
+    public List<Warehouse> getAll(Boolean isActive,Long partnerId) {
+        List<Warehouse> warehouses = warehouseRepository.findWarehouses(isActive,partnerId);
         return warehouses;
 
     }
