@@ -1,11 +1,11 @@
 package com.sabi.logistics.service.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sabi.framework.exceptions.ConflictException;
-import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.TripAssetDto;
 import com.sabi.logistics.core.dto.response.DashboardResponseDto;
-import com.sabi.logistics.core.models.*;
+import com.sabi.logistics.core.models.DashboardSummary;
+import com.sabi.logistics.core.models.PartnerAsset;
+import com.sabi.logistics.core.models.TripRequest;
 import com.sabi.logistics.service.helper.StatusConstants;
 import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
@@ -72,8 +72,9 @@ public class DashboardSummaryService {
 
     public DashboardResponseDto getDashboardSummary(Long partnerId, LocalDateTime startDate, LocalDateTime endDate) {
         List<DashboardSummary> dashboardSummaries = dashboardSummaryRepository.getAllBetweenDates(startDate, endDate, partnerId);
-        Integer totalCompletedTrips = getTotalCompletedTrips(dashboardSummaries);
-        Integer outstandingTrips = getOutstandingTrips(dashboardSummaries);
+        Integer totalCompletedTrips = tripRequestRepository.countByPartnerIDAndStatus(partnerId, StatusConstants.COMPLETED,startDate, endDate);
+        Integer outstandingTrips = tripRequestRepository.countByPartnerIDAndStatus(partnerId, StatusConstants.PENDING, startDate, endDate);
+
         Double totalEarnings = getTotalEarnings(dashboardSummaries);
         Double outstandingAmount = getOutstandingAmount(dashboardSummaries);
 
@@ -85,13 +86,19 @@ public class DashboardSummaryService {
         Integer completedTrip = tripRequestRepository.countByPartnerIDAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(partnerId, StatusConstants.COMPLETED, isActive, date);
         Integer ongoingTrip = tripRequestRepository.countByPartnerIDAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(partnerId, StatusConstants.ONGOING, isActive, date);
 
+        Integer availablePartnerAsset = partnerAssetRepository.countByPartnerId(partnerId, StatusConstants.AVAILABLE, isActive);
+        Integer intransitPartnerAsset = partnerAssetRepository.countByPartnerId(partnerId, StatusConstants.INTRANSIT, isActive);
+
+
+
+
         DashboardResponseDto responseDto = new DashboardResponseDto();
 
         responseDto.setPartnerId(partnerId);
 
         responseDto.setIncomingTrip(incomingTrip);
         responseDto.setCancelledTrip(cancelledTrip);
-        responseDto.setOutgoingTrip(ongoingTrip);
+        responseDto.setOngoingTrip(ongoingTrip);
         responseDto.setCompletedTrip(completedTrip);
 
 
@@ -99,6 +106,9 @@ public class DashboardSummaryService {
         responseDto.setOutstandingTrips(outstandingTrips);
         responseDto.setTotalEarnings(totalEarnings);
         responseDto.setOutstandingAmount(outstandingAmount);
+
+        responseDto.setAvailablePartnerAsset(availablePartnerAsset);
+        responseDto.setInTransitPartnerAsset(intransitPartnerAsset);
 
         responseDto.setTripAsset(getTripToAsset(partnerId, isActive));
 
@@ -150,17 +160,17 @@ public class DashboardSummaryService {
 
             Integer trip = tripRequestRepository.countByPartnerIDAndPartnerAssetID(partnerId, asset.getId());
 
-            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.findPartnerAssetTypeById(asset.getPartnerAssetTypeId());
-            if (partnerAssetType == null) {
-                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAssetType Id");
-            }
+//            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.findPartnerAssetTypeById(asset.getPartnerAssetTypeId());
+//            if (partnerAssetType == null) {
+//                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAssetType Id");
+//            }
+//
+//            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
+//            if (assetTypeProperties == null) {
+//                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid AssetTypeProperties Id");
+//            }
 
-            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
-            if (assetTypeProperties == null) {
-                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid AssetTypeProperties Id");
-            }
-
-            asset.setAssetTypeName(assetTypeProperties.getName());
+//            asset.setAssetTypeName(asset.getName());
 
             TripAssetDto tripAsset = new TripAssetDto();
 
