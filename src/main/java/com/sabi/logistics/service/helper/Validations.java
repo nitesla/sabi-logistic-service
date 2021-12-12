@@ -11,6 +11,7 @@ import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.*;
+import com.sabi.logistics.core.enums.TransAction;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +56,9 @@ public class Validations {
 
     @Autowired
     private DriverAssetRepository driverAssetRepository;
+
+    @Autowired
+    private  DriverWalletRepository driverWalletRepository;
 
 
 
@@ -645,11 +649,28 @@ public class Validations {
         }
     }
 
+    public void validateDriverWallet(DriverWalletDto request){
+        Driver driver = driverRepository.findById(request.getDriverId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid driver!"));
+        if (request.getAmount() == null || request.getAmount().equals("") )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "amount cannot be empty");
+        if (!TransAction.DEPOSIT.equals(request.getAction())  &&  !TransAction.WITHDRAWAL.equals(request.getAction()))
+            throw  new BadRequestException(CustomResponseCode.BAD_REQUEST,"please enter a valid action : DEPOSIT OR WITHDRAWAL");
+    }
 
-
-
-
-
+    public void validateWalletTransaction(WalletTransactionDto request){
+        DriverWallet driverWallet = driverWalletRepository.findById(request.getDriverWalletId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid driver wallet!"));
+//        DriverWallet driverWallet = driverWalletRepository.findById(request.getDriverWalletId())
+//                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                        " Enter a valid driver wallet!"));
+        if (request.getAmount() == null || request.getAmount().equals("") )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "amount cannot be empty");
+        if (!TransAction.DEPOSIT.equals(request.getAction())  &&  !TransAction.WITHDRAWAL.equals(request.getAction()))
+            throw  new BadRequestException(CustomResponseCode.BAD_REQUEST,"please enter a valid action : DEPOSIT OR WITHDRAWAL");
+    }
 }
 
 
