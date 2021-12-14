@@ -11,6 +11,7 @@ import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.*;
+import com.sabi.logistics.core.enums.TransAction;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +59,9 @@ public class Validations {
 
     @Autowired
     private DropOffRepository dropOffRepository;
+
+    @Autowired
+    private  DriverWalletRepository driverWalletRepository;
 
 
 
@@ -386,7 +390,7 @@ public class Validations {
 
         if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
-        if (!("Pending".equalsIgnoreCase(request.getDeliveryStatus()) || "Ongoing".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus())))
+        if (!("Pending".equalsIgnoreCase(request.getDeliveryStatus()) || "Ongoing".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus()) ||"Cancelled".equalsIgnoreCase(request.getDeliveryStatus())))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Delivery Status");
         if (!Utility.validateName(request.getDeliveryStatus().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Delivery Status ");
@@ -688,9 +692,36 @@ public class Validations {
         }
     }
 
+    public void validateFulfilment(FulfilmentDashboardDto request) {
+        Warehouse warehouse = warehouseRepository.findWarehouseById(request.getWareHouseId());
+        if (warehouse == null){
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " warehouse does not exist");
 
+        }
+    }
 
+    public void validateDriverWallet(DriverWalletDto request){
+        Driver driver = driverRepository.findById(request.getDriverId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid driver!"));
+        if (request.getAmount() == null || request.getAmount().equals("") )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "amount cannot be empty");
+        if (!TransAction.DEPOSIT.equals(request.getAction())  &&  !TransAction.WITHDRAWAL.equals(request.getAction()))
+            throw  new BadRequestException(CustomResponseCode.BAD_REQUEST,"please enter a valid action : DEPOSIT OR WITHDRAWAL");
+    }
 
+    public void validateWalletTransaction(WalletTransactionDto request){
+        DriverWallet driverWallet = driverWalletRepository.findById(request.getDriverWalletId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid driver wallet!"));
+//        DriverWallet driverWallet = driverWalletRepository.findById(request.getDriverWalletId())
+//                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                        " Enter a valid driver wallet!"));
+        if (request.getAmount() == null || request.getAmount().equals("") )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "amount cannot be empty");
+        if (!TransAction.DEPOSIT.equals(request.getAction())  &&  !TransAction.WITHDRAWAL.equals(request.getAction()))
+            throw  new BadRequestException(CustomResponseCode.BAD_REQUEST,"please enter a valid action : DEPOSIT OR WITHDRAWAL");
+    }
 }
 
 

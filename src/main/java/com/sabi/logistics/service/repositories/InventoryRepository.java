@@ -18,6 +18,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     Inventory findByShippingId(Long shippingId);
     List<Inventory> findByIsActive(Boolean isActive);
 
+
     @Query("SELECT c FROM Inventory c WHERE ((:thirdPartyId IS NULL) OR (:thirdPartyId IS NOT NULL AND c.thirdPartyId = :thirdPartyId))" +
             " AND ((:productName IS NULL) OR (:productName IS NOT NULL AND c.productName = :productName))" +
 //            " AND ((:qty IS NULL) OR (:qty IS NOT NULL AND c.qty = :qty))" +
