@@ -18,18 +18,16 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
 
     List<TripRequest> findByIsActive(Boolean isActive);
 
-    TripRequest findByPartnerID(Long partnerId );
-
-    Integer countByPartnerIDAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(Long partnerId, String deliveryStatus, Boolean isActive, LocalDateTime date);
+    Integer countByPartnerIdAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(Long partnerId, String deliveryStatus, Boolean isActive, LocalDateTime date);
 
     List<TripRequest> findByCreatedDate(LocalDateTime date);
 
-    Integer countByPartnerIDAndPartnerAssetID(Long partnerId, Long partnerAssetId);
+    Integer countByPartnerIdAndPartnerAssetId(Long partnerId, Long partnerAssetId);
 
-    List<TripRequest> findByPartnerIDAndIsActive(Long partnerId, Boolean isActive);
+//    List<TripRequest> findByPartnerIdAndIsActive(Long partnerId, Boolean isActive);
 
     @Query(value = "SELECT Count(d) FROM TripRequest d WHERE ((:startDate IS NULL) OR (:startDate IS NOT NULL AND d.createdDate >= :startDate)) AND ((:endDate IS NULL) OR (:endDate IS NOT NULL AND  d.createdDate <= :endDate))" +
-            " AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND d.partnerID = :partnerId))" +
+            " AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND d.partnerId = :partnerId))" +
             " AND ((:status IS NULL) OR (:status IS NOT NULL AND d.status = :status))")
     Integer countByPartnerIDAndStatus(@Param("partnerId") Long partnerId, @Param("status") String status, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 

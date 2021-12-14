@@ -56,6 +56,9 @@ public class Validations {
     @Autowired
     private DriverAssetRepository driverAssetRepository;
 
+    @Autowired
+    private DropOffRepository dropOffRepository;
+
 
 
 
@@ -417,28 +420,24 @@ public class Validations {
 
     public void validateOrderItem (OrderItemRequestDto request){
 
-        if(request.getWareHouseID() == null)
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " wareHouseID can not be null");
-        if (!Utility.isNumeric(request.getWareHouseID().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for wareHouseID ");
+        if(request.getWareHouseId() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " wareHouseId can not be null");
+        if (!Utility.isNumeric(request.getWareHouseId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for wareHouseId ");
 
         if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
         if (!("Pending".equalsIgnoreCase(request.getDeliveryStatus()) || "InTransit".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus())))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Delivery Status");
-        if (!Utility.validateName(request.getDeliveryStatus().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Delivery Status ");
 
-        if (request.getOrderID() == null )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderID cannot be empty");
-        if (!Utility.isNumeric(request.getOrderID().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for orderID ");
+        if (request.getOrderId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderId cannot be empty");
+        if (!Utility.isNumeric(request.getOrderId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for orderId ");
 
 
-        if (request.getName() == null || request.getName().isEmpty() )
+        if (request.getProductName() == null || request.getProductName().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
-        if (!Utility.validateName(request.getName().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Name ");
 
         if (request.getQty() == null )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Qty cannot be empty");
@@ -446,28 +445,28 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Qty");
 
 
-        orderRepository.findById(request.getOrderID()).orElseThrow(() ->
+        orderRepository.findById(request.getOrderId()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " orderID does not Exist!")
+                        " orderId does not Exist!")
         );
 
-        warehouseRepository.findById(request.getWareHouseID()).orElseThrow(() ->
+        warehouseRepository.findById(request.getWareHouseId()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " Warehouse ID does not Exist!")
+                        " Warehouse Id does not Exist!")
         );
     }
 
     public void validateTripRequestResponse (TripRequestResponseReqDto request){
 
-        if (request.getTripRequestID() == null )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "tripRequestID cannot be empty");
-        if (!Utility.isNumeric(request.getTripRequestID().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for tripRequestID ");
+        if (request.getTripRequestId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "tripRequestId cannot be empty");
+        if (!Utility.isNumeric(request.getTripRequestId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for tripRequestId ");
 
-        if (request.getPartnerID() == null )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "partnerID cannot be empty");
-        if (!Utility.isNumeric(request.getPartnerID().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerID");
+        if (request.getPartnerId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "partnerId cannot be empty");
+        if (!Utility.isNumeric(request.getPartnerId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerId");
 
         if (request.getStatus() == null || request.getStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
@@ -475,44 +474,77 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
 
 
-        tripRequestRepository.findById(request.getTripRequestID()).orElseThrow(() ->
+        tripRequestRepository.findById(request.getTripRequestId()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " tripRequestID does not Exist!")
+                        " tripRequestId does not Exist!")
         );
 
-        partnerRepository.findById(request.getPartnerID()).orElseThrow(() ->
+        partnerRepository.findById(request.getPartnerId()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " partnerID does not Exist!")
+                        " partnerId does not Exist!")
         );
     }
 
-    public void validateTripItem (TripItemRequestDto request){
+    public void validateDropOffItem (DropOffItemRequestDto request){
 
-        if (request.getTripRequestID() == null )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "tripRequestID cannot be empty");
-        if (!Utility.isNumeric(request.getTripRequestID().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for tripRequestID ");
+        if (request.getDropOffId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "dropOffId cannot be empty");
+        if (!Utility.isNumeric(request.getDropOffId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for dropOffId ");
 
-        if (request.getOrderItemID() == null )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderItemID cannot be empty");
-        if (!Utility.isNumeric(request.getOrderItemID().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for orderItemID");
+        if (request.getOrderItemId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderItemId cannot be empty");
+        if (!Utility.isNumeric(request.getOrderItemId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for orderItemId");
 
         if (request.getStatus() == null || request.getStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
-        if (!("Completed".equalsIgnoreCase(request.getStatus()) || "InTransit".equalsIgnoreCase(request.getStatus()) || "Returned".equalsIgnoreCase(request.getStatus())|| "Pending".equalsIgnoreCase(request.getStatus())))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
 
 
-
-        tripRequestRepository.findById(request.getTripRequestID()).orElseThrow(() ->
+        orderItemRepository.findById(request.getOrderItemId()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " tripRequestID does not Exist!")
+                        " orderItemId does not Exist!")
+        );
+        dropOffRepository.findById(request.getDropOffId()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " dropOffId does not Exist!")
+        );
+    }
+
+    public void validateDropOff (DropOffRequestDto request){
+
+        if (request.getTripRequestId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "tripRequestId cannot be empty");
+        if (!Utility.isNumeric(request.getTripRequestId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for tripRequestId ");
+
+
+        if (request.getPhoneNo() == null || request.getPhoneNo().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Phone number cannot be empty");
+        if (request.getPhoneNo().length() < 8 || request.getPhoneNo().length() > 14)// NAME LENGTH*********
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid phone number  length");
+        if (!Utility.isNumeric(request.getPhoneNo()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for phone number ");
+
+        if (request.getEmail() == null || request.getEmail().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "email cannot be empty");
+        if (!Utility.validEmail(request.getEmail().trim()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid Email Address");
+
+        if (request.getOrderId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderId cannot be empty");
+        if (!Utility.isNumeric(request.getOrderId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for orderId ");
+
+
+        tripRequestRepository.findById(request.getTripRequestId()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " tripRequestId does not Exist!")
         );
 
-        orderItemRepository.findById(request.getOrderItemID()).orElseThrow(() ->
+        orderRepository.findById(request.getOrderId()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " orderItemID does not Exist!")
+                        " orderId does not Exist!")
         );
     }
 
@@ -542,11 +574,11 @@ public class Validations {
 
     public void validateTripRequest (TripRequestDto request){
 
-        if (!Utility.isNumeric(request.getPartnerID().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerID ");
+        if (!Utility.isNumeric(request.getPartnerId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerId ");
 
-        if (!Utility.isNumeric(request.getPartnerAssetID().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerAssetID ");
+        if (!Utility.isNumeric(request.getPartnerAssetId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerAssetId ");
 
         if (request.getStatus() == null || request.getStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
@@ -557,6 +589,25 @@ public class Validations {
         warehouseRepository.findById(request.getWareHouseId()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " wareHouseId does not Exist!")
+        );
+    }
+
+    public void validateTripItem (TripItemRequestDto request){
+
+        if (request.getTripRequestId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "tripRequestId cannot be empty");
+        if (!Utility.isNumeric(request.getTripRequestId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for tripRequestId ");
+
+        if (request.getThirdPartyProductId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "thirdPartyProductId cannot be empty");
+        if (!Utility.isNumeric(request.getThirdPartyProductId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for thirdPartyProductId ");
+
+
+        tripRequestRepository.findById(request.getTripRequestId()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " tripRequestId does not Exist!")
         );
     }
 

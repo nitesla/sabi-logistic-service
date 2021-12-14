@@ -164,8 +164,8 @@ public class OrderService {
 
     }
 
-    public List<OrderItem> getAllOrderItems(Long orderID){
-        List<OrderItem> orderItems = orderItemRepository.findByOrderID(orderID);
+    public List<OrderItem> getAllOrderItems(Long orderId){
+        List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
         return orderItems;
 
     }
