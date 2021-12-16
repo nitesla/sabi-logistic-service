@@ -8,6 +8,7 @@ import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.OrderItemRequestDto;
+import com.sabi.logistics.core.dto.request.PartnerAssetPictureDto;
 import com.sabi.logistics.core.dto.response.OrderItemResponseDto;
 import com.sabi.logistics.core.models.OrderItem;
 import com.sabi.logistics.core.models.Warehouse;
@@ -24,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -60,6 +62,25 @@ public class OrderItemService {
         OrderItemResponseDto orderItemResponseDto = mapper.map(orderItem, OrderItemResponseDto.class);
         orderItemResponseDto.setWareHouseName(warehouse.getName());
         return orderItemResponseDto;
+    }
+
+    public  List<OrderItemResponseDto> createOrderItems(List<OrderItemRequestDto> requests) {
+        List<OrderItemResponseDto> responseDtos = new ArrayList<>();
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        requests.forEach(request->{
+            validations.validateOrderItem(request);
+            OrderItem orderItem = mapper.map(request,OrderItem.class);
+            OrderItem exist = orderItemRepository.findByName(request.getName());
+            if(exist !=null){
+                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " order item already exist");
+            }
+            orderItem.setCreatedBy(userCurrent.getId());
+            orderItem.setIsActive(true);
+            orderItem = orderItemRepository.save(orderItem);
+            log.debug("Create new asset picture - {}"+ new Gson().toJson(orderItem));
+            responseDtos.add(mapper.map(orderItem, OrderItemResponseDto.class));
+        });
+        return responseDtos;
     }
 
     public OrderItemResponseDto updateOrderItem(OrderItemRequestDto request) {
