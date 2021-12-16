@@ -10,15 +10,14 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.DropOffRequestDto;
 import com.sabi.logistics.core.dto.response.DropOffResponseDto;
 import com.sabi.logistics.core.models.DropOff;
+import com.sabi.logistics.core.models.DropOffItem;
 import com.sabi.logistics.core.models.Order;
+import com.sabi.logistics.core.models.OrderItem;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
-import com.sabi.logistics.service.repositories.DropOffRepository;
-import com.sabi.logistics.service.repositories.OrderItemRepository;
-import com.sabi.logistics.service.repositories.OrderRepository;
-import com.sabi.logistics.service.repositories.TripRequestRepository;
+import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +42,9 @@ public class DropOffService {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private DropOffItemRepository dropOffItemRepository;
 
     @Autowired
     private TripRequestRepository tripRequestRepository;
@@ -86,7 +88,13 @@ public class DropOffService {
         DropOff dropOff  = dropOffRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested DropOff Id does not exist!"));
-        return mapper.map(dropOff, DropOffResponseDto.class);
+        DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
+        Order order = orderRepository.getOne(dropOff.getOrderId());
+        dropOffResponseDto.setDropOffItem(getAllDropOffItems(id));
+        dropOffResponseDto.setCustomerName(order.getCustomerName());
+        dropOffResponseDto.setCustomerPhone(order.getCustomerPhone());
+
+        return dropOffResponseDto;
     }
 
 
@@ -136,5 +144,17 @@ public class DropOffService {
 
         return tripItems;
 
+    }
+
+    public List<DropOffItem> getAllDropOffItems(Long dropOffId){
+        List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOffId);
+
+        for (DropOffItem dropOffItem : dropOffItems) {
+            OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
+            Order order = orderRepository.getOne(orderItem.getOrderId());
+            dropOffItem.setCustomerName(order.getCustomerName());
+            dropOffItem.setCustomerPhone(order.getCustomerPhone());
+        }
+        return dropOffItems;
     }
 }

@@ -47,6 +47,10 @@ public class TripRequestService {
     private TripItemRepository tripItemRepository;
 
     @Autowired
+    private DropOffItemRepository dropOffItemRepository;
+
+
+    @Autowired
     private TripRequestResponseRepository tripRequestResponseRepository;
 
     @Autowired
@@ -61,8 +65,11 @@ public class TripRequestService {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private WarehouseRepository warehouseRepository;
+
     public TripRequestService(TripRequestRepository tripRequestRepository, ModelMapper mapper) {
-        this.tripRequestRepository = tripRequestRepository;
+           this.tripRequestRepository = tripRequestRepository;
         this.mapper = mapper;
     }
 
@@ -190,7 +197,7 @@ public class TripRequestService {
         PartnerAsset partnerAsset = partnerAssetRepository.findPartnerAssetById(tripResponseDto.getPartnerAssetId());
         if (partnerAsset == null) {
             throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAsset Id");
-        };
+        }
         tripResponseDto.setPartnerAssetName(partnerAsset.getName());
         Driver driver = driverRepository.findDriverById(tripResponseDto.getDriverId());
 
@@ -201,6 +208,17 @@ public class TripRequestService {
 
         User user2 = userRepository.getOne(driver2.getUserId());
         tripResponseDto.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
+
+        Warehouse warehouse = warehouseRepository.findWarehouseById(tripResponseDto.getWareHouseId());
+        if (warehouse == null) {
+            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid warehouse Id");
+        };
+        tripResponseDto.setWareHouseAddress(warehouse.getAddress());
+        tripResponseDto.setContactPerson(warehouse.getContactPerson());
+        tripResponseDto.setContactEmail(warehouse.getContactEmail());
+        tripResponseDto.setContactPhone(warehouse.getContactPhone());
+
+
         return tripResponseDto;
     }
 
@@ -339,6 +357,17 @@ public class TripRequestService {
     public List<DropOff> getAllDropOffs(Long tripRequestId){
         List<DropOff> dropOffs = dropOffRepository.findByTripRequestId(tripRequestId);
 
+        for (DropOff dropOff : dropOffs) {
+
+            Order order = orderRepository.getOne(dropOff.getOrderId());
+            dropOff.setCustomerName(order.getCustomerName());
+            dropOff.setCustomerPhone(order.getCustomerPhone());
+
+            dropOff.setDropOffItem(getAllDropOffItems(dropOff.getId()));
+        }
+
+
+
         return dropOffs;
 
     }
@@ -353,6 +382,22 @@ public class TripRequestService {
         Integer dropOff = dropOffRepository.countByTripRequestId(tripRequestId);
 
         return dropOff;
+
+    }
+
+    public List<DropOffItem> getAllDropOffItems(Long dropOffId){
+        List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOffId);
+
+        for (DropOffItem dropOffItem : dropOffItems) {
+
+            OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
+            Order order = orderRepository.getOne(orderItem.getOrderId());
+            dropOffItem.setCustomerName(order.getCustomerName());
+            dropOffItem.setCustomerPhone(order.getCustomerPhone());
+        }
+
+
+        return dropOffItems;
 
     }
 
