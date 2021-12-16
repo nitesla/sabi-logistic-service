@@ -70,7 +70,7 @@ public class DropOffItemService {
         OrderItem orderItem = orderItemRepository.getOne(request.getOrderItemId());
         Order order = orderRepository.getOne(orderItem.getOrderId());
         DropOff dropOff = dropOffRepository.getOne(request.getDropOffId());
-            dropOffItem.setCreatedBy(userCurrent.getId());
+        dropOffItem.setCreatedBy(userCurrent.getId());
         dropOffItem.setIsActive(true);
         dropOffItem = dropOffItemRepository.save(dropOffItem);
         log.debug("Create new trip item - {}"+ new Gson().toJson(dropOffItem));

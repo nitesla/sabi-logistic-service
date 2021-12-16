@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-
+@SuppressWarnings("All")
 @Repository
 public interface DropOffRepository extends JpaRepository<DropOff, Long>, JpaSpecificationExecutor<DropOff> {
 

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-
+@SuppressWarnings("All")
 @Repository
 public interface DropOffItemRepository extends JpaRepository<DropOffItem, Long>, JpaSpecificationExecutor<DropOffItem> {
 
@@ -25,6 +25,8 @@ public interface DropOffItemRepository extends JpaRepository<DropOffItem, Long>,
     @Query("SELECT ti from DropOffItem ti inner join OrderItem oi on ti.orderItemId = oi.id  where ((:orderId IS NULL) OR (oi.orderId = :orderId)) and ((:dropOffId IS NULL) OR(ti.dropOffId = :dropOffId))")
     List<DropOffItem> findByDropOffIdAndOrderId(@Param("dropOffId")Long dropOffId,
                                                 @Param("orderId") Long orderId);
+
+    List<DropOffItem> findByDropOffId(Long dropOffId);
 
 
 }
