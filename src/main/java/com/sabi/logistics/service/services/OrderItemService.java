@@ -71,9 +71,10 @@ public class OrderItemService {
         requests.forEach(request->{
             validations.validateOrderItem(request);
             OrderItem orderItem = mapper.map(request,OrderItem.class);
-            OrderItem exist = orderItemRepository.findByName(request.getName());
-            if(exist !=null){
-                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " order item already exist");
+            OrderItem orderItemExists = orderItemRepository.findByThirdPartyProductId(orderItem.getThirdPartyProductId());
+
+            if(orderItemExists !=null){
+                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order Item already exist");
             }
             orderItem.setCreatedBy(userCurrent.getId());
             orderItem.setIsActive(true);
