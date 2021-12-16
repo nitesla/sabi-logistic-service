@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("All")
 @Service
 @Slf4j
 public class OrderItemService {
@@ -49,12 +50,12 @@ public class OrderItemService {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         OrderItem orderItem = mapper.map(request,OrderItem.class);
 
-        OrderItem orderItemExists = orderItemRepository.findByName(orderItem.getName());
+        OrderItem orderItemExists = orderItemRepository.findByThirdPartyProductId(orderItem.getThirdPartyProductId());
 
         if(orderItemExists !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order Item already exist");
         }
-        Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseID());
+        Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseId());
         orderItem.setCreatedBy(userCurrent.getId());
         orderItem.setIsActive(true);
         orderItem = orderItemRepository.save(orderItem);
@@ -95,8 +96,8 @@ public class OrderItemService {
         orderItemRepository.save(orderItem);
         log.debug("color record updated - {}"+ new Gson().toJson(orderItem));
         OrderItemResponseDto orderItemResponseDto = mapper.map(orderItem, OrderItemResponseDto.class);
-        if(request.getWareHouseID() != null ) {
-            Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseID());
+        if(request.getWareHouseId() != null ) {
+            Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseId());
             orderItemResponseDto.setWareHouseName(warehouse.getName());
         }
 
@@ -111,14 +112,14 @@ public class OrderItemService {
     }
 
 
-    public Page<OrderItem> findAll(Long wareHouseID, String referenceNo, String deliveryStatus, Long partnerAssetID,
+    public Page<OrderItem> findAll(Long wareHouseId, String referenceNo, String deliveryStatus, Long partnerAssetId,
                                    String name, Integer qty, PageRequest pageRequest ){
 
         GenericSpecification<OrderItem> genericSpecification = new GenericSpecification<OrderItem>();
 
-        if (wareHouseID != null)
+        if (wareHouseId != null)
         {
-            genericSpecification.add(new SearchCriteria("wareHouseID", wareHouseID, SearchOperation.EQUAL));
+            genericSpecification.add(new SearchCriteria("wareHouseId", wareHouseId, SearchOperation.EQUAL));
         }
 
         if (referenceNo != null && !referenceNo.isEmpty())
@@ -131,9 +132,9 @@ public class OrderItemService {
             genericSpecification.add(new SearchCriteria("deliveryStatus", deliveryStatus, SearchOperation.EQUAL));
         }
 
-        if (partnerAssetID != null)
+        if (partnerAssetId != null)
         {
-            genericSpecification.add(new SearchCriteria("partnerAssetID", partnerAssetID, SearchOperation.EQUAL));
+            genericSpecification.add(new SearchCriteria("partnerAssetId", partnerAssetId, SearchOperation.EQUAL));
         }
 
         if (name != null && !name.isEmpty())
@@ -169,19 +170,18 @@ public class OrderItemService {
 
 
     public List<OrderItem> getAll(Boolean isActive){
-        List<OrderItem> Colors = orderItemRepository.findByIsActive(isActive);
-        return Colors;
+        return orderItemRepository.findByIsActive(isActive);
 
     }
 
-    public Page<OrderItem> getAllDeliveries(Long partnerID, String deliveryStatus, PageRequest pageRequest ){
+    public Page<OrderItem> getAllDeliveries(Long partnerId, String deliveryStatus, PageRequest pageRequest ){
         GenericSpecification<OrderItem> genericSpecification = new GenericSpecification<OrderItem>();
+        if (partnerId != null) {
+            Warehouse warehouse = warehouseRepository.findByPartnerId(partnerId);
 
-        Warehouse warehouse = warehouseRepository.findByPartnerId(partnerID);
-
-        if (warehouse.getId() != null)
-        {
-            genericSpecification.add(new SearchCriteria("wareHouseID", warehouse.getId(), SearchOperation.EQUAL));
+            if (warehouse.getId() != null) {
+                genericSpecification.add(new SearchCriteria("wareHouseId", warehouse.getId(), SearchOperation.EQUAL));
+            }
         }
 
         if (deliveryStatus != null)

@@ -81,10 +81,10 @@ public class DashboardSummaryService {
         Boolean isActive = true;
         LocalDate localDate = LocalDate.now();
         LocalDateTime date = localDate.atStartOfDay();
-        Integer incomingTrip = tripRequestRepository.countByPartnerIDAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(partnerId, StatusConstants.PENDING, isActive, date);
-        Integer cancelledTrip = tripRequestRepository.countByPartnerIDAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(partnerId, StatusConstants.CANCELLED, isActive, date);
-        Integer completedTrip = tripRequestRepository.countByPartnerIDAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(partnerId, StatusConstants.COMPLETED, isActive, date);
-        Integer ongoingTrip = tripRequestRepository.countByPartnerIDAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(partnerId, StatusConstants.ONGOING, isActive, date);
+        Integer incomingTrip = tripRequestRepository.countByPartnerIdAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(partnerId, StatusConstants.PENDING, isActive, date);
+        Integer cancelledTrip = tripRequestRepository.countByPartnerIdAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(partnerId, StatusConstants.CANCELLED, isActive, date);
+        Integer completedTrip = tripRequestRepository.countByPartnerIdAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(partnerId, StatusConstants.COMPLETED, isActive, date);
+        Integer ongoingTrip = tripRequestRepository.countByPartnerIdAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(partnerId, StatusConstants.ONGOING, isActive, date);
 
         Integer availablePartnerAsset = partnerAssetRepository.countByPartnerId(partnerId, StatusConstants.AVAILABLE, isActive);
         Integer intransitPartnerAsset = partnerAssetRepository.countByPartnerId(partnerId, StatusConstants.INTRANSIT, isActive);
@@ -158,7 +158,7 @@ public class DashboardSummaryService {
 
         partnerAssets.forEach(asset->{
 
-            Integer trip = tripRequestRepository.countByPartnerIDAndPartnerAssetID(partnerId, asset.getId());
+            Integer trip = tripRequestRepository.countByPartnerIdAndPartnerAssetId(partnerId, asset.getId());
 
 //            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.findPartnerAssetTypeById(asset.getPartnerAssetTypeId());
 //            if (partnerAssetType == null) {

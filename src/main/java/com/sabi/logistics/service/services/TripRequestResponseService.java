@@ -49,14 +49,14 @@ public class TripRequestResponseService {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         TripRequestResponse requestResponse = mapper.map(request,TripRequestResponse.class);
 
-        TripRequestResponse requestResponseExists = tripRequestResponseRepository.findByTripRequestIDAndPartnerID(requestResponse.getTripRequestID(), requestResponse.getPartnerID());
+        TripRequestResponse requestResponseExists = tripRequestResponseRepository.findByTripRequestIdAndPartnerId(requestResponse.getTripRequestId(), requestResponse.getPartnerId());
 
 
         if(requestResponseExists != null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Trip Request Response already exist");
         }
 
-        Partner partner = partnerRepository.getOne(request.getPartnerID());
+        Partner partner = partnerRepository.getOne(request.getPartnerId());
 
         requestResponse.setCreatedBy(userCurrent.getId());
         requestResponse.setIsActive(true);
@@ -81,8 +81,8 @@ public class TripRequestResponseService {
         log.debug("requestResponse record updated - {}"+ new Gson().toJson(requestResponse));
         TripRequestResponseDto requestResponseDto = mapper.map(requestResponse, TripRequestResponseDto.class);
 
-        if(request.getPartnerID() != null ) {
-            Partner partner = partnerRepository.getOne(request.getPartnerID());
+        if(request.getPartnerId() != null ) {
+            Partner partner = partnerRepository.getOne(request.getPartnerId());
             requestResponseDto.setPartnerName(partner.getName());
         }
         return requestResponseDto;
@@ -97,7 +97,7 @@ public class TripRequestResponseService {
     }
 
 
-    public Page<TripRequestResponse> findAll(Long tripRequest, Long partnerID, String status, PageRequest pageRequest ){
+    public Page<TripRequestResponse> findAll(Long tripRequest, Long partnerId, String status, PageRequest pageRequest ){
         GenericSpecification<TripRequestResponse> genericSpecification = new GenericSpecification<TripRequestResponse>();
 
         if (tripRequest != null)
@@ -105,9 +105,9 @@ public class TripRequestResponseService {
             genericSpecification.add(new SearchCriteria("tripRequest", tripRequest, SearchOperation.EQUAL));
         }
 
-        if (partnerID != null)
+        if (partnerId != null)
         {
-            genericSpecification.add(new SearchCriteria("partnerID", partnerID, SearchOperation.EQUAL));
+            genericSpecification.add(new SearchCriteria("partnerId", partnerId, SearchOperation.EQUAL));
         }
 
         if (status != null && !status.isEmpty())

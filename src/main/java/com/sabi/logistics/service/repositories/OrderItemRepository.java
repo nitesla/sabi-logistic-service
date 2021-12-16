@@ -20,10 +20,10 @@ import java.util.List;
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long>, JpaSpecificationExecutor<OrderItem> {
 
 
-    OrderItem findByName(String name);
+    OrderItem findByThirdPartyProductId(Long thirdPartyProductId);
 
     List<OrderItem> findByIsActive(Boolean isActive);
 
-    List<OrderItem> findByOrderID(Long orderID);
+    List<OrderItem> findByOrderId(Long orderId);
 
 }
