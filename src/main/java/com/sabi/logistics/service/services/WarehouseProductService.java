@@ -12,7 +12,6 @@ import com.sabi.logistics.core.dto.request.WarehouseProductDto;
 import com.sabi.logistics.core.dto.response.WarehouseProductResponseDto;
 import com.sabi.logistics.core.models.WarehouseProduct;
 import com.sabi.logistics.service.helper.Validations;
-import com.sabi.logistics.service.repositories.StateRepository;
 import com.sabi.logistics.service.repositories.WarehouseProductRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -27,7 +26,6 @@ import java.util.List;
 @Service
 @Slf4j
 public class WarehouseProductService {
-
     @Autowired
     private WarehouseProductRepository repository;
     @Autowired
