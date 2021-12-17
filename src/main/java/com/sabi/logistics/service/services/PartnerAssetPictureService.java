@@ -49,10 +49,10 @@ public class PartnerAssetPictureService {
         validations.validatePartnerPicture(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PartnerAssetPicture partnerAssetPicture = mapper.map(request,PartnerAssetPicture.class);
-        PartnerAssetPicture exist = repository.findByPartnerAssetIdAndPictureType(request.getPartnerAssetId(),request.getPictureType());
-        if(exist !=null){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Asset picture already exist");
-        }
+//        PartnerAssetPicture exist = repository.findByPartnerAssetIdAndPictureType(request.getPartnerAssetId(),request.getPictureType());
+//        if(exist !=null){
+//            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Asset picture already exist");
+//        }
         partnerAssetPicture.setCreatedBy(userCurrent.getId());
         partnerAssetPicture.setIsActive(true);
         partnerAssetPicture = repository.save(partnerAssetPicture);
@@ -62,15 +62,16 @@ public class PartnerAssetPictureService {
 
 
     public  List<PartnerAssetPictureResponseDto> createPartnerPictures(List<PartnerAssetPictureDto> requests) {
+//        validations.validatePartnerPicture(requests.);
         List<PartnerAssetPictureResponseDto> responseDtos = new ArrayList<>();
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         requests.forEach(request->{
             validations.validatePartnerPicture(request);
             PartnerAssetPicture partnerAssetPicture = mapper.map(request,PartnerAssetPicture.class);
-            PartnerAssetPicture exist = repository.findByPartnerAssetIdAndPictureType(request.getPartnerAssetId(),request.getPictureType());
-            if(exist !=null){
-                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Asset picture already exist");
-            }
+//            PartnerAssetPicture exist = repository.findByPartnerAssetIdAndPictureType(request.getPartnerAssetId(),request.getPictureType());
+//            if(exist !=null){
+//                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Asset picture already exist");
+//            }
             partnerAssetPicture.setCreatedBy(userCurrent.getId());
             partnerAssetPicture.setIsActive(true);
             partnerAssetPicture = repository.save(partnerAssetPicture);

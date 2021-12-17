@@ -7,16 +7,21 @@ import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabi.logistics.core.dto.request.OrderOrderItemDto;
 import com.sabi.logistics.core.dto.request.OrderRequestDto;
+import com.sabi.logistics.core.dto.response.OrderItemResponseDto;
+import com.sabi.logistics.core.dto.response.OrderOrderItemResponseDto;
 import com.sabi.logistics.core.dto.response.OrderResponseDto;
 import com.sabi.logistics.core.models.Order;
 import com.sabi.logistics.core.models.OrderItem;
+import com.sabi.logistics.core.models.Warehouse;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.OrderItemRepository;
 import com.sabi.logistics.service.repositories.OrderRepository;
+import com.sabi.logistics.service.repositories.WarehouseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +32,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -39,6 +45,8 @@ public class OrderService {
 
     @Autowired
     private OrderItemRepository orderItemRepository;
+    @Autowired
+    private OrderItemService orderItemService;
 
 
     public OrderService(OrderRepository orderRepository, ModelMapper mapper) {
@@ -69,6 +77,39 @@ public class OrderService {
         order = orderRepository.save(order);
         log.debug("Create new order - {}"+ new Gson().toJson(order));
         OrderResponseDto orderResponseDto = mapper.map(order, OrderResponseDto.class);
+        return orderResponseDto;
+    }
+
+    public OrderOrderItemResponseDto createOrderOrderItems(OrderOrderItemDto request) {
+        List<OrderItemResponseDto> responseDtos = new ArrayList<>();
+//        validations.validateOrder(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        Order order = mapper.map(request,Order.class);
+        OrderItem orderItem = mapper.map(request, OrderItem.class);
+
+        order.setReferenceNo(validations.generateReferenceNumber(10));
+        Order orderExists = orderRepository.findByReferenceNo(order.getReferenceNo());
+        if(order.getReferenceNo() == null){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order does not have Reference Number");
+        }
+        if(orderExists != null){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order already exist");
+        }
+
+        order.setBarCode(validations.generateCode(order.getReferenceNo()));
+        order.setQrCode(validations.generateCode(order.getReferenceNo()));
+
+        order.setCreatedBy(userCurrent.getId());
+        order.setIsActive(true);
+        order = orderRepository.save(order);
+        log.debug("Create new order - {}"+ new Gson().toJson(order));
+        OrderOrderItemResponseDto orderResponseDto = mapper.map(order, OrderOrderItemResponseDto.class);
+        log.info("request sent ::::::::::::::::::::::::::::::::: " + request.getOrderItemRequestDto());
+        responseDtos = orderItemService.createOrderItems(request.getOrderItemRequestDto());
+        List<OrderItemResponseDto> finalResponseDtos = responseDtos;
+        responseDtos.forEach(orderItemResponseDto -> {
+            orderResponseDto.setOrderItem(finalResponseDtos);
+        });
         return orderResponseDto;
     }
 

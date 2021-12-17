@@ -63,6 +63,9 @@ public class Validations {
     @Autowired
     private  DriverWalletRepository driverWalletRepository;
 
+    @Autowired
+    private ProductRepository productRepository;
+
 
 
 
@@ -253,8 +256,14 @@ public class Validations {
         PartnerAsset partnerAsset = partnerAssetRepository.findById(partnerAssetPictureDto.getPartnerAssetId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " Enter a valid partner asset id!"));
+        if (partnerAssetPictureDto.getImage() == null || partnerAssetPictureDto.getImage().isEmpty()){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,
+                    " Image can not be empty!");
+        }
+        if (!("Front".equalsIgnoreCase(partnerAssetPictureDto.getPictureType()) || "Side".equalsIgnoreCase(partnerAssetPictureDto.getPictureType()) || "Haulage".equalsIgnoreCase(partnerAssetPictureDto.getPictureType()))) {
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter a correct picture type");
+        }
     }
-
 
 
 
@@ -718,6 +727,32 @@ public class Validations {
         if (!TransAction.DEPOSIT.equals(request.getAction())  &&  !TransAction.WITHDRAWAL.equals(request.getAction()))
             throw  new BadRequestException(CustomResponseCode.BAD_REQUEST,"please enter a valid action : DEPOSIT OR WITHDRAWAL");
     }
+
+    public void validateWarehouseProduct(WarehouseProductDto warehouseProductDto) {
+        if (warehouseProductDto.getProductName() == null || warehouseProductDto.getProductName().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Product Name cannot be empty");
+        String valName = warehouseProductDto.getProductName();
+        char valCharName = valName.charAt(0);
+        if (Character.isDigit(valCharName)){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Product Name can not start with a number");
+        }
+        if(warehouseProductDto.getThirdPartyProductID() == null || warehouseProductDto.getThirdPartyProductID().isEmpty()){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Thirdparty Product id can not be empty");
+        }
+
+        Warehouse warehouse = warehouseRepository.findById(warehouseProductDto.getWarehouseId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid warehouse id!"));
+        if (warehouseProductDto.getThirdPartyProductID() == null || warehouseProductDto.getThirdPartyProductID().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Product Name cannot be empty");
+        if (warehouseProductDto.getQuantityAvailable() < 1)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "quantity avaliable cannot be less than 1");
+        if (warehouseProductDto.getQuantity() < 1)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "quantity cannot be less than 1");
+        if (warehouseProductDto.getQuantitySold() < 1)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "quantity sold cannot be less than 1");
+    }
+
 }
 
 

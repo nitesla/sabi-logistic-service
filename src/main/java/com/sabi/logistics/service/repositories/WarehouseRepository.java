@@ -20,7 +20,7 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
     Page<Warehouse> findWarehouse(@Param("owner") String owner,
                                   @Param("name") String name,
                                   @Param("partnerId") Long partnerId,
-                                  @Param("isActive") boolean isActive,
+                                  @Param("isActive") Boolean isActive,
                                   @Param("lgaId") Long lgaId,
                                   Pageable pageable);
     Warehouse findWarehouseById (Long id);

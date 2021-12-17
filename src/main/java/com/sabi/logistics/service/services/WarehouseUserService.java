@@ -77,7 +77,7 @@ public class WarehouseUserService {
         return mapper.map(warehouseUser, WareHouseUserResponseDto.class);
     }
 
-    public WareHouseUserResponseDto deleteWareHouseUser(Long id){
+public WareHouseUserResponseDto deleteWareHouseUser(Long id){
         WarehouseUser wareHouseUser = wareHouseUserRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested WareHouseUser Id does not exist!"));
@@ -85,8 +85,6 @@ public class WarehouseUserService {
         log.debug("WareHouse User Deleted - {}"+ new Gson().toJson(wareHouseUser));
         return mapper.map(wareHouseUser, WareHouseUserResponseDto.class);
     }
-
-
 
     public Page<WarehouseUser> findAll(Long wareHouseId, PageRequest pageRequest ){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
