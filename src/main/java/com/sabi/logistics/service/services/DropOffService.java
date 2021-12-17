@@ -58,17 +58,20 @@ public class DropOffService {
     public DropOffResponseDto createDropOff(DropOffRequestDto request) {
         validations.validateDropOff(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-        DropOff dropOff = mapper.map(request,DropOff.class);
         DropOff dropOffExists = dropOffRepository.findByTripRequestIdAndOrderId(request.getTripRequestId(), request.getOrderId());
         if(dropOffExists !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " DropOff already exist");
         }
         Order order = orderRepository.getOne(request.getOrderId());
+        DropOff dropOff = mapper.map(request,DropOff.class);
         dropOff.setCreatedBy(userCurrent.getId());
         dropOff.setIsActive(true);
+        dropOff.setDeliveryAddress(order.getDeliveryAddress());
         dropOff = dropOffRepository.save(dropOff);
         log.debug("Create new trip item - {}"+ new Gson().toJson(dropOff));
-        return mapper.map(dropOff, DropOffResponseDto.class);
+        DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
+        dropOffResponseDto.setDeliveryAddress(order.getDeliveryAddress());
+        return dropOffResponseDto;
     }
 
     public DropOffResponseDto updateDropOff(DropOffRequestDto request) {
@@ -77,11 +80,15 @@ public class DropOffService {
         DropOff dropOff = dropOffRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested DropOff Id does not exist!"));
+        Order order = orderRepository.getOne(request.getOrderId());
         mapper.map(request, dropOff);
         dropOff.setUpdatedBy(userCurrent.getId());
+        dropOff.setDeliveryAddress(order.getDeliveryAddress());
         dropOffRepository.save(dropOff);
         log.debug("color record updated - {}"+ new Gson().toJson(dropOff));
-        return mapper.map(dropOff, DropOffResponseDto.class);
+        DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
+        dropOffResponseDto.setDeliveryAddress(order.getDeliveryAddress());
+        return dropOffResponseDto;
     }
 
     public DropOffResponseDto findDropOff(Long id){

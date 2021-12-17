@@ -392,13 +392,9 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
         if (!("Pending".equalsIgnoreCase(request.getDeliveryStatus()) || "Ongoing".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus()) ||"Cancelled".equalsIgnoreCase(request.getDeliveryStatus())))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Delivery Status");
-        if (!Utility.validateName(request.getDeliveryStatus().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Delivery Status ");
 
         if (request.getCustomerName() == null || request.getCustomerName().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Customer Name cannot be empty");
-        if (!Utility.validateName(request.getCustomerName().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Customer Name ");
 
         if (request.getCustomerPhone() == null || request.getCustomerPhone().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Customer Phone cannot be empty");
@@ -474,7 +470,7 @@ public class Validations {
 
         if (request.getStatus() == null || request.getStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
-        if (!("Completed".equalsIgnoreCase(request.getStatus()) || "InTransit".equalsIgnoreCase(request.getStatus()) || "Returned".equalsIgnoreCase(request.getStatus())))
+        if (!("Pending".equalsIgnoreCase(request.getStatus()) || "Rejected".equalsIgnoreCase(request.getStatus()) || "Accepted".equalsIgnoreCase(request.getStatus()) || "Cancelled".equalsIgnoreCase(request.getStatus())))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
 
 
@@ -590,10 +586,10 @@ public class Validations {
         if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
 
-        warehouseRepository.findById(request.getWareHouseId()).orElseThrow(() ->
-                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " wareHouseId does not Exist!")
-        );
+//        warehouseRepository.findById(request.getWareHouseId()).orElseThrow(() ->
+//                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+//                        " wareHouseId does not Exist!")
+//        );
     }
 
     public void validateTripItem (TripItemRequestDto request){

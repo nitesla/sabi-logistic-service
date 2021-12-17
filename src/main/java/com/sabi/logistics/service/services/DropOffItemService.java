@@ -78,7 +78,6 @@ public class DropOffItemService {
         dropOffItemResponseDto.setOrderItemName(orderItem.getProductName());
         dropOffItemResponseDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
         dropOffItemResponseDto.setQty(orderItem.getQty());
-        dropOffItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
         dropOffItemResponseDto.setCustomerName(order.getCustomerName());
         dropOffItemResponseDto.setCustomerPhone(order.getCustomerPhone());
         dropOffItemResponseDto.setOrderId(orderItem.getOrderId());
@@ -120,7 +119,6 @@ public class DropOffItemService {
 
             dropOffItemResponseDto.setOrderItemName(orderItem.getProductName());
             dropOffItemResponseDto.setQty(orderItem.getQty());
-            dropOffItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
             dropOffItemResponseDto.setCustomerName(order.getCustomerName());
             dropOffItemResponseDto.setCustomerPhone(order.getCustomerPhone());
             dropOffItemResponseDto.setOrderId(orderItem.getOrderId());
@@ -163,7 +161,6 @@ public class DropOffItemService {
 
         dropOffItemResponseDto.setOrderItemName(orderItem.getProductName());
         dropOffItemResponseDto.setQty(orderItem.getQty());
-        dropOffItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
         dropOffItemResponseDto.setCustomerName(order.getCustomerName());
         dropOffItemResponseDto.setCustomerPhone(order.getCustomerPhone());
         dropOffItemResponseDto.setOrderId(orderItem.getOrderId());
@@ -210,7 +207,6 @@ public class DropOffItemService {
 
             item.setOrderItemName(orderItem.getProductName());
             item.setQty(orderItem.getQty());
-            item.setDeliveryAddress(order.getDeliveryAddress());
             item.setCustomerName(order.getCustomerName());
             item.setCustomerPhone(order.getCustomerPhone());
             item.setOrderId(orderItem.getOrderId());
@@ -247,7 +243,6 @@ public class DropOffItemService {
 
             item.setOrderItemName(orderItem.getProductName());
             item.setQty(orderItem.getQty());
-            item.setDeliveryAddress(order.getDeliveryAddress());
             item.setCustomerName(order.getCustomerName());
             item.setCustomerPhone(order.getCustomerPhone());
             item.setOrderId(orderItem.getOrderId());
@@ -276,7 +271,6 @@ public class DropOffItemService {
 
             item.setOrderItemName(orderItem.getProductName());
             item.setQty(orderItem.getQty());
-            item.setDeliveryAddress(order.getDeliveryAddress());
             item.setCustomerName(order.getCustomerName());
             item.setCustomerPhone(order.getCustomerPhone());
             item.setOrderId(orderItem.getOrderId());

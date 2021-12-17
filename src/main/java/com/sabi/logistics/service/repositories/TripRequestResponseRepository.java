@@ -20,4 +20,6 @@ public interface TripRequestResponseRepository extends JpaRepository<TripRequest
 
     List<TripRequestResponse> findByTripRequestId(Long id);
 
+    TripRequestResponse findTripRequestResponseByTripRequestId(Long tripRequestId);
+
 }

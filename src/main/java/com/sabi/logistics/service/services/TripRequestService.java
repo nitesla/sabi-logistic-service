@@ -9,6 +9,7 @@ import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.TripRequestDto;
+import com.sabi.logistics.core.dto.request.TripRequestResponseReqDto;
 import com.sabi.logistics.core.dto.response.TripResponseDto;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.GenericSpecification;
@@ -64,6 +65,9 @@ public class TripRequestService {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private TripRequestResponseService tripRequestResponseService;
 
     @Autowired
     private WarehouseRepository warehouseRepository;
@@ -138,7 +142,52 @@ public class TripRequestService {
         TripRequest tripRequest = tripRequestRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Trip Request ID does not exist!"));
-        mapper.map(request, tripRequest);
+        TripRequestResponse tripRequestResponse = new TripRequestResponse();
+        TripRequestResponseReqDto tripRequestResponseReqDto = new TripRequestResponseReqDto();
+
+        if(tripRequest.getStatus() != request.getStatus())
+        {
+            if (request.getStatus().equalsIgnoreCase("Pending") || tripRequest.getStatus().equalsIgnoreCase("Pending")) {
+                tripRequestResponse = tripRequestResponseRepository.findTripRequestResponseByTripRequestId(tripRequest.getId());
+                if (tripRequestResponse == null) {
+                    tripRequestResponseReqDto.setTripRequestId(tripRequest.getId());
+                    tripRequestResponseReqDto.setPartnerId(tripRequest.getPartnerId());
+                    tripRequestResponseReqDto.setResponseDate(tripRequest.getUpdatedDate().now());
+                    tripRequestResponseReqDto.setStatus(request.getStatus());
+                    tripRequestResponseReqDto.setRejectReason(request.getRejectReason());
+                    tripRequestResponseService.createTripRequestResponse(tripRequestResponseReqDto);
+                }
+            }else if(request.getStatus().equalsIgnoreCase("Rejected")){
+                tripRequestResponse = tripRequestResponseRepository.findTripRequestResponseByTripRequestId(tripRequest.getId());
+                tripRequestResponseReqDto.setTripRequestId(tripRequest.getId());
+                tripRequestResponseReqDto.setPartnerId(tripRequest.getPartnerId());
+                tripRequestResponseReqDto.setResponseDate(tripRequest.getUpdatedDate().now());
+                tripRequestResponseReqDto.setStatus(request.getStatus());
+                tripRequestResponseReqDto.setRejectReason(request.getRejectReason());
+                tripRequestResponseReqDto.setId(tripRequestResponse.getId());
+                tripRequestResponseService.updateTripRequestResponse(tripRequestResponseReqDto);
+            }
+            if(request.getStatus().equalsIgnoreCase("Accepted")) {
+                tripRequestResponse = tripRequestResponseRepository.findTripRequestResponseByTripRequestId(tripRequest.getId());
+                if (tripRequestResponse != null) {
+                    tripRequestResponseReqDto.setTripRequestId(tripRequest.getId());
+                    tripRequestResponseReqDto.setPartnerId(tripRequest.getPartnerId());
+                    tripRequestResponseReqDto.setResponseDate(tripRequest.getUpdatedDate().now());
+                    tripRequestResponseReqDto.setStatus(request.getStatus());
+                    tripRequestResponseReqDto.setRejectReason(request.getRejectReason());
+                    tripRequestResponseReqDto.setId(tripRequestResponse.getId());
+                    tripRequestResponseService.updateTripRequestResponse(tripRequestResponseReqDto);
+                }
+            }
+        }
+
+        if (request.getStatus().equalsIgnoreCase("Rejected")){
+            request.setStatus("Pending");
+            request.setWareHouseId(0l);
+            mapper.map(request, tripRequest);
+        }else {
+            mapper.map(request, tripRequest);
+        }
         if (request.getDriverUserId() != null) {
 
             Driver driver = driverRepository.findByUserId(request.getDriverUserId());
@@ -213,7 +262,7 @@ public class TripRequestService {
         if (warehouse == null) {
             throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid warehouse Id");
         };
-        tripResponseDto.setWareHouseAddress(warehouse.getAddress());
+        tripResponseDto.setWareHouseAddress(tripResponseDto.getWareHouseAddress());
         tripResponseDto.setContactPerson(warehouse.getContactPerson());
         tripResponseDto.setContactEmail(warehouse.getContactEmail());
         tripResponseDto.setContactPhone(warehouse.getContactPhone());
@@ -361,6 +410,7 @@ public class TripRequestService {
 
             Order order = orderRepository.getOne(dropOff.getOrderId());
             dropOff.setCustomerName(order.getCustomerName());
+            dropOff.setDeliveryAddress(order.getDeliveryAddress());
             dropOff.setCustomerPhone(order.getCustomerPhone());
 
             dropOff.setDropOffItem(getAllDropOffItems(dropOff.getId()));
