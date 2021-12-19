@@ -8,8 +8,11 @@ import com.sabi.framework.models.User;
 import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabi.logistics.core.dto.request.TripMasterRequestDto;
 import com.sabi.logistics.core.dto.request.TripRequestDto;
 import com.sabi.logistics.core.dto.request.TripRequestResponseReqDto;
+import com.sabi.logistics.core.dto.response.DropOffResponseDto;
+import com.sabi.logistics.core.dto.response.TripMasterResponseDto;
 import com.sabi.logistics.core.dto.response.TripResponseDto;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.GenericSpecification;
@@ -24,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("All")
@@ -71,6 +75,15 @@ public class TripRequestService {
 
     @Autowired
     private WarehouseRepository warehouseRepository;
+
+    @Autowired
+    private DropOffService dropOffService;
+
+    @Autowired
+    private DropOffItemService dropOffItemService;
+
+    @Autowired
+    private OrderItemService orderItemService;
 
     public TripRequestService(TripRequestRepository tripRequestRepository, ModelMapper mapper) {
            this.tripRequestRepository = tripRequestRepository;
@@ -133,6 +146,75 @@ public class TripRequestService {
             tripResponseDto.setPartnerName(partner.getName());
             tripResponseDto.setPartnerAssetName(partnerAsset.getName());
         }
+        return tripResponseDto;
+    }
+
+    public TripMasterResponseDto createMasterTripRequest(TripMasterRequestDto request) {
+        List<DropOffResponseDto> dropOffResponseDtos = new ArrayList<>();
+
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        TripRequest tripRequest = mapper.map(request,TripRequest.class);
+
+        tripRequest.setReferenceNo(validations.generateReferenceNumber(10));
+
+
+        tripRequest.setBarCode(validations.generateCode(tripRequest.getReferenceNo()));
+        tripRequest.setQrCode(validations.generateCode(tripRequest.getReferenceNo()));
+
+        if (request.getDriverUserId() != null) {
+
+            Driver driver = driverRepository.findByUserId(request.getDriverUserId());
+            if (driver == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Id");
+            }
+            User user = userRepository.getOne(driver.getUserId());
+            tripRequest.setDriverId(driver.getId());
+            tripRequest.setDriverUserId(driver.getUserId());
+            tripRequest.setDriverName(user.getLastName() + " " + user.getFirstName());
+
+        }
+        if (request.getDriverAssistantUserId() != null) {
+            Driver driver2 = driverRepository.findByUserId(request.getDriverAssistantUserId());
+            if (driver2 == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Driver Assistant Id");
+            }
+            User user2 = userRepository.getOne(driver2.getUserId());
+            tripRequest.setDriverAssistantId(driver2.getId());
+
+            tripRequest.setDriverAssistantUserId(driver2.getUserId());
+
+            tripRequest.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
+
+        }
+
+        tripRequest.setCreatedBy(userCurrent.getId());
+        tripRequest.setIsActive(true);
+        tripRequest = tripRequestRepository.save(tripRequest);
+        log.debug("Create new trip Request - {}"+ new Gson().toJson(tripRequest));
+        TripMasterResponseDto tripResponseDto = mapper.map(tripRequest, TripMasterResponseDto.class);
+
+        if ((request.getPartnerAssetId() != null || request.getPartnerId() != null)) {
+            Partner partner = partnerRepository.findPartnerById(request.getPartnerId());
+            if (partner == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Partner Id");
+            }
+            PartnerAsset partnerAsset = partnerAssetRepository.findPartnerAssetById(request.getPartnerAssetId());
+            if (partnerAsset == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAsset Id");
+            };
+
+            tripResponseDto.setPartnerName(partner.getName());
+            tripResponseDto.setPartnerAssetName(partnerAsset.getName());
+        }
+
+        if(request.getDropOff() != null) {
+            dropOffResponseDtos = dropOffService.createDropOffs(request.getDropOff(), tripResponseDto.getId());
+            List<DropOffResponseDto> finalDropOffResponse = dropOffResponseDtos;
+            dropOffResponseDtos.forEach(response -> {
+                tripResponseDto.setDropOff(finalDropOffResponse);
+            });
+        }
+
         return tripResponseDto;
     }
 

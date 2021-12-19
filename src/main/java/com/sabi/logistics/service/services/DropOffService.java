@@ -7,6 +7,7 @@ import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabi.logistics.core.dto.request.DropOffMasterRequestDto;
 import com.sabi.logistics.core.dto.request.DropOffRequestDto;
 import com.sabi.logistics.core.dto.response.DropOffResponseDto;
 import com.sabi.logistics.core.models.DropOff;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -49,6 +51,9 @@ public class DropOffService {
     @Autowired
     private TripRequestRepository tripRequestRepository;
 
+    @Autowired
+    private DropOffItemService dropOffItemService;
+
 
     public DropOffService(DropOffRepository dropOffRepository, ModelMapper mapper) {
         this.dropOffRepository = dropOffRepository;
@@ -72,6 +77,36 @@ public class DropOffService {
         DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
         dropOffResponseDto.setDeliveryAddress(order.getDeliveryAddress());
         return dropOffResponseDto;
+    }
+
+    public List<DropOffResponseDto> createDropOffs(List<DropOffMasterRequestDto> requests, Long tripRequestId) {
+        List<DropOffResponseDto> responseDtos = new ArrayList<>();
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        requests.forEach(request-> {
+            List<DropOffItem> dropOffItemResponseDtos = new ArrayList<>();
+            request.setTripRequestId(tripRequestId);
+            validations.validateDropOffs(request);
+
+            Order order = orderRepository.getOne(request.getOrderId());
+            DropOff dropOff = mapper.map(request, DropOff.class);
+            dropOff.setCreatedBy(userCurrent.getId());
+            dropOff.setIsActive(true);
+            dropOff.setDeliveryAddress(order.getDeliveryAddress());
+            dropOff = dropOffRepository.save(dropOff);
+            log.debug("Create new trip item - {}" + new Gson().toJson(dropOff));
+            DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
+
+            if(request.getDropOffItem() != null) {
+                dropOffItemResponseDtos = dropOffItemService.createDropOffItems(request.getDropOffItem(), dropOffResponseDto.getId());
+                List<DropOffItem> finalDropOffItemResponse = dropOffItemResponseDtos;
+                dropOffItemResponseDtos.forEach(itemResponse -> {
+                    dropOffResponseDto.setDropOffItem(finalDropOffItemResponse);
+                });
+            }
+
+            responseDtos.add(dropOffResponseDto);
+        });
+        return responseDtos;
     }
 
     public DropOffResponseDto updateDropOff(DropOffRequestDto request) {

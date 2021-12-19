@@ -557,6 +557,43 @@ public class Validations {
         );
     }
 
+    public void validateDropOffs (DropOffMasterRequestDto request){
+
+        if (request.getTripRequestId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "tripRequestId cannot be empty");
+        if (!Utility.isNumeric(request.getTripRequestId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for tripRequestId ");
+
+
+        if (request.getPhoneNo() == null || request.getPhoneNo().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Phone number cannot be empty");
+        if (request.getPhoneNo().length() < 8 || request.getPhoneNo().length() > 14)// NAME LENGTH*********
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid phone number  length");
+        if (!Utility.isNumeric(request.getPhoneNo()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for phone number ");
+
+        if (request.getEmail() == null || request.getEmail().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "email cannot be empty");
+        if (!Utility.validEmail(request.getEmail().trim()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid Email Address");
+
+        if (request.getOrderId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderId cannot be empty");
+        if (!Utility.isNumeric(request.getOrderId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for orderId ");
+
+
+        tripRequestRepository.findById(request.getTripRequestId()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " tripRequestId does not Exist!")
+        );
+
+        orderRepository.findById(request.getOrderId()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " orderId does not Exist!")
+        );
+    }
+
     public void validateProduct (ProductRequestDto request){
 
         if (request.getThirdPartyId() == null )
