@@ -32,4 +32,16 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
     Integer countByPartnerIDAndStatus(@Param("partnerId") Long partnerId, @Param("status") String status, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 }

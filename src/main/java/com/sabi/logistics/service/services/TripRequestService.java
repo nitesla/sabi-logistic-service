@@ -68,6 +68,9 @@ public class TripRequestService {
     @Autowired
     private WarehouseRepository warehouseRepository;
 
+    @Autowired
+    private DashboardSummaryRepository dashboardSummaryRepository;
+
     public TripRequestService(TripRequestRepository tripRequestRepository, ModelMapper mapper) {
            this.tripRequestRepository = tripRequestRepository;
         this.mapper = mapper;
@@ -112,6 +115,7 @@ public class TripRequestService {
 
         tripRequest.setCreatedBy(userCurrent.getId());
         tripRequest.setIsActive(true);
+//        tripRequest.setProcessingStatus(PartnerConstants.PROCESSING_STATUS);
         tripRequest = tripRequestRepository.save(tripRequest);
         log.debug("Create new trip Request - {}"+ new Gson().toJson(tripRequest));
         TripResponseDto tripResponseDto = mapper.map(tripRequest, TripResponseDto.class);
@@ -432,4 +436,9 @@ public class TripRequestService {
         return tripRequests;
 
     }
+
+
+
+
+
 }
