@@ -85,6 +85,9 @@ public class TripRequestService {
     @Autowired
     private OrderItemService orderItemService;
 
+    @Autowired
+    private DashboardSummaryRepository dashboardSummaryRepository;
+
     public TripRequestService(TripRequestRepository tripRequestRepository, ModelMapper mapper) {
            this.tripRequestRepository = tripRequestRepository;
         this.mapper = mapper;
@@ -137,19 +140,29 @@ public class TripRequestService {
         log.debug("Create new trip Request - {}"+ new Gson().toJson(tripRequest));
         TripResponseDto tripResponseDto = mapper.map(tripRequest, TripResponseDto.class);
 
+
+        PartnerAsset partnerAsset = partnerAssetRepository.findPartnerAssetById(request.getPartnerAssetId());
         if ((request.getPartnerAssetId() != null || request.getPartnerId() != null)) {
             Partner partner = partnerRepository.findPartnerById(request.getPartnerId());
             if (partner == null) {
                 throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Partner Id");
             }
-            PartnerAsset partnerAsset = partnerAssetRepository.findPartnerAssetById(request.getPartnerAssetId());
             if (partnerAsset == null) {
                 throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAsset Id");
-            };
+            }
 
             tripResponseDto.setPartnerName(partner.getName());
             tripResponseDto.setPartnerAssetName(partnerAsset.getName());
         }
+
+        DashboardSummary dashboardSummary = DashboardSummary.builder()
+                .assetTypeId(partnerAsset.getPartnerAssetTypeId())
+                .partnerId(tripRequest.getPartnerId())
+                .date(tripRequest.getCreatedDate())
+                .deliveryStatus(tripRequest.getDeliveryStatus())
+                .totalEarnings(tripRequest.getEarnings())
+                .build();
+             dashboardSummaryRepository.save(dashboardSummary);
         return tripResponseDto;
     }
 

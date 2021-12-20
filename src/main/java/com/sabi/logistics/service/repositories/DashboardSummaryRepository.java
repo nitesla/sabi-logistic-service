@@ -3,7 +3,11 @@ package com.sabi.logistics.service.repositories;
 
 import com.sabi.logistics.core.models.DashboardSummary;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 
 @Repository
@@ -14,6 +18,8 @@ public interface DashboardSummaryRepository extends JpaRepository<DashboardSumma
 //    List<DashboardSummary> getAllBetweenDates(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("partnerId")Long partnerId);
 
 
+    @Query(value = "{call dashboardSummary(:partnerId)}", nativeQuery = true)
+    public List<Object[]> dashboardSummary(@Param("partnerId") Long partnerId);
 
 
 
