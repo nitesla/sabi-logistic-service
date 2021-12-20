@@ -97,6 +97,10 @@ public class TripRequestService {
 
         tripRequest.setReferenceNo(validations.generateReferenceNumber(10));
 
+        TripRequest exist = tripRequestRepository.findByPartnerIdAndReferenceNo(request.getPartnerId(), tripRequest.getReferenceNo());
+        if(exist !=null){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Trip Request already exist");
+        }
 
         tripRequest.setBarCode(validations.generateCode(tripRequest.getReferenceNo()));
         tripRequest.setQrCode(validations.generateCode(tripRequest.getReferenceNo()));
@@ -157,6 +161,10 @@ public class TripRequestService {
 
         tripRequest.setReferenceNo(validations.generateReferenceNumber(10));
 
+        TripRequest exist = tripRequestRepository.findByPartnerIdAndReferenceNo(request.getPartnerId(), tripRequest.getReferenceNo());
+        if(exist !=null){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Trip Request already exist");
+        }
 
         tripRequest.setBarCode(validations.generateCode(tripRequest.getReferenceNo()));
         tripRequest.setQrCode(validations.generateCode(tripRequest.getReferenceNo()));
@@ -354,7 +362,7 @@ public class TripRequestService {
     }
 
 
-    public Page<TripRequest> findAll(Long partnerId, String status, String referenceNo, Long driverId,
+    public Page<TripRequest> findAll(Long partnerId, String status, String referenceNo, Long driverUserId,
                                      Long wareHouseId, String wareHouseAddress, Long partnerAssetId, PageRequest pageRequest ){
         GenericSpecification<TripRequest> genericSpecification = new GenericSpecification<TripRequest>();
 
@@ -372,6 +380,10 @@ public class TripRequestService {
         {
             genericSpecification.add(new SearchCriteria("referenceNo", referenceNo, SearchOperation.MATCH));
         }
+
+        Driver driver = driverRepository.findByUserId(driverUserId);
+
+        Long driverId = driver.getId();
 
         if (driverId != null)
         {
@@ -410,9 +422,9 @@ public class TripRequestService {
 //            if (partnerAsset == null) {
 //                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAsset Id");
 //            };
-            Driver driver = driverRepository.findDriverById(request.getDriverId());
+            Driver driver1 = driverRepository.findDriverById(request.getDriverId());
 
-            User user = userRepository.getOne(driver.getUserId());
+            User user = userRepository.getOne(driver1.getUserId());
 
             Driver driver2 = driverRepository.findDriverById(request.getDriverAssistantId());
 
