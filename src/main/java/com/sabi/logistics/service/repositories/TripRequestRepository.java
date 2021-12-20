@@ -31,6 +31,7 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
             " AND ((:status IS NULL) OR (:status IS NOT NULL AND d.status = :status))")
     Integer countByPartnerIDAndStatus(@Param("partnerId") Long partnerId, @Param("status") String status, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
+    TripRequest findByPartnerIdAndReferenceNo(Long partnerId, String referenceNo);
 
 
 
