@@ -33,6 +33,11 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
 
     TripRequest findByPartnerIdAndReferenceNo(Long partnerId, String referenceNo);
 
+    @Query(value = "SELECT Count(d) FROM TripRequest d WHERE ((:driverId IS NULL) OR (:driverId IS NOT NULL AND d.driverId >= :driverId)) AND ((:status IS NULL) OR (:status IS NOT NULL AND  d.status <= :status))" +
+            " AND ((:driverId IS NULL) OR (:driverId IS NOT NULL AND d.driverId = :driverId))" +
+            " AND ((:status IS NULL) OR (:status IS NOT NULL AND d.status = :status))")
+    Integer countByDriverIdAndStatus(@Param("driverId") Long partnerId, @Param("status") String status);
+
 
 
 

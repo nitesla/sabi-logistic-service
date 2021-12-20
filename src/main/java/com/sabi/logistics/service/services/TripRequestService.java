@@ -13,6 +13,7 @@ import com.sabi.logistics.core.dto.request.TripRequestDto;
 import com.sabi.logistics.core.dto.request.TripRequestResponseReqDto;
 import com.sabi.logistics.core.dto.response.DropOffResponseDto;
 import com.sabi.logistics.core.dto.response.TripMasterResponseDto;
+import com.sabi.logistics.core.dto.response.TripRequestStatusCountResponse;
 import com.sabi.logistics.core.dto.response.TripResponseDto;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.GenericSpecification;
@@ -587,6 +588,19 @@ public class TripRequestService {
         }
 
         return tripRequests;
+
+    }
+
+    public TripRequestStatusCountResponse getStatus(Long driverUserId){
+        Driver driver = driverRepository.findByUserId(driverUserId);
+        Integer pendingCount = tripRequestRepository.countByDriverIdAndStatus(driver.getId(),"Pending");
+        Integer AcceptedCount = tripRequestRepository.countByDriverIdAndStatus(driver.getId(),"Accepted");
+        Integer RejectedCount = tripRequestRepository.countByDriverIdAndStatus(driver.getId(),"Rejected");
+        TripRequestStatusCountResponse response = new TripRequestStatusCountResponse();
+         response.setPending(pendingCount);
+        response.setAccepted(AcceptedCount);
+        response.setRejected(RejectedCount);
+        return response;
 
     }
 }
