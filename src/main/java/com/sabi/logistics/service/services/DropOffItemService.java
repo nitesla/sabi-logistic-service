@@ -23,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -78,7 +79,6 @@ public class DropOffItemService {
         dropOffItemResponseDto.setOrderItemName(orderItem.getProductName());
         dropOffItemResponseDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
         dropOffItemResponseDto.setQty(orderItem.getQty());
-        dropOffItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
         dropOffItemResponseDto.setCustomerName(order.getCustomerName());
         dropOffItemResponseDto.setCustomerPhone(order.getCustomerPhone());
         dropOffItemResponseDto.setOrderId(orderItem.getOrderId());
@@ -101,6 +101,53 @@ public class DropOffItemService {
         return dropOffItemResponseDto;
     }
 
+    public List<DropOffItem> createDropOffItems(List<DropOffItemRequestDto> requests, Long dropOffId) {
+        List<DropOffItem> responseDtos = new ArrayList<>();
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        requests.forEach(request-> {
+            request.setDropOffId(dropOffId);
+            validations.validateDropOffItem(request);
+            DropOffItem dropOffItem = mapper.map(request, DropOffItem.class);
+            OrderItem orderItem = orderItemRepository.getOne(request.getOrderItemId());
+            Order order = orderRepository.getOne(orderItem.getOrderId());
+            DropOff dropOff = dropOffRepository.getOne(request.getDropOffId());
+            dropOffItem.setCreatedBy(userCurrent.getId());
+            dropOffItem.setIsActive(true);
+            dropOffItem = dropOffItemRepository.save(dropOffItem);
+            log.debug("Create new trip item - {}" + new Gson().toJson(dropOffItem));
+            DropOffItem dropOffItemResponseDto = mapper.map(dropOffItem, DropOffItem.class);
+            dropOffItemResponseDto.setOrderItemName(orderItem.getProductName());
+            dropOffItemResponseDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
+            dropOffItemResponseDto.setQty(orderItem.getQty());
+            dropOffItemResponseDto.setCustomerName(order.getCustomerName());
+            dropOffItemResponseDto.setCustomerPhone(order.getCustomerPhone());
+            dropOffItemResponseDto.setOrderId(orderItem.getOrderId());
+            dropOffItemResponseDto.setDropOffId(dropOffItem.getDropOffId());
+            dropOffItemResponseDto.setOrderItemId(dropOffItem.getOrderItemId());
+
+            orderItem.setDeliveryStatus("Awaiting Delivery");
+            orderItemRepository.save(orderItem);
+
+            TripItem tripItem = new TripItem();
+            TripItemRequestDto tripItemRequestDto = new TripItemRequestDto();
+            tripItem = tripItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), orderItem.getThirdPartyProductId());
+            if (tripItem == null) {
+                tripItemRequestDto.setTripRequestId(dropOff.getTripRequestId());
+                tripItemRequestDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
+                tripItemRequestDto.setProductName(orderItem.getProductName());
+                tripItemRequestDto.setQty(orderItem.getQty());
+                tripItemRequestDto.setQtyPickedUp(dropOffItem.getQtyGoodsDelivered());
+                tripItemService.createTripItem(tripItemRequestDto);
+            }
+
+
+
+            responseDtos.add(dropOffItemResponseDto);
+        });
+
+        return responseDtos;
+    }
+
     public DropOffItemResponseDto updateDropOffItem(DropOffItemRequestDto request) {
         validations.validateDropOffItem(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
@@ -120,7 +167,6 @@ public class DropOffItemService {
 
             dropOffItemResponseDto.setOrderItemName(orderItem.getProductName());
             dropOffItemResponseDto.setQty(orderItem.getQty());
-            dropOffItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
             dropOffItemResponseDto.setCustomerName(order.getCustomerName());
             dropOffItemResponseDto.setCustomerPhone(order.getCustomerPhone());
             dropOffItemResponseDto.setOrderId(orderItem.getOrderId());
@@ -163,7 +209,6 @@ public class DropOffItemService {
 
         dropOffItemResponseDto.setOrderItemName(orderItem.getProductName());
         dropOffItemResponseDto.setQty(orderItem.getQty());
-        dropOffItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
         dropOffItemResponseDto.setCustomerName(order.getCustomerName());
         dropOffItemResponseDto.setCustomerPhone(order.getCustomerPhone());
         dropOffItemResponseDto.setOrderId(orderItem.getOrderId());
@@ -210,7 +255,6 @@ public class DropOffItemService {
 
             item.setOrderItemName(orderItem.getProductName());
             item.setQty(orderItem.getQty());
-            item.setDeliveryAddress(order.getDeliveryAddress());
             item.setCustomerName(order.getCustomerName());
             item.setCustomerPhone(order.getCustomerPhone());
             item.setOrderId(orderItem.getOrderId());
@@ -247,7 +291,6 @@ public class DropOffItemService {
 
             item.setOrderItemName(orderItem.getProductName());
             item.setQty(orderItem.getQty());
-            item.setDeliveryAddress(order.getDeliveryAddress());
             item.setCustomerName(order.getCustomerName());
             item.setCustomerPhone(order.getCustomerPhone());
             item.setOrderId(orderItem.getOrderId());
@@ -276,7 +319,6 @@ public class DropOffItemService {
 
             item.setOrderItemName(orderItem.getProductName());
             item.setQty(orderItem.getQty());
-            item.setDeliveryAddress(order.getDeliveryAddress());
             item.setCustomerName(order.getCustomerName());
             item.setCustomerPhone(order.getCustomerPhone());
             item.setOrderId(orderItem.getOrderId());
