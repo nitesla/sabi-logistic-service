@@ -8,7 +8,6 @@ import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.OrderItemRequestDto;
-import com.sabi.logistics.core.dto.request.PartnerAssetPictureDto;
 import com.sabi.logistics.core.dto.response.OrderItemResponseDto;
 import com.sabi.logistics.core.models.OrderItem;
 import com.sabi.logistics.core.models.Warehouse;
@@ -113,8 +112,8 @@ public class OrderItemService {
     }
 
 
-    public Page<OrderItem> findAll(Long wareHouseId, String referenceNo, String deliveryStatus, Long partnerAssetId,
-                                   String name, Integer qty, PageRequest pageRequest ){
+    public Page<OrderItem> findAll(Long wareHouseId, String deliveryStatus, Boolean hasInventory,
+                                   String productName, Integer qty,  PageRequest pageRequest ){
 
         GenericSpecification<OrderItem> genericSpecification = new GenericSpecification<OrderItem>();
 
@@ -123,24 +122,19 @@ public class OrderItemService {
             genericSpecification.add(new SearchCriteria("wareHouseId", wareHouseId, SearchOperation.EQUAL));
         }
 
-        if (referenceNo != null && !referenceNo.isEmpty())
-        {
-            genericSpecification.add(new SearchCriteria("referenceNo", referenceNo, SearchOperation.EQUAL));
-        }
 
         if (deliveryStatus != null && !deliveryStatus.isEmpty())
         {
             genericSpecification.add(new SearchCriteria("deliveryStatus", deliveryStatus, SearchOperation.EQUAL));
         }
 
-        if (partnerAssetId != null)
-        {
-            genericSpecification.add(new SearchCriteria("partnerAssetId", partnerAssetId, SearchOperation.EQUAL));
+        if (hasInventory != null) {
+            genericSpecification.add(new SearchCriteria("inventoryId", 0, SearchOperation.GREATER_THAN));
         }
 
-        if (name != null && !name.isEmpty())
+        if (productName != null && !productName.isEmpty())
         {
-            genericSpecification.add(new SearchCriteria("name", name, SearchOperation.MATCH));
+            genericSpecification.add(new SearchCriteria("productName", productName, SearchOperation.MATCH));
         }
         if (qty != null)
         genericSpecification.add(new SearchCriteria("qty", qty, SearchOperation.EQUAL));
