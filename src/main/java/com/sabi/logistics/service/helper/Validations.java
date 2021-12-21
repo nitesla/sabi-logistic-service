@@ -66,6 +66,9 @@ public class Validations {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private PricingConfigurationRepository pricingConfigurationRepository;
+
 
 
 
@@ -790,6 +793,23 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "quantity sold cannot be less than 1");
     }
 
+    public void validatePricingConfiguration(PricingConfigurationRequest request) {
+        partnerRepository.findById(request.getPartnerId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                " Enter a valid partner id!"));
+    }
+
+    public void validatePricingItems(PricingItemsRequest request) {
+        partnerAssetTypeRepository.findById(request.getAssetTypeId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                " Enter a valid asset type id!"));
+        pricingConfigurationRepository.findById(request.getPricingConfiguartionId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                " Enter a valid pricing configuration id!"));
+
+    }
+
+    public void validaterouteLocation(RouteLocationRequest request) {
+        stateRepository.findById(request.getStateId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                " Enter a valid state id!"));
+    }
 }
 
 

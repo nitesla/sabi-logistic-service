@@ -13,6 +13,7 @@ import com.sabi.logistics.core.dto.request.TripRequestDto;
 import com.sabi.logistics.core.dto.request.TripRequestResponseReqDto;
 import com.sabi.logistics.core.dto.response.DropOffResponseDto;
 import com.sabi.logistics.core.dto.response.TripMasterResponseDto;
+import com.sabi.logistics.core.dto.response.TripRequestStatusCountResponse;
 import com.sabi.logistics.core.dto.response.TripResponseDto;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.GenericSpecification;
@@ -85,6 +86,9 @@ public class TripRequestService {
     @Autowired
     private OrderItemService orderItemService;
 
+    @Autowired
+    private DashboardSummaryRepository dashboardSummaryRepository;
+
     public TripRequestService(TripRequestRepository tripRequestRepository, ModelMapper mapper) {
            this.tripRequestRepository = tripRequestRepository;
         this.mapper = mapper;
@@ -137,19 +141,29 @@ public class TripRequestService {
         log.debug("Create new trip Request - {}"+ new Gson().toJson(tripRequest));
         TripResponseDto tripResponseDto = mapper.map(tripRequest, TripResponseDto.class);
 
+
+        PartnerAsset partnerAsset = partnerAssetRepository.findPartnerAssetById(request.getPartnerAssetId());
         if ((request.getPartnerAssetId() != null || request.getPartnerId() != null)) {
             Partner partner = partnerRepository.findPartnerById(request.getPartnerId());
             if (partner == null) {
                 throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Partner Id");
             }
-            PartnerAsset partnerAsset = partnerAssetRepository.findPartnerAssetById(request.getPartnerAssetId());
             if (partnerAsset == null) {
                 throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAsset Id");
-            };
+            }
 
             tripResponseDto.setPartnerName(partner.getName());
             tripResponseDto.setPartnerAssetName(partnerAsset.getName());
         }
+
+        DashboardSummary dashboardSummary = DashboardSummary.builder()
+                .assetTypeId(partnerAsset.getPartnerAssetTypeId())
+                .partnerId(tripRequest.getPartnerId())
+                .date(tripRequest.getCreatedDate())
+                .deliveryStatus(tripRequest.getDeliveryStatus())
+                .totalEarnings(tripRequest.getEarnings())
+                .build();
+             dashboardSummaryRepository.save(dashboardSummary);
         return tripResponseDto;
     }
 
@@ -576,6 +590,19 @@ public class TripRequestService {
         }
 
         return tripRequests;
+
+    }
+
+    public TripRequestStatusCountResponse getStatus(Long driverUserId){
+        Driver driver = driverRepository.findByUserId(driverUserId);
+        Integer pendingCount = tripRequestRepository.countByDriverIdAndStatus(driver.getId(),"Pending");
+        Integer AcceptedCount = tripRequestRepository.countByDriverIdAndStatus(driver.getId(),"Accepted");
+        Integer RejectedCount = tripRequestRepository.countByDriverIdAndStatus(driver.getId(),"Rejected");
+        TripRequestStatusCountResponse response = new TripRequestStatusCountResponse();
+         response.setPending(pendingCount);
+        response.setAccepted(AcceptedCount);
+        response.setRejected(RejectedCount);
+        return response;
 
     }
 }
