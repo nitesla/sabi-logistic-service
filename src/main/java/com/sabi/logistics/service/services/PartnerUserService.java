@@ -117,7 +117,11 @@ public class PartnerUserService {
             driver.setUserId(user.getId());
             driver.setIsActive(true);
             driver.setCreatedBy(userCurrent.getId());
-            driverRepository.save(driver);
+           Driver driver1= driverRepository.save(driver);
+         User user1 = userRepository.getOne(driver.getUserId());
+              user1.setIsActive(true);
+              user1.setPasswordChangedOn(LocalDateTime.now());
+              userRepository.save(user1);
         }
         return mapper.map(user, PartnerUserResponseDto.class);
     }
