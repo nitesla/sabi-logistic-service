@@ -11,11 +11,11 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.InventoryDto;
 import com.sabi.logistics.core.dto.response.InventoryResponseDto;
 import com.sabi.logistics.core.models.Inventory;
-import com.sabi.logistics.core.models.Partner;
+import com.sabi.logistics.core.models.OrderItem;
 import com.sabi.logistics.core.models.Warehouse;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.InventoryRepository;
-import com.sabi.logistics.service.repositories.PartnerRepository;
+import com.sabi.logistics.service.repositories.OrderItemRepository;
 import com.sabi.logistics.service.repositories.WarehouseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -34,15 +34,13 @@ public class InventoryService {
     private InventoryRepository repository;
     @Autowired
     private WarehouseRepository warehouseRepository;
+    @Autowired
+    private OrderItemRepository orderItemRepository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
     private final Validations validations;
 
-//    @Autowired
-//    private PartnerAssetRepository partnerAssetRepository;
-//
-//    @Autowired
-//    private DriverRepository driverRepository;
+
 
 
     public InventoryService(ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
@@ -64,15 +62,32 @@ public class InventoryService {
         if(warehouse ==null){
             throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " warehouse not found");
         }
-//        Warehouse warehouse = warehouseRepository.findById(request.getId())
-//                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-//                        "Requested warehouse Id does not exist!"));
+
+        if (request.getOrderItemId() != null) {
+            request.getOrderItemId().forEach(id -> {
+                OrderItem exist = orderItemRepository.findOrderItemById(id);
+                if (exist == null) {
+                    throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order Item Id does not exist");
+                }
+            });
+        }
         inventory.setCreatedBy(userCurrent.getId());
         inventory.setIsActive(true);
-//        inventory.setWareHouseName(warehouse.getName());
         inventory = repository.save(inventory);
         log.debug("Create new inventory - {}"+ new Gson().toJson(inventory));
-        return mapper.map(inventory, InventoryResponseDto.class);
+        InventoryResponseDto inventoryResponseDto = mapper.map(inventory, InventoryResponseDto.class);
+
+        if (request.getOrderItemId() != null) {
+            request.getOrderItemId().forEach(id -> {
+                OrderItem orderItem = orderItemRepository.findOrderItemById(id);
+
+                orderItem.setInventoryId(inventoryResponseDto.getId());
+                orderItemRepository.save(orderItem);
+
+            });
+        }
+
+        return inventoryResponseDto;
     }
 
 

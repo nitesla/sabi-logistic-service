@@ -395,13 +395,15 @@ public class TripRequestService {
             genericSpecification.add(new SearchCriteria("referenceNo", referenceNo, SearchOperation.MATCH));
         }
 
-        Driver driver = driverRepository.findByUserId(driverUserId);
+        if(driverUserId != null) {
+            Driver driver = driverRepository.findByUserId(driverUserId);
 
-        Long driverId = driver.getId();
+            Long driverId = driver.getId();
 
-        if (driverId != null)
-        {
-            genericSpecification.add(new SearchCriteria("driverId", driverId, SearchOperation.EQUAL));
+
+            if (driverId != null) {
+                genericSpecification.add(new SearchCriteria("driverId", driverId, SearchOperation.EQUAL));
+            }
         }
 
         if (wareHouseId != null)
