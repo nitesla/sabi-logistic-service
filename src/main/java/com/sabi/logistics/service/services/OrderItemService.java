@@ -124,7 +124,8 @@ public class OrderItemService {
         Order order = orderRepository.getOne(orderItem.getOrderId());
         orderItemResponseDto.setCustomerName(order.getCustomerName());
         orderItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
-        orderItemResponseDto.setPrice(0l);
+        orderItemResponseDto.setUnitPrice(orderItem.getUnitPrice());
+        orderItemResponseDto.setTotalPrice(orderItem.getTotalPrice());
 
         if(orderItem.getInventoryId() != null) {
             Inventory inventory = inventoryRepository.getOne(orderItem.getInventoryId());
@@ -176,7 +177,6 @@ public class OrderItemService {
             Order order = orderRepository.getOne(item.getOrderId());
             item.setCustomerName(order.getCustomerName());
             item.setDeliveryAddress(order.getDeliveryAddress());
-            item.setPrice(0l);
 
             if(item.getInventoryId() != null) {
                 Inventory inventory = inventoryRepository.getOne(item.getInventoryId());
