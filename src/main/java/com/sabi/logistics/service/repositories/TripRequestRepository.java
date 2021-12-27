@@ -40,6 +40,8 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
 
 
 
+    @Query("SELECT t FROM TripRequest t ")
+    List<TripRequest> listTrips();
 
 
 

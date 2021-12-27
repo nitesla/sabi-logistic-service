@@ -69,6 +69,9 @@ public class Validations {
     @Autowired
     private PricingConfigurationRepository pricingConfigurationRepository;
 
+    @Autowired
+    private DashboardSummaryRepository dashboardSummaryRepository;
+
 
 
 
@@ -810,6 +813,15 @@ public class Validations {
         stateRepository.findById(request.getStateId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                 " Enter a valid state id!"));
     }
+
+
+//    public void validatedashBoard(DashboardSummary dashboardSummary){
+//        DashboardSummary dashboard = dashboardSummaryRepository.findByPartnerIdAndReferenceNo(dashboardSummary.getPartnerId(),dashboardSummary.getReferenceNo());
+//        if(dashboard ==null)
+//            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " DashBoard record already exist");
+//    }
+
+
 }
 
 
