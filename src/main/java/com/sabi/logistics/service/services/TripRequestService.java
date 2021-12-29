@@ -135,6 +135,18 @@ public class TripRequestService {
 
         }
 
+        if (request.getWareHouseId() != null) {
+            Warehouse warehouse = warehouseRepository.findWarehouseById(request.getWareHouseId());
+            if (warehouse == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid warehouse Id");
+            }
+            ;
+            tripRequest.setWareHouseAddress(warehouse.getAddress());
+            tripRequest.setContactPerson(warehouse.getContactPerson());
+            tripRequest.setContactEmail(warehouse.getContactEmail());
+            tripRequest.setContactPhone(warehouse.getContactPhone());
+        }
+
         tripRequest.setCreatedBy(userCurrent.getId());
         tripRequest.setIsActive(true);
         tripRequest = tripRequestRepository.save(tripRequest);
@@ -168,6 +180,7 @@ public class TripRequestService {
     }
 
     public TripMasterResponseDto createMasterTripRequest(TripMasterRequestDto request) {
+        validations.validateMasterTripRequest(request);
         List<DropOffResponseDto> dropOffResponseDtos = new ArrayList<>();
 
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
@@ -207,6 +220,17 @@ public class TripRequestService {
 
             tripRequest.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
 
+        }
+        if (request.getWareHouseId() != null) {
+            Warehouse warehouse = warehouseRepository.findWarehouseById(request.getWareHouseId());
+            if (warehouse == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid warehouse Id");
+            }
+            ;
+            tripRequest.setWareHouseAddress(warehouse.getAddress());
+            tripRequest.setContactPerson(warehouse.getContactPerson());
+            tripRequest.setContactEmail(warehouse.getContactEmail());
+            tripRequest.setContactPhone(warehouse.getContactPhone());
         }
 
         tripRequest.setCreatedBy(userCurrent.getId());
@@ -321,6 +345,17 @@ public class TripRequestService {
             tripRequest.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
 
         }
+        if (request.getWareHouseId() != null) {
+            Warehouse warehouse = warehouseRepository.findWarehouseById(request.getWareHouseId());
+            if (warehouse == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid warehouse Id");
+            }
+            ;
+            tripRequest.setWareHouseAddress(warehouse.getAddress());
+            tripRequest.setContactPerson(warehouse.getContactPerson());
+            tripRequest.setContactEmail(warehouse.getContactEmail());
+            tripRequest.setContactPhone(warehouse.getContactPhone());
+        }
         tripRequest.setUpdatedBy(userCurrent.getId());
         tripRequestRepository.save(tripRequest);
         log.debug("tripRequest record updated - {}"+ new Gson().toJson(tripRequest));
@@ -371,16 +406,6 @@ public class TripRequestService {
 
         User user2 = userRepository.getOne(driver2.getUserId());
         tripResponseDto.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
-
-        Warehouse warehouse = warehouseRepository.findWarehouseById(tripResponseDto.getWareHouseId());
-        if (warehouse == null) {
-            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid warehouse Id");
-        };
-        tripResponseDto.setWareHouseAddress(tripResponseDto.getWareHouseAddress());
-        tripResponseDto.setContactPerson(warehouse.getContactPerson());
-        tripResponseDto.setContactEmail(warehouse.getContactEmail());
-        tripResponseDto.setContactPhone(warehouse.getContactPhone());
-
 
         return tripResponseDto;
     }
