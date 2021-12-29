@@ -82,7 +82,7 @@ public class OrderService {
 
     public OrderOrderItemResponseDto createOrderOrderItems(OrderOrderItemDto request) {
         List<OrderItemResponseDto> responseDtos = new ArrayList<>();
-//        validations.validateOrder(request);
+        validations.validateOrderOrderItems(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Order order = mapper.map(request,Order.class);
         OrderItem orderItem = mapper.map(request, OrderItem.class);
