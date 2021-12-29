@@ -9,13 +9,17 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.OrderItemRequestDto;
 import com.sabi.logistics.core.dto.response.OrderItemResponseDto;
+import com.sabi.logistics.core.models.Inventory;
+import com.sabi.logistics.core.models.Order;
 import com.sabi.logistics.core.models.OrderItem;
 import com.sabi.logistics.core.models.Warehouse;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
+import com.sabi.logistics.service.repositories.InventoryRepository;
 import com.sabi.logistics.service.repositories.OrderItemRepository;
+import com.sabi.logistics.service.repositories.OrderRepository;
 import com.sabi.logistics.service.repositories.WarehouseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -37,6 +41,12 @@ public class OrderItemService {
     private Validations validations;
     @Autowired
     private WarehouseRepository warehouseRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private InventoryRepository inventoryRepository;
 
 
     public OrderItemService(OrderItemRepository orderItemRepository, ModelMapper mapper) {
@@ -108,7 +118,23 @@ public class OrderItemService {
         OrderItem orderItem  = orderItemRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested order item Id does not exist!"));
-        return mapper.map(orderItem, OrderItemResponseDto.class);
+
+        OrderItemResponseDto orderItemResponseDto = mapper.map(orderItem, OrderItemResponseDto.class);
+
+        Order order = orderRepository.getOne(orderItem.getOrderId());
+        orderItemResponseDto.setCustomerName(order.getCustomerName());
+        orderItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
+        orderItemResponseDto.setUnitPrice(orderItem.getUnitPrice());
+        orderItemResponseDto.setTotalPrice(orderItem.getTotalPrice());
+
+        if(orderItem.getInventoryId() != null) {
+            Inventory inventory = inventoryRepository.getOne(orderItem.getInventoryId());
+            orderItemResponseDto.setCreatedDate(inventory.getCreatedDate());
+            orderItemResponseDto.setAcceptedDate(inventory.getAcceptedDate());
+        }
+
+        return orderItemResponseDto;
+
     }
 
 
@@ -146,6 +172,21 @@ public class OrderItemService {
         if(orderItems == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
+
+        orderItems.getContent().forEach(item ->{
+            Order order = orderRepository.getOne(item.getOrderId());
+            item.setCustomerName(order.getCustomerName());
+            item.setDeliveryAddress(order.getDeliveryAddress());
+
+            if(item.getInventoryId() != null) {
+                Inventory inventory = inventoryRepository.getOne(item.getInventoryId());
+                item.setCreatedDate(inventory.getCreatedDate());
+                item.setAcceptedDate(inventory.getAcceptedDate());
+            }
+
+        });
+
+
         return orderItems;
 
     }

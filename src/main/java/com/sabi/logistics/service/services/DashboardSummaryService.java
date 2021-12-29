@@ -5,6 +5,8 @@ import com.sabi.logistics.core.dto.request.TripAssetDto;
 import com.sabi.logistics.core.dto.response.DashboardResponseDto;
 import com.sabi.logistics.core.models.DashboardSummary;
 import com.sabi.logistics.core.models.PartnerAsset;
+import com.sabi.logistics.core.models.TripRequest;
+import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.*;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -35,6 +37,8 @@ public class DashboardSummaryService {
     PartnerAssetTypeRepository partnerAssetTypeRepository;
     @Autowired
     AssetTypePropertiesRepository assetTypePropertiesRepository;
+    @Autowired
+    private Validations validations;
 
     public DashboardSummaryService(ModelMapper mapper, ObjectMapper objectMapper) {
         this.mapper = mapper;
@@ -110,6 +114,33 @@ public class DashboardSummaryService {
         });
         return tripAssetDtos;
     }
+
+
+
+
+
+    public void moveTripRecordToDashBoard()  {
+        List<TripRequest> tripRequests = tripRequestRepository.listTrips();
+        for (TripRequest tran : tripRequests
+                ) {
+//            PartnerAsset partnerAsset = partnerAssetRepository.getOne(tran.getPartnerAssetId());
+            DashboardSummary dashboardSummary = DashboardSummary.builder()
+                    .partnerId(tran.getPartnerId())
+                    .deliveryStatus(tran.getDeliveryStatus())
+                    .date(tran.getCreatedDate())
+                    .assetTypeId(tran.getPartnerAssetId())
+                    .referenceNo(tran.getReferenceNo())
+                    .earnings(tran.getEarnings())
+                    .build();
+            log.info("::::: dashboard request :: " + dashboardSummary);
+            DashboardSummary dashboard = dashboardSummaryRepository.findByPartnerIdAndReferenceNo(dashboardSummary.getPartnerId(),dashboardSummary.getReferenceNo());
+            if(dashboard == null) {
+                dashboardSummaryRepository.save(dashboardSummary);
+            }
+
+        }
+    }
+
 }
 
 
