@@ -19,6 +19,9 @@ public interface DashboardSummaryRepository extends JpaRepository<DashboardSumma
     List<DashboardSummary> getAllBetweenDates(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("partnerId")Long partnerId);
 
 
+    DashboardSummary findByPartnerIdAndReferenceNo(Long partnerId, String referenceNo);
+
+
 
 
 
