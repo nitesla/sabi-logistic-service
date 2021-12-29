@@ -623,10 +623,9 @@ public class Validations {
 
     public void validateTripRequest (TripRequestDto request){
 
-        if (!Utility.isNumeric(request.getPartnerId().toString()))
+        if (request.getPartnerId() != null && !Utility.isNumeric(request.getPartnerId().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerId ");
-
-        if (!Utility.isNumeric(request.getPartnerAssetId().toString()))
+        if (request.getPartnerAssetId() != null && !Utility.isNumeric(request.getPartnerAssetId().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerAssetId ");
 
         if (request.getStatus() == null || request.getStatus().isEmpty() )

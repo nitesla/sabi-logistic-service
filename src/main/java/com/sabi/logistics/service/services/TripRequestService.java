@@ -261,15 +261,25 @@ public class TripRequestService {
                     tripRequestResponseReqDto.setRejectReason(request.getRejectReason());
                     tripRequestResponseService.createTripRequestResponse(tripRequestResponseReqDto);
                 }
-            }else if(request.getStatus().equalsIgnoreCase("Rejected")){
+            }
+            if(request.getStatus().equalsIgnoreCase("Rejected")){
                 tripRequestResponse = tripRequestResponseRepository.findTripRequestResponseByTripRequestId(tripRequest.getId());
-                tripRequestResponseReqDto.setTripRequestId(tripRequest.getId());
-                tripRequestResponseReqDto.setPartnerId(tripRequest.getPartnerId());
-                tripRequestResponseReqDto.setResponseDate(tripRequest.getUpdatedDate().now());
-                tripRequestResponseReqDto.setStatus(request.getStatus());
-                tripRequestResponseReqDto.setRejectReason(request.getRejectReason());
-                tripRequestResponseReqDto.setId(tripRequestResponse.getId());
-                tripRequestResponseService.updateTripRequestResponse(tripRequestResponseReqDto);
+                if (tripRequestResponse != null) {
+                    tripRequestResponseReqDto.setTripRequestId(tripRequest.getId());
+                    tripRequestResponseReqDto.setPartnerId(tripRequest.getPartnerId());
+                    tripRequestResponseReqDto.setResponseDate(tripRequest.getUpdatedDate().now());
+                    tripRequestResponseReqDto.setStatus(request.getStatus());
+                    tripRequestResponseReqDto.setRejectReason(request.getRejectReason());
+                    tripRequestResponseReqDto.setId(tripRequestResponse.getId());
+                    tripRequestResponseService.updateTripRequestResponse(tripRequestResponseReqDto);
+                }else if (tripRequestResponse == null) {
+                    tripRequestResponseReqDto.setTripRequestId(tripRequest.getId());
+                    tripRequestResponseReqDto.setPartnerId(tripRequest.getPartnerId());
+                    tripRequestResponseReqDto.setResponseDate(tripRequest.getUpdatedDate().now());
+                    tripRequestResponseReqDto.setStatus(request.getStatus());
+                    tripRequestResponseReqDto.setRejectReason(request.getRejectReason());
+                    tripRequestResponseService.createTripRequestResponse(tripRequestResponseReqDto);
+                }
             }
             if(request.getStatus().equalsIgnoreCase("Accepted")) {
                 tripRequestResponse = tripRequestResponseRepository.findTripRequestResponseByTripRequestId(tripRequest.getId());
