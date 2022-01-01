@@ -479,8 +479,8 @@ public class Validations {
         if (!("Pending".equalsIgnoreCase(request.getDeliveryStatus()) || "InTransit".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus())))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Delivery Status");
 
-        if (request.getOrderId() == null )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderId cannot be empty");
+//        if (request.getOrderId() == null )
+//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderId cannot be empty");
         if (!Utility.isNumeric(request.getOrderId().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for orderId ");
 

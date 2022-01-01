@@ -174,7 +174,7 @@ public class PartnerUserService {
                                                    Long roleId,Boolean isActive, String lastName, PageRequest pageRequest ){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PartnerUser partner = partnerUserRepository.findByUserId(userCurrent.getId());
-        Page<User> users = userRepository.findByClientId(firstName,phone,email,username,roleId,partner.getPartnerId(),isActive,lastName,pageRequest);
+        Page<User> users = userRepository.findByClientId(firstName,phone,email,username,roleId,partner.getPartnerId(),lastName,pageRequest);
         if(users == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
