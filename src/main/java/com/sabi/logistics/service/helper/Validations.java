@@ -660,10 +660,9 @@ public class Validations {
 
     public void validateTripRequest (TripRequestDto request){
 
-        if (!Utility.isNumeric(request.getPartnerId().toString()))
+        if (request.getPartnerId() != null && !Utility.isNumeric(request.getPartnerId().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerId ");
-
-        if (!Utility.isNumeric(request.getPartnerAssetId().toString()))
+        if (request.getPartnerAssetId() != null && !Utility.isNumeric(request.getPartnerAssetId().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerAssetId ");
 
         if (request.getStatus() == null || request.getStatus().isEmpty() )
@@ -672,10 +671,53 @@ public class Validations {
         if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
 
-//        warehouseRepository.findById(request.getWareHouseId()).orElseThrow(() ->
-//                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-//                        " wareHouseId does not Exist!")
-//        );
+        if (request.getWareHouseId() == null && (request.getContactPerson() == null || request.getContactPerson().isEmpty())) {
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Contact Person cannot be empty");
+        } else if(request.getWareHouseId() == null && (request.getContactEmail() == null || request.getContactEmail().isEmpty())){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Contact Email cannot be empty");
+        } else if(request.getWareHouseId() == null && (request.getContactPhone() == null || request.getContactPhone().isEmpty())){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Contact Phone cannot be empty");
+        } else if(request.getWareHouseId() == null && (request.getWareHouseAddress() == null || request.getWareHouseAddress().isEmpty())) {
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "WareHouse Address cannot be empty");
+        }
+
+        if (request.getWareHouseId() != null) {
+            warehouseRepository.findById(request.getWareHouseId()).orElseThrow(() ->
+                    new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                            " wareHouseId does not Exist!")
+            );
+        }
+    }
+
+    public void validateMasterTripRequest (TripMasterRequestDto request){
+
+        if (request.getPartnerId() != null && !Utility.isNumeric(request.getPartnerId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerId ");
+        if (request.getPartnerAssetId() != null && !Utility.isNumeric(request.getPartnerAssetId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for partnerAssetId ");
+
+        if (request.getStatus() == null || request.getStatus().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
+
+        if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
+
+        if (request.getWareHouseId() == null && (request.getContactPerson() == null || request.getContactPerson().isEmpty())) {
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Contact Person cannot be empty");
+        } else if(request.getWareHouseId() == null && (request.getContactEmail() == null || request.getContactEmail().isEmpty())){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Contact Email cannot be empty");
+        } else if(request.getWareHouseId() == null && (request.getContactPhone() == null || request.getContactPhone().isEmpty())){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Contact Phone cannot be empty");
+        } else if(request.getWareHouseId() == null && (request.getWareHouseAddress() == null || request.getWareHouseAddress().isEmpty())) {
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "WareHouse Address cannot be empty");
+        }
+
+        if (request.getWareHouseId() != null) {
+            warehouseRepository.findById(request.getWareHouseId()).orElseThrow(() ->
+                    new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                            " wareHouseId does not Exist!")
+            );
+        }
     }
 
     public void validateTripItem (TripItemRequestDto request){
