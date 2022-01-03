@@ -1,6 +1,7 @@
 package com.sabi.logistics.service.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sabi.logistics.core.dto.request.DashBoardSummaryRequest;
 import com.sabi.logistics.core.dto.request.TripAssetDto;
 import com.sabi.logistics.core.dto.response.DashboardResponseDto;
 import com.sabi.logistics.core.models.DashboardSummary;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@SuppressWarnings("ALL")
 @Service
 public class DashboardSummaryService {
     private static final Logger log = LoggerFactory.getLogger(DashboardSummaryService.class);
@@ -118,12 +120,10 @@ public class DashboardSummaryService {
 
 
 
-
     public void moveTripRecordToDashBoard()  {
         List<TripRequest> tripRequests = tripRequestRepository.listTrips();
         for (TripRequest tran : tripRequests
                 ) {
-//            PartnerAsset partnerAsset = partnerAssetRepository.getOne(tran.getPartnerAssetId());
             DashboardSummary dashboardSummary = DashboardSummary.builder()
                     .partnerId(tran.getPartnerId())
                     .deliveryStatus(tran.getDeliveryStatus())
@@ -132,7 +132,6 @@ public class DashboardSummaryService {
                     .referenceNo(tran.getReferenceNo())
                     .earnings(tran.getEarnings())
                     .build();
-            log.info("::::: dashboard request :: " + dashboardSummary);
             DashboardSummary dashboard = dashboardSummaryRepository.findByPartnerIdAndReferenceNo(dashboardSummary.getPartnerId(),dashboardSummary.getReferenceNo());
             if(dashboard == null) {
                 dashboardSummaryRepository.save(dashboardSummary);
@@ -140,6 +139,66 @@ public class DashboardSummaryService {
 
         }
     }
+
+
+
+
+
+
+
+    public List<DashBoardSummaryRequest> dashBoardSummary(Long partnerId,LocalDateTime start,LocalDateTime end) {
+        List<DashBoardSummaryRequest> resultLists = new ArrayList<>();
+        List<Object[]> result = dashboardSummaryRepository.GetTotalTripsAndTotalEarnings(partnerId,start,end);
+
+        try{
+            result.forEach(r -> {
+                DashBoardSummaryRequest resultList = new DashBoardSummaryRequest();
+
+//                BigInteger partner = (BigInteger) r[0];
+//                BigInteger completeTrip = (BigInteger) r[1];
+//                BigDecimal totalEarnings = (BigDecimal) r[2];
+                resultList.setPartnerId((Long) r[0]);
+                resultList.setCompletedTrips((Long) r[1]);
+                resultList.setTotalEarnings((BigDecimal) r[2]);
+                resultList.setDate((LocalDateTime) r[3]);
+//                BigInteger assetType = (BigInteger) r[4];
+//                resultList.setAssetType(assetType.longValue());
+                resultLists.add(resultList);
+
+            });
+
+        }catch (Exception e){
+            e.printStackTrace();
+
+        }
+        return resultLists;
+
+    }
+
+
+
+    public List<DashBoardSummaryRequest> dashBoardOutStandingSummary(Long partnerId,LocalDateTime start,LocalDateTime end) {
+        List<DashBoardSummaryRequest> resultLists = new ArrayList<>();
+        List<Object[]> result1 = dashboardSummaryRepository.GetOutStandingTripsAndOutStandEarnings(partnerId,start,end);
+
+        try{
+            result1.forEach(r -> {
+                DashBoardSummaryRequest resultList1 = new DashBoardSummaryRequest();
+                resultList1.setPartnerId((Long) r[0]);
+                resultList1.setOutStandingTrips((Long) r[1]);
+                resultList1.setOutStandingEarnings((BigDecimal) r[2]);
+                resultList1.setDate((LocalDateTime) r[3]);
+//                resultList1.setAssetType(assetType.longValue());
+                resultLists.add(resultList1);
+            });
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return resultLists;
+
+    }
+
 
 }
 
