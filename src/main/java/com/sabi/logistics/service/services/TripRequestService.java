@@ -167,15 +167,6 @@ public class TripRequestService {
             tripResponseDto.setPartnerName(partner.getName());
             tripResponseDto.setPartnerAssetName(partnerAsset.getName());
         }
-
-//        DashboardSummary dashboardSummary = DashboardSummary.builder()
-//                .assetTypeId(partnerAsset.getPartnerAssetTypeId())
-//                .partnerId(tripRequest.getPartnerId())
-//                .date(tripRequest.getCreatedDate())
-//                .deliveryStatus(tripRequest.getDeliveryStatus())
-//                .totalEarnings(tripRequest.getEarnings())
-//                .build();
-//             dashboardSummaryRepository.save(dashboardSummary);
         return tripResponseDto;
     }
 
