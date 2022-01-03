@@ -433,6 +433,40 @@ public class Validations {
 
     }
 
+    public void validateOrderOrderItems (OrderOrderItemDto request){
+
+        if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
+        if (!("Pending".equalsIgnoreCase(request.getDeliveryStatus()) || "Ongoing".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus()) ||"Cancelled".equalsIgnoreCase(request.getDeliveryStatus())))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Delivery Status");
+
+        if (request.getCustomerName() == null || request.getCustomerName().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Customer Name cannot be empty");
+
+        if (request.getCustomerPhone() == null || request.getCustomerPhone().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Customer Phone cannot be empty");
+        if (!Utility.validatePhoneNumber(request.getCustomerPhone().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Customer Phone ");
+
+        if (request.getDeliveryAddress() == null || request.getDeliveryAddress().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Address cannot be empty");
+
+        if (request.getTotalAmount() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Total Amount cannot be empty");
+        if (request.getTotalAmount()  <= 0.0)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Total Amount cannot be less than 0");
+        if (!Utility.isNumeric(request.getTotalAmount().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Total Amount");
+
+        if (request.getTotalQuantity() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Qty cannot be empty");
+        if (!Utility.isNumeric(request.getTotalQuantity().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Qty");
+
+
+
+    }
+
     public void validateOrderItem (OrderItemRequestDto request){
 
         if(request.getWareHouseId() == null)
@@ -445,8 +479,8 @@ public class Validations {
         if (!("Pending".equalsIgnoreCase(request.getDeliveryStatus()) || "InTransit".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus())))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Delivery Status");
 
-        if (request.getOrderId() == null )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderId cannot be empty");
+//        if (request.getOrderId() == null )
+//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderId cannot be empty");
         if (!Utility.isNumeric(request.getOrderId().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for orderId ");
 

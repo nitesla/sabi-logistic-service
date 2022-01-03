@@ -82,7 +82,7 @@ public class OrderService {
 
     public OrderOrderItemResponseDto createOrderOrderItems(OrderOrderItemDto request) {
         List<OrderItemResponseDto> responseDtos = new ArrayList<>();
-//        validations.validateOrder(request);
+        validations.validateOrderOrderItems(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Order order = mapper.map(request,Order.class);
         OrderItem orderItem = mapper.map(request, OrderItem.class);
@@ -105,6 +105,9 @@ public class OrderService {
         log.debug("Create new order - {}"+ new Gson().toJson(order));
         OrderOrderItemResponseDto orderResponseDto = mapper.map(order, OrderOrderItemResponseDto.class);
         log.info("request sent ::::::::::::::::::::::::::::::::: " + request.getOrderItemRequestDto());
+        request.getOrderItemRequestDto().forEach(orderItems ->{
+            orderItems.setOrderId(orderResponseDto.getId());
+        });
         responseDtos = orderItemService.createOrderItems(request.getOrderItemRequestDto());
         List<OrderItemResponseDto> finalResponseDtos = responseDtos;
         responseDtos.forEach(orderItemResponseDto -> {
