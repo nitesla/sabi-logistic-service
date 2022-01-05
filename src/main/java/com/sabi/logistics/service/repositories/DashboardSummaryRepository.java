@@ -1,6 +1,7 @@
 package com.sabi.logistics.service.repositories;
 
 
+
 import com.sabi.logistics.core.models.DashboardSummary;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,11 +25,27 @@ public interface DashboardSummaryRepository extends JpaRepository<DashboardSumma
 
 
 
+    @Query("select d.partnerId,COUNT(d.deliveryStatus) AS completedTrips,SUM(d.earnings) AS totalEarnings,d.date from DashboardSummary d" +
+            " where d.deliveryStatus='Completed' AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND d.partnerId = :partnerId)) " +
+            "AND ((:startDate IS NULL) OR (:startDate IS NOT NULL AND d.date >= :startDate)) " +
+            "AND ((:endDate IS NULL) OR (:endDate IS NOT NULL AND  d.date <= :endDate)) GROUP BY d.partnerId,d.date")
+    List<Object[]> GetTotalTripsAndTotalEarnings (@Param("partnerId")Long partnerId,
+                                                  @Param("startDate") LocalDateTime startDate,
+                                                  @Param("endDate") LocalDateTime endDate);
 
 
 
-//    @Query(value = "{call dashboardSummary(:partnerId)}", nativeQuery = true)
-//    public List<Object[]> dashboardSummary(@Param("partnerId") Long partnerId);
+    @Query("select d.partnerId,COUNT(d.deliveryStatus) AS outStandingTrips,SUM(d.earnings) AS outstandingEarnings,d.date from DashboardSummary d" +
+            " where d.deliveryStatus='Pending' OR d.deliveryStatus='Cancelled' OR d.deliveryStatus='Ongoing' AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND d.partnerId = :partnerId)) " +
+            "AND ((:startDate IS NULL) OR (:startDate IS NOT NULL AND d.date >= :startDate)) " +
+            "AND ((:endDate IS NULL) OR (:endDate IS NOT NULL AND  d.date <= :endDate)) GROUP BY d.partnerId,d.date")
+    List<Object[]> GetOutStandingTripsAndOutStandEarnings (@Param("partnerId")Long partnerId,
+                                                  @Param("startDate") LocalDateTime startDate,
+                                                  @Param("endDate") LocalDateTime endDate);
+
+
+
+
 
 
 

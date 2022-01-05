@@ -167,15 +167,6 @@ public class TripRequestService {
             tripResponseDto.setPartnerName(partner.getName());
             tripResponseDto.setPartnerAssetName(partnerAsset.getName());
         }
-
-//        DashboardSummary dashboardSummary = DashboardSummary.builder()
-//                .assetTypeId(partnerAsset.getPartnerAssetTypeId())
-//                .partnerId(tripRequest.getPartnerId())
-//                .date(tripRequest.getCreatedDate())
-//                .deliveryStatus(tripRequest.getDeliveryStatus())
-//                .totalEarnings(tripRequest.getEarnings())
-//                .build();
-//             dashboardSummaryRepository.save(dashboardSummary);
         return tripResponseDto;
     }
 
@@ -265,7 +256,7 @@ public class TripRequestService {
     }
 
     public TripResponseDto updateTripRequest(TripRequestDto request) {
-        validations.validateTripRequest(request);
+//        validations.validateTripRequest(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         TripRequest tripRequest = tripRequestRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
@@ -344,17 +335,6 @@ public class TripRequestService {
             tripRequest.setDriverAssistantUserId(driver2.getUserId());
             tripRequest.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
 
-        }
-        if (request.getWareHouseId() != null) {
-            Warehouse warehouse = warehouseRepository.findWarehouseById(request.getWareHouseId());
-            if (warehouse == null) {
-                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid warehouse Id");
-            }
-            ;
-            tripRequest.setWareHouseAddress(warehouse.getAddress());
-            tripRequest.setContactPerson(warehouse.getContactPerson());
-            tripRequest.setContactEmail(warehouse.getContactEmail());
-            tripRequest.setContactPhone(warehouse.getContactPhone());
         }
         tripRequest.setUpdatedBy(userCurrent.getId());
         tripRequestRepository.save(tripRequest);
