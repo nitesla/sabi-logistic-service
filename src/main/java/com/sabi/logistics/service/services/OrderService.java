@@ -5,8 +5,11 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
+import com.sabi.framework.service.AuditTrailService;
 import com.sabi.framework.service.TokenService;
+import com.sabi.framework.utils.AuditTrailFlag;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.OrderOrderItemDto;
 import com.sabi.logistics.core.dto.request.OrderRequestDto;
 import com.sabi.logistics.core.dto.response.OrderItemResponseDto;
@@ -14,14 +17,12 @@ import com.sabi.logistics.core.dto.response.OrderOrderItemResponseDto;
 import com.sabi.logistics.core.dto.response.OrderResponseDto;
 import com.sabi.logistics.core.models.Order;
 import com.sabi.logistics.core.models.OrderItem;
-import com.sabi.logistics.core.models.Warehouse;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.OrderItemRepository;
 import com.sabi.logistics.service.repositories.OrderRepository;
-import com.sabi.logistics.service.repositories.WarehouseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +30,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +39,7 @@ import java.util.List;
 public class OrderService {
     private final OrderRepository orderRepository;
     private final ModelMapper mapper;
+    private final AuditTrailService auditTrailService;
     @Autowired
     private Validations validations;
 
@@ -49,12 +49,13 @@ public class OrderService {
     private OrderItemService orderItemService;
 
 
-    public OrderService(OrderRepository orderRepository, ModelMapper mapper) {
+    public OrderService(OrderRepository orderRepository, ModelMapper mapper,AuditTrailService auditTrailService) {
         this.orderRepository = orderRepository;
         this.mapper = mapper;
+        this.auditTrailService = auditTrailService;
     }
 
-    public OrderResponseDto createOrder(OrderRequestDto request) {
+    public OrderResponseDto createOrder(OrderRequestDto request,HttpServletRequest request1) {
         validations.validateOrder(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Order order = mapper.map(request,Order.class);
@@ -76,11 +77,17 @@ public class OrderService {
         order.setIsActive(true);
         order = orderRepository.save(order);
         log.debug("Create new order - {}"+ new Gson().toJson(order));
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Create new order by :" + userCurrent.getUsername(),
+                        AuditTrailFlag.CREATE,
+                        " Create new order for:" + order.getCustomerName() + " "+ order.getReferenceNo() ,1, Utility.getClientIp(request1));
         OrderResponseDto orderResponseDto = mapper.map(order, OrderResponseDto.class);
         return orderResponseDto;
     }
 
-    public OrderOrderItemResponseDto createOrderOrderItems(OrderOrderItemDto request) {
+    public OrderOrderItemResponseDto createOrderOrderItems(OrderOrderItemDto request,HttpServletRequest request1) {
         List<OrderItemResponseDto> responseDtos = new ArrayList<>();
         validations.validateOrderOrderItems(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
@@ -113,10 +120,16 @@ public class OrderService {
         responseDtos.forEach(orderItemResponseDto -> {
             orderResponseDto.setOrderItem(finalResponseDtos);
         });
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Create new order items by :" + userCurrent.getUsername(),
+                        AuditTrailFlag.CREATE,
+                        " Create new order items for:" + order.getCustomerName() + " "+ order.getReferenceNo() ,1, Utility.getClientIp(request1));
         return orderResponseDto;
     }
 
-    public OrderResponseDto updateOrder(OrderRequestDto request) {
+    public OrderResponseDto updateOrder(OrderRequestDto request,HttpServletRequest request1) {
         validations.validateOrder(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Order order = orderRepository.findById(request.getId())
@@ -127,6 +140,12 @@ public class OrderService {
         order.setUpdatedBy(userCurrent.getId());
         orderRepository.save(order);
         log.debug("order record updated - {}"+ new Gson().toJson(order));
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Update order by username:" + userCurrent.getUsername(),
+                        AuditTrailFlag.UPDATE,
+                        " Update order Request for:" + order.getId() ,1, Utility.getClientIp(request1));
         OrderResponseDto orderResponseDto = mapper.map(order, OrderResponseDto.class);
         return orderResponseDto;
     }

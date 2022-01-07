@@ -6,8 +6,11 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
+import com.sabi.framework.service.AuditTrailService;
 import com.sabi.framework.service.TokenService;
+import com.sabi.framework.utils.AuditTrailFlag;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.AllocationHistoryDto;
 import com.sabi.logistics.core.dto.response.AllocationHistoryResponseDto;
 import com.sabi.logistics.core.models.AllocationHistory;
@@ -24,8 +27,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -41,15 +44,19 @@ public class AllocationHistoryService {
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
     private final Validations validations;
+    private final AuditTrailService auditTrailService;
 
-    public AllocationHistoryService(AllocationHistoryRepository repository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
+    public AllocationHistoryService(AllocationHistoryRepository repository, ModelMapper mapper,
+                                    ObjectMapper objectMapper, Validations validations,
+                                    AuditTrailService auditTrailService) {
         this.repository = repository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
         this.validations = validations;
+        this.auditTrailService = auditTrailService;
     }
 
-    public AllocationHistoryResponseDto createAllocationHistory(AllocationHistoryDto request) {
+    public AllocationHistoryResponseDto createAllocationHistory(AllocationHistoryDto request,HttpServletRequest request1) {
 //        validations.validateAssetTypeProperties(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         AllocationHistory allocationHistory = mapper.map(request,AllocationHistory.class);
@@ -67,10 +74,17 @@ public class AllocationHistoryService {
         allocationHistory.setIsActive(true);
         allocationHistory = repository.save(allocationHistory);
         log.debug("Create new asset type - {}"+ new Gson().toJson(allocationHistory));
+
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Create new allocation by :" + userCurrent.getUsername(),
+                        AuditTrailFlag.CREATE,
+                        " Create new allocation for:" + allocationHistory.getAllocationId() ,1, Utility.getClientIp(request1));
         return mapper.map(allocationHistory, AllocationHistoryResponseDto.class);
     }
 
-    public AllocationHistoryResponseDto updateAllocationHistory(AllocationHistoryDto request) {
+    public AllocationHistoryResponseDto updateAllocationHistory(AllocationHistoryDto request,HttpServletRequest request1) {
 //        validations.validateAssetTypeProperties(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         AllocationHistory allocationHistory = repository.findById(request.getId())
@@ -90,6 +104,12 @@ public class AllocationHistoryService {
         allocationHistory.setUpdatedBy(userCurrent.getId());
         repository.save(allocationHistory);
         log.debug("Allocation History record updated - {}"+ new Gson().toJson(allocationHistory));
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Update allocation by username:" + userCurrent.getUsername(),
+                        AuditTrailFlag.UPDATE,
+                        " Update allocation Request for:" + allocationHistory.getId() ,1, Utility.getClientIp(request1));
         return mapper.map(allocationHistory, AllocationHistoryResponseDto.class);
     }
 

@@ -7,8 +7,11 @@ import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
 import com.sabi.framework.repositories.UserRepository;
+import com.sabi.framework.service.AuditTrailService;
 import com.sabi.framework.service.TokenService;
+import com.sabi.framework.utils.AuditTrailFlag;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.DriverAssetDto;
 import com.sabi.logistics.core.dto.response.DriverAssetResponseDto;
 import com.sabi.logistics.core.models.Driver;
@@ -26,6 +29,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Slf4j
@@ -36,6 +40,7 @@ public class DriverAssetService {
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
     private final Validations validations;
+    private final AuditTrailService auditTrailService;
 
     @Autowired
     private PartnerAssetRepository partnerAssetRepository;
@@ -49,15 +54,18 @@ public class DriverAssetService {
     @Autowired
     PartnerAssetTypeRepository partnerAssetTypeRepository;
 
-    public DriverAssetService(DriverAssetRepository repository, ModelMapper mapper, ObjectMapper objectMapper,Validations validations) {
+
+    public DriverAssetService(DriverAssetRepository repository, ModelMapper mapper, ObjectMapper objectMapper,Validations validations,
+                              AuditTrailService auditTrailService) {
         this.repository = repository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
         this.validations = validations;
+        this.auditTrailService = auditTrailService;
     }
 
 
-    public DriverAssetResponseDto createDriverAsset(DriverAssetDto request) {
+    public DriverAssetResponseDto createDriverAsset(DriverAssetDto request,HttpServletRequest request1) {
         validations.validateDriverAsset(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         DriverAsset driverAsset = mapper.map(request,DriverAsset.class);
@@ -77,11 +85,17 @@ public class DriverAssetService {
         driverAsset.setIsActive(true);
         driverAsset = repository.save(driverAsset);
         log.debug("Create new Driver asset - {}"+ new Gson().toJson(driverAsset));
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Create new driver asset by :" + userCurrent.getUsername(),
+                        AuditTrailFlag.CREATE,
+                        " Create new driver asset for:" + driverAsset.getDriverName() + " "+ driverAsset.getAssetType() ,1, Utility.getClientIp(request1));
         return mapper.map(driverAsset, DriverAssetResponseDto.class);
     }
 
 
-    public DriverAssetResponseDto updateDriverAsset(DriverAssetDto request) {
+    public DriverAssetResponseDto updateDriverAsset(DriverAssetDto request,HttpServletRequest request1) {
         validations.validateDriverAsset(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         DriverAsset driverAsset = repository.findById(request.getId())
@@ -97,6 +111,12 @@ public class DriverAssetService {
         driverAsset.setUpdatedBy(userCurrent.getId());
         repository.save(driverAsset);
         log.debug("Driver asset record updated - {}"+ new Gson().toJson(driverAsset));
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Update driver asset by username:" + userCurrent.getUsername(),
+                        AuditTrailFlag.UPDATE,
+                        " Update driver asset Request for:" + driverAsset.getId() ,1, Utility.getClientIp(request1));
         return mapper.map(driverAsset, DriverAssetResponseDto.class);
     }
 

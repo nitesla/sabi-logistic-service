@@ -23,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @SuppressWarnings("ALL")
@@ -67,7 +68,7 @@ public class PartnerAssetService {
         this.validations = validations;
     }
 
-    public PartnerAssetResponseDto createPartnerAsset(PartnerAssetRequestDto request) {
+    public PartnerAssetResponseDto createPartnerAsset(PartnerAssetRequestDto request,HttpServletRequest request1) {
         log.info("Request ::::::::::::::::::::::::::::::::: {} " + request);
         validations.validatePartnerAsset(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
@@ -137,7 +138,7 @@ public class PartnerAssetService {
             processDriver.setDriverType(DriverType.DRIVER);
             processDriver.setDriverId(partnerAsset.getDriverId());
             processDriver.setAssestTypeName(partnerAsset.getAssetTypeName());
-           responseDto =  driverAssetService.createDriverAsset(processDriver);
+           responseDto =  driverAssetService.createDriverAsset(processDriver,request1);
         }
         saveDrivedAsset = driverAssetRepository.findByDriverIdAndPartnerAssetId(partnerAsset.getDriverAssistantId(),partnerAsset.getId());
         if (saveDrivedAsset == null){
@@ -145,7 +146,7 @@ public class PartnerAssetService {
             processDriver.setDriverType(DriverType.DRIVER_ASSISTANT);
             processDriver.setDriverId(partnerAsset.getDriverAssistantId());
             processDriver.setAssestTypeName(partnerAsset.getAssetTypeName());
-            driverAssetService.createDriverAsset(processDriver);
+            driverAssetService.createDriverAsset(processDriver,request1);
         }
         return partnerAssetResponseDto;
 
@@ -154,7 +155,7 @@ public class PartnerAssetService {
 
     }
 
-    public PartnerAssetResponseDto updatePartnerAsset(PartnerAssetRequestDto request) {
+    public PartnerAssetResponseDto updatePartnerAsset(PartnerAssetRequestDto request,HttpServletRequest request1) {
         validations.validatePartnerAsset(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         DriverAssetResponseDto responseDto = new DriverAssetResponseDto();
@@ -225,14 +226,14 @@ public class PartnerAssetService {
             processDriver.setDriverId(partnerAsset.getDriverId());
             processDriver.setAssestTypeName(partnerAsset.getAssetTypeName());
 
-            responseDto =  driverAssetService.createDriverAsset(processDriver);
+            responseDto =  driverAssetService.createDriverAsset(processDriver,request1);
         } else {
             processDriver.setPartnerAssetId(partnerAsset.getId());
             processDriver.setDriverType(DriverType.DRIVER);
             processDriver.setDriverId(partnerAsset.getDriverId());
             processDriver.setAssestTypeName(partnerAsset.getAssetTypeName());
             processDriver.setId(driverAssetDto.getId());
-            responseDto =  driverAssetService.updateDriverAsset(processDriver);
+            responseDto =  driverAssetService.updateDriverAsset(processDriver,request1);
         }
 
 
@@ -243,14 +244,14 @@ public class PartnerAssetService {
             processDriver.setDriverId(partnerAsset.getDriverAssistantId());
             processDriver.setAssestTypeName(partnerAsset.getAssetTypeName());
 
-            driverAssetService.createDriverAsset(processDriver);
+            driverAssetService.createDriverAsset(processDriver,request1);
         } else {
             processDriver.setPartnerAssetId(partnerAsset.getId());
             processDriver.setDriverType(DriverType.DRIVER_ASSISTANT);
             processDriver.setDriverId(partnerAsset.getDriverAssistantId());
             processDriver.setAssestTypeName(partnerAsset.getAssetTypeName());
             processDriver.setId(saveDrivedAsset.getId());
-            driverAssetService.updateDriverAsset(processDriver);
+            driverAssetService.updateDriverAsset(processDriver,request1);
         }
 
         return partnerAssetResponseDto;

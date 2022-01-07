@@ -11,8 +11,10 @@ import com.sabi.framework.models.PreviousPasswords;
 import com.sabi.framework.models.User;
 import com.sabi.framework.repositories.PreviousPasswordRepository;
 import com.sabi.framework.repositories.UserRepository;
+import com.sabi.framework.service.AuditTrailService;
 import com.sabi.framework.service.NotificationService;
 import com.sabi.framework.service.TokenService;
+import com.sabi.framework.utils.AuditTrailFlag;
 import com.sabi.framework.utils.Constants;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.framework.utils.Utility;
@@ -34,6 +36,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +61,7 @@ public class PartnerService {
     private NotificationService notificationService;
     private final PartnerUserRepository partnerUserRepository;
     private LGARepository lgaRepository;
+    private final AuditTrailService auditTrailService;
 
 
     public PartnerService(PartnerRepository repository,PartnerAssetTypeRepository partnerAssetTypeRepository,
@@ -65,7 +69,7 @@ public class PartnerService {
                           UserRepository userRepository,PreviousPasswordRepository previousPasswordRepository,
                           ModelMapper mapper, ObjectMapper objectMapper,
                           Validations validations,NotificationService notificationService,
-                          PartnerUserRepository partnerUserRepository,LGARepository lgaRepository) {
+                          PartnerUserRepository partnerUserRepository,LGARepository lgaRepository,AuditTrailService auditTrailService) {
         this.repository = repository;
         this.partnerAssetTypeRepository = partnerAssetTypeRepository;
         this.partnerCategoriesRepository = partnerCategoriesRepository;
@@ -78,12 +82,13 @@ public class PartnerService {
         this.notificationService = notificationService;
         this.partnerUserRepository = partnerUserRepository;
         this.lgaRepository = lgaRepository;
+        this.auditTrailService = auditTrailService;
     }
 
 
 
 
-    public PartnerSignUpResponseDto partnerSignUp(PartnerSignUpDto request) {
+    public PartnerSignUpResponseDto partnerSignUp(PartnerSignUpDto request,HttpServletRequest request1) {
         validations.validatePartner(request);
         User user = mapper.map(request,User.class);
 
@@ -155,6 +160,12 @@ public class PartnerService {
                 .partnerId(partnerResponse.getId())
                 .build();
 
+        auditTrailService
+                .logEvent(response.getUsername(),
+                        "SignUp user :" + response.getUsername(),
+                        AuditTrailFlag.SIGNUP,
+                        " Sign up User Request for:" + user.getFirstName() + " " + user.getLastName() + " " + user.getEmail()
+                        , 1, Utility.getClientIp(request1));
         return response;
     }
 
@@ -289,7 +300,7 @@ public class PartnerService {
     }
 
 
-    public PartnerResponseDto updatePartnerProperties(PartnerDto request) {
+    public PartnerResponseDto updatePartnerProperties(PartnerDto request,HttpServletRequest request1) {
         validations.validatePartnerProperties(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Partner partnerProperties = repository.findById(request.getId())
@@ -299,6 +310,11 @@ public class PartnerService {
         partnerProperties.setUpdatedBy(userCurrent.getId());
         repository.save(partnerProperties);
         log.debug("partner asset record updated - {}"+ new Gson().toJson(partnerProperties));
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Update partner by username:" + userCurrent.getUsername(),
+                        AuditTrailFlag.UPDATE,
+                        " Update partner Request for:" + partnerProperties.getId() ,1, Utility.getClientIp(request1));
         return mapper.map(partnerProperties, PartnerResponseDto.class);
     }
 
@@ -326,13 +342,20 @@ public class PartnerService {
 
 
 
-    public void enableDisEnable (EnableDisEnableDto request){
+    public void enableDisEnable (EnableDisEnableDto request,HttpServletRequest request1){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Partner partnerProperties = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner properties Id does not exist!"));
         partnerProperties.setIsActive(request.isActive());
         partnerProperties.setUpdatedBy(userCurrent.getId());
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Disable/Enable partner by :" + userCurrent.getUsername() ,
+                        AuditTrailFlag.UPDATE,
+                        " Disable/Enable partner Request for:" +  partnerProperties.getId()
+                                + " " +  partnerProperties.getName(),1, Utility.getClientIp(request1));
         repository.save(partnerProperties);
 
     }
