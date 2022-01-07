@@ -45,8 +45,8 @@ public class WarehouseProductService {
         validations.validateWarehouseProduct(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         WarehouseProduct warehouseProduct = mapper.map(request,WarehouseProduct.class);
-        WarehouseProduct stateExist = repository.findByThirdPartyProductID(request.getThirdPartyProductID());
-        if(stateExist !=null){
+        WarehouseProduct warehouseProductExist = repository.findByThirdPartyProductID(request.getThirdPartyProductID());
+        if(warehouseProductExist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " warehouse product already exist");
         }
         warehouseProduct.setCreatedBy(userCurrent.getId());
@@ -66,14 +66,14 @@ public class WarehouseProductService {
     public WarehouseProductResponseDto updateWarehouseProduct(WarehouseProductDto request) {
         validations.validateWarehouseProduct(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-        WarehouseProduct state = repository.findById(request.getId())
+        WarehouseProduct warehouseProduct = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested warehouse product Id does not exist!"));
-        mapper.map(request, state);
-        state.setUpdatedBy(userCurrent.getId());
-        repository.save(state);
-        log.debug("State record warehouse product - {}"+ new Gson().toJson(state));
-        return mapper.map(state, WarehouseProductResponseDto.class);
+        mapper.map(request, warehouseProduct);
+        warehouseProduct.setUpdatedBy(userCurrent.getId());
+        repository.save(warehouseProduct);
+        log.debug("State record warehouse product - {}"+ new Gson().toJson(warehouseProduct));
+        return mapper.map(warehouseProduct, WarehouseProductResponseDto.class);
     }
 
 
@@ -83,12 +83,23 @@ public class WarehouseProductService {
      * <remarks>this method is responsible for getting a single record</remarks>
      */
     public WarehouseProductResponseDto findWarehouseProduct(Long id){
-        WarehouseProduct state = repository.findById(id)
+        WarehouseProduct warehouseProduct = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested warehouse product Id does not exist!"));
 //        Country country = countryRepository.getOne(state.getCountryId());
 //        state.setCountryName(country.getName());
-        return mapper.map(state,WarehouseProductResponseDto.class);
+        return mapper.map(warehouseProduct,WarehouseProductResponseDto.class);
+    }
+
+    public WarehouseProductResponseDto findWarehouseProductByThirdPartyProductId(String thirdpartyProductId){
+        WarehouseProduct warehouseProduct = repository.findByThirdPartyProductID(thirdpartyProductId);
+        if(warehouseProduct == null){
+            throw  new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                    "Requested warehouse product Id does not exist!");
+        }
+//        Country country = countryRepository.getOne(state.getCountryId());
+//        state.setCountryName(country.getName());
+        return mapper.map(warehouseProduct,WarehouseProductResponseDto.class);
     }
 
 
@@ -121,8 +132,8 @@ public class WarehouseProductService {
 
 
     public List<WarehouseProduct> getAll(Boolean isActive){
-        List<WarehouseProduct> Colors = repository.findByIsActive(isActive);
-        return Colors;
+        List<WarehouseProduct> warehouseProductList = repository.findByIsActive(isActive);
+        return warehouseProductList;
 
     }
 }
