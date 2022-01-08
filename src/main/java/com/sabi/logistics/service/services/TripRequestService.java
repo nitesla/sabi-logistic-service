@@ -400,7 +400,7 @@ public class TripRequestService {
     }
 
 
-    public Page<TripRequest> findAll(Long partnerId, String status, String referenceNo, Long driverUserId,
+    public Page<TripRequest> findAll(Long partnerId, String status, String referenceNo, Long driverUserId, Long driverAssistantUserId,
                                      Long wareHouseId, String wareHouseAddress, Long partnerAssetId, PageRequest pageRequest ){
         GenericSpecification<TripRequest> genericSpecification = new GenericSpecification<TripRequest>();
 
@@ -427,6 +427,17 @@ public class TripRequestService {
 
             if (driverId != null) {
                 genericSpecification.add(new SearchCriteria("driverId", driverId, SearchOperation.EQUAL));
+            }
+        }
+
+        if(driverAssistantUserId != null) {
+            Driver driver2 = driverRepository.findByUserId(driverAssistantUserId);
+
+            Long driverAssistantId = driver2.getId();
+
+
+            if (driverAssistantId != null) {
+                genericSpecification.add(new SearchCriteria("driverAssistantId", driverAssistantId, SearchOperation.EQUAL));
             }
         }
 
