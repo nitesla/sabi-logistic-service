@@ -12,8 +12,10 @@ import com.sabi.framework.notification.requestDto.SmsRequest;
 import com.sabi.framework.repositories.PreviousPasswordRepository;
 import com.sabi.framework.repositories.RoleRepository;
 import com.sabi.framework.repositories.UserRepository;
+import com.sabi.framework.service.AuditTrailService;
 import com.sabi.framework.service.NotificationService;
 import com.sabi.framework.service.TokenService;
+import com.sabi.framework.utils.AuditTrailFlag;
 import com.sabi.framework.utils.Constants;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.framework.utils.Utility;
@@ -35,6 +37,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,12 +58,13 @@ public class PartnerUserService {
     private NotificationService notificationService;
     private final ModelMapper mapper;
     private final Validations validations;
+    private final AuditTrailService auditTrailService;
 
     public PartnerUserService(PartnerRepository partnerRepository,UserRepository userRepository,PreviousPasswordRepository previousPasswordRepository,
                               PartnerUserRepository partnerUserRepository,DriverRepository driverRepository,
                               RoleRepository roleRepository,
                               NotificationService notificationService,
-                              ModelMapper mapper, Validations validations) {
+                              ModelMapper mapper, Validations validations,AuditTrailService auditTrailService) {
         this.partnerRepository = partnerRepository;
         this.userRepository = userRepository;
         this.previousPasswordRepository = previousPasswordRepository;
@@ -70,9 +74,10 @@ public class PartnerUserService {
         this.notificationService = notificationService;
         this.mapper = mapper;
         this.validations = validations;
+        this.auditTrailService = auditTrailService;
     }
 
-    public PartnerUserResponseDto createPartnerUser(PartnerUserRequestDto request) {
+    public PartnerUserResponseDto createPartnerUser(PartnerUserRequestDto request,HttpServletRequest request1) {
         validations.validatePartnerUser(request);
         User user = mapper.map(request,User.class);
 
@@ -123,6 +128,13 @@ public class PartnerUserService {
               user1.setPasswordChangedOn(LocalDateTime.now());
               userRepository.save(user1);
         }
+
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Create new partner user by :" + userCurrent.getUsername(),
+                        AuditTrailFlag.CREATE,
+                        " Create new partner user for:" + user.getFirstName() + " " + user.getUsername(),1, Utility.getClientIp(request1));
         return mapper.map(user, PartnerUserResponseDto.class);
     }
 
@@ -184,6 +196,7 @@ public class PartnerUserService {
                 Role role = roleRepository.getOne(user.getRoleId());
                 partnerUsers.setRoleName(role.getName());
             }
+            partnerUsers.setUserType(partner.getUserType());
         });
         return users;
 
