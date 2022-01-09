@@ -5,8 +5,11 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
+import com.sabi.framework.service.AuditTrailService;
 import com.sabi.framework.service.TokenService;
+import com.sabi.framework.utils.AuditTrailFlag;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.DropOffItemRequestDto;
 import com.sabi.logistics.core.dto.request.TripItemRequestDto;
 import com.sabi.logistics.core.dto.response.DropOffItemResponseDto;
@@ -23,6 +26,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,13 +58,16 @@ public class DropOffItemService {
     @Autowired
     private TripItemService tripItemService;
 
+    @Autowired
+    private AuditTrailService auditTrailService;
+
 
     public DropOffItemService(DropOffItemRepository dropOffItemRepository, ModelMapper mapper) {
         this.dropOffItemRepository = dropOffItemRepository;
         this.mapper = mapper;
     }
 
-    public DropOffItemResponseDto createDropOffItem(DropOffItemRequestDto request) {
+    public DropOffItemResponseDto createDropOffItem(DropOffItemRequestDto request,HttpServletRequest request1) {
         validations.validateDropOffItem(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         DropOffItem dropOffItem = mapper.map(request,DropOffItem.class);
@@ -96,7 +103,11 @@ public class DropOffItemService {
             tripItemRequestDto.setQtyPickedUp(dropOffItem.getQtyGoodsDelivered());
             tripItemService.createTripItem(tripItemRequestDto);
         }
-
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Create new dropOffItem  by :" + userCurrent.getUsername(),
+                        AuditTrailFlag.CREATE,
+                        " Create new dropOffItem for:" + dropOffItem.getCustomerName() ,1, Utility.getClientIp(request1));
 
         return dropOffItemResponseDto;
     }
@@ -148,7 +159,7 @@ public class DropOffItemService {
         return responseDtos;
     }
 
-    public DropOffItemResponseDto updateDropOffItem(DropOffItemRequestDto request) {
+    public DropOffItemResponseDto updateDropOffItem(DropOffItemRequestDto request,HttpServletRequest request1) {
         validations.validateDropOffItem(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         DropOffItem dropOffItem = dropOffItemRepository.findById(request.getId())
@@ -195,6 +206,12 @@ public class DropOffItemService {
             tripItemService.updateTripItem(tripItemRequestDto);
         }
 
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Update dropOffItem by username:" + userCurrent.getUsername(),
+                        AuditTrailFlag.UPDATE,
+                        " Update dropOffItem Request for:" + dropOffItem.getId(),1, Utility.getClientIp(request1));
         return dropOffItemResponseDto;
     }
 
@@ -269,13 +286,19 @@ public class DropOffItemService {
 
 
 
-    public void enableDisable (EnableDisEnableDto request){
+    public void enableDisable (EnableDisEnableDto request,HttpServletRequest request1){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         DropOffItem dropOffItem  = dropOffItemRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Trip item Id does not exist!"));
         dropOffItem.setIsActive(request.isActive());
         dropOffItem.setUpdatedBy(userCurrent.getId());
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Update dropOffItem by username:" + userCurrent.getUsername(),
+                        AuditTrailFlag.UPDATE,
+                        " Update dropOffItem Request for:" + dropOffItem.getId(),1, Utility.getClientIp(request1));
         dropOffItemRepository.save(dropOffItem);
 
     }

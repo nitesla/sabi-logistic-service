@@ -5,8 +5,11 @@ import com.google.gson.Gson;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
+import com.sabi.framework.service.AuditTrailService;
 import com.sabi.framework.service.TokenService;
+import com.sabi.framework.utils.AuditTrailFlag;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.DriverWalletDto;
 import com.sabi.logistics.core.dto.response.DriverWalletResponseDto;
 import com.sabi.logistics.core.enums.TransAction;
@@ -20,9 +23,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @SuppressWarnings("ALL")
 @Slf4j
@@ -37,6 +39,8 @@ public class DriverWalletService {
     private ObjectMapper objectMapper;
     @Autowired
     private Validations validations;
+    @Autowired
+    private AuditTrailService auditTrailService;
 
     /** <summary>
      * DriverWallet creation
@@ -44,7 +48,7 @@ public class DriverWalletService {
      * <remarks>this method is responsible for creation of new DriverWallet</remarks>
      */
 
-    public DriverWalletResponseDto createDriverWallet(DriverWalletDto request) {
+    public DriverWalletResponseDto createDriverWallet(DriverWalletDto request,HttpServletRequest request1) {
         validations.validateDriverWallet(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         DriverWallet driverWallet = mapper.map(request,DriverWallet.class);
@@ -74,6 +78,13 @@ public class DriverWalletService {
         driverWallet.setIsActive(true);
         driverWallet = repository.save(driverWallet);
         log.debug("Create new Driver asset - {}"+ new Gson().toJson(driverWallet));
+
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Create new driverWallet  by :" + userCurrent.getUsername(),
+                        AuditTrailFlag.CREATE,
+                        " Create new driverWallet for:" + driverWallet.getDriverId() ,1, Utility.getClientIp(request1));
         return mapper.map(driverWallet, DriverWalletResponseDto.class);
     }
 
@@ -85,7 +96,7 @@ public class DriverWalletService {
      * <remarks>this method is responsible for updating already existing DriverWallet</remarks>
      */
 
-    public DriverWalletResponseDto updateDriverWallet(DriverWalletDto request) {
+    public DriverWalletResponseDto updateDriverWallet(DriverWalletDto request,HttpServletRequest request1) {
 //        validations.validateDriverWallet(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         DriverWallet driverWallet = repository.findById(request.getId())
@@ -114,6 +125,12 @@ public class DriverWalletService {
         driverWallet.setUpdatedBy(userCurrent.getId());
         repository.save(driverWallet);
         log.debug("Driver Wallet record updated - {}" + new Gson().toJson(driverWallet));
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Update driverWallet by username:" + userCurrent.getUsername(),
+                        AuditTrailFlag.UPDATE,
+                        " Update driverWallet Request for:" + driverWallet.getId(),1, Utility.getClientIp(request1));
         return mapper.map(driverWallet, DriverWalletResponseDto.class);
     }
 
@@ -154,7 +171,7 @@ public class DriverWalletService {
 
     }
 
-    public DriverWalletResponseDto prepareForFinalDriverWalletSave(DriverWallet request) {
+    public DriverWalletResponseDto prepareForFinalDriverWalletSave(DriverWallet request,HttpServletRequest request1) {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         DriverWallet driverWallet = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
@@ -163,6 +180,12 @@ public class DriverWalletService {
         driverWallet.setPreviousAmount(request.getPreviousAmount());
         repository.save(driverWallet);
         log.debug("Driver Wallet record updated - {}" + new Gson().toJson(driverWallet));
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Update driverWallet by username:" + userCurrent.getUsername(),
+                        AuditTrailFlag.UPDATE,
+                        " Update driverWallet Request for:" + driverWallet.getId(),1, Utility.getClientIp(request1));
         return mapper.map(driverWallet, DriverWalletResponseDto.class);
     }
 }
