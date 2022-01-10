@@ -170,14 +170,10 @@ public class Validations {
         }
     }
 
-    public void validatePartnerProperties(PartnerDto partnerPropertiesDto) {
+    public void validatePartnerProperties(CompleteSignupRequest partnerPropertiesDto) {
         if (partnerPropertiesDto.getName() == null || partnerPropertiesDto.getName().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
-        String valName = partnerPropertiesDto.getName();
-        char valCharName = valName.charAt(0);
-        if (Character.isDigit(valCharName)){
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name can not start with a number");
-        }
+
         if (partnerPropertiesDto.getAddress() == null || partnerPropertiesDto.getAddress().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Address cannot be empty");
         LGA lga = lgaRepository.findById(partnerPropertiesDto.getLgaId())
@@ -187,11 +183,25 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Phone cannot be empty");
         if (partnerPropertiesDto.getEmail() == null || partnerPropertiesDto.getEmail().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Email cannot be empty");
-        if (partnerPropertiesDto.getWebSite() == null || partnerPropertiesDto.getWebSite().isEmpty())
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Website cannot be empty");
-
-
     }
+
+
+
+    public void validatePartnerUpdate(PartnerDto partnerPropertiesDto) {
+        if (partnerPropertiesDto.getName() == null || partnerPropertiesDto.getName().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+
+        if (partnerPropertiesDto.getAddress() == null || partnerPropertiesDto.getAddress().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Address cannot be empty");
+        LGA lga = lgaRepository.findById(partnerPropertiesDto.getLgaId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid LGA id!"));
+        if (partnerPropertiesDto.getPhone() == null || partnerPropertiesDto.getPhone().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Phone cannot be empty");
+        if (partnerPropertiesDto.getEmail() == null || partnerPropertiesDto.getEmail().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Email cannot be empty");
+    }
+
 
     public void validateBlockType(BlockTypeDto blockTypeDto) {
         if (blockTypeDto.getName() == null || blockTypeDto.getName().isEmpty())

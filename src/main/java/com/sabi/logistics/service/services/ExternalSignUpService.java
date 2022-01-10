@@ -4,6 +4,7 @@ package com.sabi.logistics.service.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.sabi.framework.exceptions.ConflictException;
+import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.PreviousPasswords;
 import com.sabi.framework.models.User;
 import com.sabi.framework.repositories.PreviousPasswordRepository;
@@ -12,7 +13,9 @@ import com.sabi.framework.service.NotificationService;
 import com.sabi.framework.utils.Constants;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.ExternalPartnerSignUp;
+import com.sabi.logistics.core.dto.response.ExternalDetailsResponse;
 import com.sabi.logistics.core.dto.response.ExternalPartnerSignUpResponse;
+import com.sabi.logistics.core.models.LGA;
 import com.sabi.logistics.core.models.Partner;
 import com.sabi.logistics.core.models.PartnerAssetType;
 import com.sabi.logistics.core.models.PartnerUser;
@@ -98,8 +101,10 @@ public class ExternalSignUpService {
         Partner savePartner = new Partner();
         savePartner.setName(request.getName());
         savePartner.setUserId(user.getId());
+        savePartner.setLgaId(request.getLgaId());
         savePartner.setIsActive(false);
         savePartner.setCreatedBy(user.getId());
+        savePartner.setSupplierId(request.getSupplierId());
 
         Partner partnerResponse= repository.save(savePartner);
         log.debug("Create new partner  - {}"+ new Gson().toJson(savePartner));
@@ -134,4 +139,45 @@ public class ExternalSignUpService {
 
 
     }
+
+
+
+    public ExternalDetailsResponse externalDetails(Long supplierId){
+        Partner partner  = repository.findBySupplierId(supplierId);
+        if(partner ==null)
+            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Supplier id does not exist");
+
+        LGA lga = lgaRepository.getOne(partner.getLgaId());
+
+        User user = userRepository.getOne(partner.getUserId());
+
+        ExternalDetailsResponse externalDetailsResponse = ExternalDetailsResponse.builder()
+                .address(partner.getAddress())
+                .cac(partner.getCac())
+                .createdBy(partner.getCreatedBy())
+                .createdDate(partner.getCreatedDate())
+                .email(partner.getEmail())
+                .employeeCount(partner.getEmployeeCount())
+                .name(partner.getName())
+                .isRegistered(partner.isRegistered())
+                .partnerId(partner.getId())
+                .registrationDate(partner.getRegistrationDate())
+                .supplierId(partner.getSupplierId())
+                .webSite(partner.getWebSite())
+                .lgaId(partner.getLgaId())
+                .lgaName(lga.getName())
+                .lastName(user.getLastName())
+                .firstName(user.getFirstName())
+                .userEmail(user.getEmail())
+                .userPhone(user.getPhone())
+                .userId(user.getId())
+                .username(user.getUsername())
+                .build();
+
+
+        return externalDetailsResponse;
+    }
+
+
+
 }

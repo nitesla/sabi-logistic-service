@@ -33,4 +33,6 @@ public interface PartnerRepository extends JpaRepository<Partner, Long> {
     @Query("SELECT p FROM Partner p WHERE ((:name IS NULL) OR (:name IS NOT NULL AND p.name = :name))")
     Page<Partner> findPartnersProperties(@Param("name") String name, Pageable pageable);
 
+
+    Partner findBySupplierId (Long supplierId);
 }

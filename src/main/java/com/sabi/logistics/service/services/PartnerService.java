@@ -172,6 +172,7 @@ public class PartnerService {
 
 
     public CompleteSignUpResponse completeSignUp(CompleteSignupRequest request) {
+        validations.validatePartnerProperties(request);
         Partner partner = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner Id does not exist!"));
@@ -285,7 +286,7 @@ public class PartnerService {
 
 
     public PartnerResponseDto createPartnerProperties(PartnerDto request) {
-        validations.validatePartnerProperties(request);
+//        validations.validatePartnerProperties(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Partner partnerProperties = mapper.map(request,Partner.class);
         Partner exist = repository.findByName(request.getName());
@@ -301,7 +302,7 @@ public class PartnerService {
 
 
     public PartnerResponseDto updatePartnerProperties(PartnerDto request,HttpServletRequest request1) {
-        validations.validatePartnerProperties(request);
+        validations.validatePartnerUpdate(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Partner partnerProperties = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
