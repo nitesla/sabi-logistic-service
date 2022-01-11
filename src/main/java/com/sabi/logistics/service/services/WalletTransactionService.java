@@ -2,7 +2,6 @@ package com.sabi.logistics.service.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
@@ -23,7 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -51,7 +50,7 @@ public class WalletTransactionService {
      * <remarks>this method is responsible for creation of new WalletTransaction</remarks>
      */
 
-    public WalletTransactionResponseDto createWalletTransaction(WalletTransactionDto request) {
+    public WalletTransactionResponseDto createWalletTransaction(WalletTransactionDto request,HttpServletRequest request1) {
         validations.validateWalletTransaction(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         WalletTransaction walletTransaction = mapper.map(request,WalletTransaction.class);
@@ -72,7 +71,7 @@ public class WalletTransactionService {
         driverWalletDto.setAction(walletTransaction.getAction());
         driverWalletDto.setAmount(walletTransaction.getAmount());
         driverWalletDto.setId(walletTransaction.getDriverWalletId());
-        driverWalletService.updateDriverWallet(driverWalletDto);
+        driverWalletService.updateDriverWallet(driverWalletDto,request1);
 
         log.debug("Create new Driver wallet - {}"+ new Gson().toJson(walletTransaction));
         return mapper.map(walletTransaction, WalletTransactionResponseDto.class);

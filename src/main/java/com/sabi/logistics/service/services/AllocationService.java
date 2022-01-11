@@ -6,11 +6,12 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
+import com.sabi.framework.service.AuditTrailService;
 import com.sabi.framework.service.TokenService;
+import com.sabi.framework.utils.AuditTrailFlag;
 import com.sabi.framework.utils.CustomResponseCode;
-import com.sabi.logistics.core.dto.request.AllocationHistoryDto;
+import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.AllocationsDto;
-import com.sabi.logistics.core.dto.response.AllocationHistoryResponseDto;
 import com.sabi.logistics.core.dto.response.AllocationResponseDto;
 import com.sabi.logistics.core.models.AllocationHistory;
 import com.sabi.logistics.core.models.Allocations;
@@ -28,9 +29,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Slf4j
@@ -50,14 +49,17 @@ public class AllocationService {
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
     private final Validations validations;
+    private final AuditTrailService auditTrailService;
 
-    public AllocationService(ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
+    public AllocationService(ModelMapper mapper, ObjectMapper objectMapper, Validations validations,
+                             AuditTrailService auditTrailService) {
         this.mapper = mapper;
         this.objectMapper = objectMapper;
         this.validations = validations;
+        this.auditTrailService = auditTrailService;
     }
 
-    public AllocationResponseDto createAllocation(AllocationsDto request) {
+    public AllocationResponseDto createAllocation(AllocationsDto request,HttpServletRequest request1) {
 //        validations.validateAssetTypeProperties(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Allocations allocationHistory = mapper.map(request,Allocations.class);
@@ -75,10 +77,16 @@ public class AllocationService {
         allocationHistory.setIsActive(true);
         allocationHistory = repository.save(allocationHistory);
         log.debug("Create new asset type - {}"+ new Gson().toJson(allocationHistory));
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Create new allocation  by :" + userCurrent.getUsername(),
+                        AuditTrailFlag.CREATE,
+                        " Create new allocation for:" + allocationHistory.getName() ,1, Utility.getClientIp(request1));
         return mapper.map(allocationHistory, AllocationResponseDto.class);
     }
 
-    public AllocationResponseDto updateAllocations(AllocationsDto request) {
+    public AllocationResponseDto updateAllocations(AllocationsDto request,HttpServletRequest request1) {
 //        validations.validateAssetTypeProperties(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Allocations allocations = repository.findById(request.getId())
@@ -94,6 +102,12 @@ public class AllocationService {
         allocations.setUpdatedBy(userCurrent.getId());
         repository.save(allocations);
         log.debug("Allocations record updated - {}"+ new Gson().toJson(allocations));
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Update allocation by username:" + userCurrent.getUsername(),
+                        AuditTrailFlag.UPDATE,
+                        " Update allocation Request for:" + allocations.getId(),1, Utility.getClientIp(request1));
         return mapper.map(allocations, AllocationResponseDto.class);
     }
 
@@ -121,13 +135,21 @@ public class AllocationService {
 
 
 
-    public void enableDisEnable (EnableDisEnableDto request){
+    public void enableDisEnable (EnableDisEnableDto request,HttpServletRequest request1){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Allocations allocations  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested asset type Id does not exist!"));
         allocations.setIsActive(request.isActive());
         allocations.setUpdatedBy(userCurrent.getId());
+
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Disable/Enable allocation by :" + userCurrent.getUsername() ,
+                        AuditTrailFlag.UPDATE,
+                        " Disable/Enable allocation Request for:" +  allocations.getId()
+                                + " " +  allocations.getName(),1, Utility.getClientIp(request1));
         repository.save(allocations);
 
     }

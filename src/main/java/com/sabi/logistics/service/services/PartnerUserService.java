@@ -130,12 +130,28 @@ public class PartnerUserService {
         }
 
 
+        PartnerUserResponseDto partnerUserResponseDto = PartnerUserResponseDto.builder()
+                .createdBy(user.getCreatedBy())
+                .createdDate(user.getCreatedDate())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .isActive(user.getIsActive())
+                .lastName(user.getLastName())
+                .phone(user.getPhone())
+                .updatedBy(user.getUpdatedBy())
+                .updatedDate(user.getUpdatedDate())
+                .userType(request.getUserType())
+                .build();
+
+
         auditTrailService
                 .logEvent(userCurrent.getUsername(),
                         "Create new partner user by :" + userCurrent.getUsername(),
                         AuditTrailFlag.CREATE,
                         " Create new partner user for:" + user.getFirstName() + " " + user.getUsername(),1, Utility.getClientIp(request1));
-        return mapper.map(user, PartnerUserResponseDto.class);
+
+
+        return partnerUserResponseDto;
     }
 
 

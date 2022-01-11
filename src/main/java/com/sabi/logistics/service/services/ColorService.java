@@ -5,8 +5,11 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
+import com.sabi.framework.service.AuditTrailService;
 import com.sabi.framework.service.TokenService;
+import com.sabi.framework.utils.AuditTrailFlag;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.ColorRequestDto;
 import com.sabi.logistics.core.dto.response.ColorResponseDto;
 import com.sabi.logistics.core.models.Color;
@@ -18,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Service
@@ -26,16 +30,19 @@ public class ColorService {
     private final ColorRepository colorRepository;
     private final ModelMapper mapper;
     private final Validations validations;
+    private final AuditTrailService auditTrailService;
 
 
 
-    public ColorService(ColorRepository colorRepository, ModelMapper mapper, Validations validations) {
+    public ColorService(ColorRepository colorRepository, ModelMapper mapper, Validations validations,
+                        AuditTrailService auditTrailService) {
         this.colorRepository = colorRepository;
         this.mapper = mapper;
         this.validations = validations;
+        this.auditTrailService = auditTrailService;
     }
 
-    public ColorResponseDto createColor(ColorRequestDto request) {
+    public ColorResponseDto createColor(ColorRequestDto request,HttpServletRequest request1) {
         validations.validateColor(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Color color = mapper.map(request,Color.class);
@@ -47,10 +54,16 @@ public class ColorService {
         color.setIsActive(true);
         color = colorRepository.save(color);
         log.debug("Create new color - {}"+ new Gson().toJson(color));
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Create new color  by :" + userCurrent.getUsername(),
+                        AuditTrailFlag.CREATE,
+                        " Create new color for:" + color.getName() ,1, Utility.getClientIp(request1));
         return mapper.map(color, ColorResponseDto.class);
     }
 
-    public ColorResponseDto updateColor(ColorRequestDto request) {
+    public ColorResponseDto updateColor(ColorRequestDto request,HttpServletRequest request1) {
         validations.validateColor(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Color color = colorRepository.findById(request.getId())
@@ -60,6 +73,16 @@ public class ColorService {
         color.setUpdatedBy(userCurrent.getId());
         colorRepository.save(color);
         log.debug("color record updated - {}"+ new Gson().toJson(color));
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Update color by username:" + userCurrent.getUsername(),
+                        AuditTrailFlag.UPDATE,
+                        " Update color Request for:" + color.getId(),1, Utility.getClientIp(request1));   auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Update color by username:" + userCurrent.getUsername(),
+                        AuditTrailFlag.UPDATE,
+                        " Update color Request for:" + color.getId(),1, Utility.getClientIp(request1));
         return mapper.map(color, ColorResponseDto.class);
     }
 
@@ -82,13 +105,20 @@ public class ColorService {
 
 
 
-    public void enableDisEnableState (EnableDisEnableDto request){
+    public void enableDisEnableState (EnableDisEnableDto request,HttpServletRequest request1){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         Color Color  = colorRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Color Id does not exist!"));
         Color.setIsActive(request.isActive());
         Color.setUpdatedBy(userCurrent.getId());
+
+        auditTrailService
+                .logEvent(userCurrent.getUsername(),
+                        "Disable/Enable Color by :" + userCurrent.getUsername() ,
+                        AuditTrailFlag.UPDATE,
+                        " Disable/Enable Color Request for:" +  Color.getId()
+                                + " " +  Color.getName(),1, Utility.getClientIp(request1));
         colorRepository.save(Color);
 
     }
