@@ -26,8 +26,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 @SuppressWarnings("All")
@@ -72,6 +74,7 @@ public class DropOffService {
         dropOff.setCreatedBy(userCurrent.getId());
         dropOff.setIsActive(true);
         dropOff.setDeliveryAddress(order.getDeliveryAddress());
+        dropOff.setPaymentStatus(order.getPaymentStatus());
         dropOff = dropOffRepository.save(dropOff);
         log.debug("Create new trip item - {}"+ new Gson().toJson(dropOff));
         DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
@@ -92,6 +95,7 @@ public class DropOffService {
             dropOff.setCreatedBy(userCurrent.getId());
             dropOff.setIsActive(true);
             dropOff.setDeliveryAddress(order.getDeliveryAddress());
+            dropOff.setPaymentStatus(order.getPaymentStatus());
             dropOff = dropOffRepository.save(dropOff);
             log.debug("Create new trip item - {}" + new Gson().toJson(dropOff));
             DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
@@ -101,6 +105,7 @@ public class DropOffService {
                 List<DropOffItem> finalDropOffItemResponse = dropOffItemResponseDtos;
                 dropOffItemResponseDtos.forEach(itemResponse -> {
                     dropOffResponseDto.setDropOffItem(finalDropOffItemResponse);
+                    dropOffResponseDto.setTotalAmount(getTotalAmount(finalDropOffItemResponse));
                 });
             }
 
@@ -119,6 +124,7 @@ public class DropOffService {
         mapper.map(request, dropOff);
         dropOff.setUpdatedBy(userCurrent.getId());
         dropOff.setDeliveryAddress(order.getDeliveryAddress());
+        dropOff.setPaymentStatus(order.getPaymentStatus());
         dropOffRepository.save(dropOff);
         log.debug("color record updated - {}"+ new Gson().toJson(dropOff));
         DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
@@ -136,6 +142,10 @@ public class DropOffService {
         dropOffResponseDto.setCustomerName(order.getCustomerName());
         dropOffResponseDto.setCustomerPhone(order.getCustomerPhone());
 
+        if (dropOff.getPaymentStatus() != null && dropOffResponseDto.getPaymentStatus().equalsIgnoreCase("Pay On Delivery")) {
+            List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(id);
+            dropOffResponseDto.setTotalAmount(getTotalAmount(dropOffItems));
+        }
         return dropOffResponseDto;
     }
 
@@ -198,5 +208,9 @@ public class DropOffService {
             dropOffItem.setCustomerPhone(order.getCustomerPhone());
         }
         return dropOffItems;
+    }
+
+    private BigDecimal getTotalAmount(List<DropOffItem> dropOffItems) {
+        return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getAmountCollected).reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 }
