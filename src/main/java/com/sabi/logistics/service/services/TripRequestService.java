@@ -28,8 +28,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @SuppressWarnings("All")
 @Service
@@ -381,12 +383,13 @@ public class TripRequestService {
 
         User user = userRepository.getOne(driver.getUserId());
         tripResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
+        tripResponseDto.setDriverPhone(user.getPhone());
 
         Driver driver2 = driverRepository.findDriverById(tripResponseDto.getDriverAssistantId());
 
         User user2 = userRepository.getOne(driver2.getUserId());
         tripResponseDto.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
-
+        tripResponseDto.setDriverAssistantPhone(user2.getPhone());
         return tripResponseDto;
     }
 
@@ -480,6 +483,8 @@ public class TripRequestService {
                 request.setPartnerAssetName(partnerAsset.getName());
                 request.setDriverName(user.getLastName() + " " + user.getFirstName());
                 request.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
+                request.setDriverPhone(user.getPhone());
+                request.setDriverAssistantPhone(user2.getPhone());
             }
 
         });
@@ -518,11 +523,13 @@ public class TripRequestService {
 
             User user = userRepository.getOne(driver.getUserId());
             request.setDriverName(user.getLastName() + " " + user.getFirstName());
+            request.setDriverPhone(user.getPhone());
 
             Driver driver2 = driverRepository.findDriverById(request.getDriverAssistantId());
 
             User user2 = userRepository.getOne(driver2.getUserId());
             request.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
+            request.setDriverAssistantPhone(user2.getPhone());
 
             request.setDropOffCount(getDropOff(request.getId()));
 
@@ -548,6 +555,12 @@ public class TripRequestService {
             dropOff.setCustomerName(order.getCustomerName());
             dropOff.setDeliveryAddress(order.getDeliveryAddress());
             dropOff.setCustomerPhone(order.getCustomerPhone());
+
+
+            if (dropOff.getPaymentStatus() != null && dropOff.getPaymentStatus().equalsIgnoreCase("Pay On Delivery")) {
+                List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
+                dropOff.setTotalAmount(getTotalAmount(dropOffItems));
+            }
 
             dropOff.setDropOffItem(getAllDropOffItems(dropOff.getId()));
         }
@@ -630,5 +643,9 @@ public class TripRequestService {
         response.setRejected(RejectedCount);
         return response;
 
+    }
+
+    private BigDecimal getTotalAmount(List<DropOffItem> dropOffItems) {
+        return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getAmountCollected).reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 }
