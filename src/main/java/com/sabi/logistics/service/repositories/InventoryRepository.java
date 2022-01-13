@@ -29,7 +29,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
             " AND ((:deliveryPartnerPhone IS NULL) OR (:deliveryPartnerPhone IS NOT NULL AND c.deliveryPartnerPhone = :deliveryPartnerPhone))" +
             " AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND c.partnerId = :partnerId))" +
             " AND ((:wareHouseId IS NULL) OR (:wareHouseId IS NOT NULL AND c.wareHouseId = :wareHouseId))" +
-            " AND ((:shippingId IS NULL) OR (:shippingId IS NOT NULL AND c.shippingId = :shippingId))"
+            " AND ((:shippingId IS NULL) OR (:shippingId IS NOT NULL AND c.shippingId = :shippingId)) order by c.createdDate desc "
     )
     Page<Inventory> findInventory(@Param("thirdPartyId") Long thirdPartyId,
                                   @Param("productName") String productName,

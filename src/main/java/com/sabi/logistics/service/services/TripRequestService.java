@@ -396,64 +396,24 @@ public class TripRequestService {
 
     public Page<TripRequest> findAll(Long partnerId, String status, String referenceNo, Long driverUserId, Long driverAssistantUserId,
                                      Long wareHouseId, String wareHouseAddress, Long partnerAssetId, PageRequest pageRequest ){
-        GenericSpecification<TripRequest> genericSpecification = new GenericSpecification<TripRequest>();
 
-        if (partnerId != null)
-        {
-            genericSpecification.add(new SearchCriteria("partnerId", partnerId, SearchOperation.EQUAL));
-        }
-
-        if (status != null && !status.isEmpty())
-        {
-            genericSpecification.add(new SearchCriteria("status", status, SearchOperation.MATCH));
-        }
-
-        if (referenceNo != null && !referenceNo.isEmpty())
-        {
-            genericSpecification.add(new SearchCriteria("referenceNo", referenceNo, SearchOperation.MATCH));
-        }
+        Long driverId = null;
+        Long driverAssistantId = null;
 
         if(driverUserId != null) {
             Driver driver = driverRepository.findByUserId(driverUserId);
+            driverId = driver.getId();
 
-            Long driverId = driver.getId();
-
-
-            if (driverId != null) {
-                genericSpecification.add(new SearchCriteria("driverId", driverId, SearchOperation.EQUAL));
-            }
         }
 
         if(driverAssistantUserId != null) {
             Driver driver2 = driverRepository.findByUserId(driverAssistantUserId);
+            driverAssistantId = driver2.getId();
 
-            Long driverAssistantId = driver2.getId();
-
-
-            if (driverAssistantId != null) {
-                genericSpecification.add(new SearchCriteria("driverAssistantId", driverAssistantId, SearchOperation.EQUAL));
-            }
         }
 
-        if (wareHouseId != null)
-        {
-            genericSpecification.add(new SearchCriteria("wareHouseId", wareHouseId, SearchOperation.EQUAL));
-        }
-
-        if (wareHouseAddress != null && !wareHouseAddress.isEmpty())
-        {
-            genericSpecification.add(new SearchCriteria("wareHouseAddress", wareHouseAddress, SearchOperation.MATCH));
-        }
-
-        if (partnerAssetId != null)
-        {
-            genericSpecification.add(new SearchCriteria("partnerAssetId", partnerAssetId, SearchOperation.EQUAL));
-        }
-
-
-
-
-        Page<TripRequest> tripRequests = tripRequestRepository.findAll(genericSpecification, pageRequest);
+        Page<TripRequest> tripRequests = tripRequestRepository.findTripRequest(partnerId, status, referenceNo, driverId, driverAssistantId,
+                                                                                wareHouseId, wareHouseAddress, partnerAssetId, pageRequest);
         if(tripRequests == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

@@ -16,7 +16,7 @@ public interface BrandRepository extends JpaRepository<Brand, Long> {
 
     Brand findBrandById(Long Id);
 
-    @Query("SELECT c FROM Brand c WHERE ((:name IS NULL) OR (:name IS NOT NULL AND c.name = :name))")
+    @Query("SELECT c FROM Brand c WHERE ((:name IS NULL) OR (:name IS NOT NULL AND c.name = :name)) order by c.name asc")
     Page<Brand> findBrand(String name, Pageable pageRequest);
 
     List<Brand> findByIsActive(Boolean isActive);

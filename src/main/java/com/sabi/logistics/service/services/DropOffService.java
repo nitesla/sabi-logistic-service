@@ -152,21 +152,7 @@ public class DropOffService {
 
     public Page<DropOff> findAll(Long orderId, Long tripRequestId, PageRequest pageRequest ){
 
-        GenericSpecification<DropOff> genericSpecification = new GenericSpecification<DropOff>();
-
-        if (orderId != null)
-        {
-            genericSpecification.add(new SearchCriteria("orderId", orderId, SearchOperation.EQUAL));
-        }
-
-        if (tripRequestId != null)
-        {
-            genericSpecification.add(new SearchCriteria("tripRequestId", tripRequestId, SearchOperation.EQUAL));
-        }
-
-
-
-        Page<DropOff> dropOffs = dropOffRepository.findAll(genericSpecification,pageRequest);
+        Page<DropOff> dropOffs = dropOffRepository.findDropOff(orderId, tripRequestId,pageRequest);
         if(dropOffs == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

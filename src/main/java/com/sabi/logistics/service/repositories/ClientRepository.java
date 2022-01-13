@@ -19,7 +19,7 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
     List<Client> findByIsActive(Boolean isActive);
     Client findClientById(Long id);
 
-    @Query("SELECT s FROM Client s WHERE ((:userId IS NULL) OR (:userId IS NOT NULL AND s.userId = :userId))" )
+    @Query("SELECT s FROM Client s WHERE ((:userId IS NULL) OR (:userId IS NOT NULL AND s.userId = :userId)) order by s.userId desc " )
 //            " AND ((:userId IS NULL) OR (:userId IS NOT NULL AND s.userId = :userId))")
     Page<Client> findAllClients(
                                 @Param("userId")Long userId, Pageable pageable);

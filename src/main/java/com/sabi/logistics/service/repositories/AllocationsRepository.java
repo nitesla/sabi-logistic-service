@@ -1,6 +1,5 @@
 package com.sabi.logistics.service.repositories;
 
-import com.sabi.logistics.core.models.AllocationHistory;
 import com.sabi.logistics.core.models.Allocations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +23,7 @@ public interface AllocationsRepository extends JpaRepository<Allocations, Long> 
             " AND ((:wareHouseId IS NULL) OR (:wareHouseId IS NOT NULL AND d.wareHouseId = :wareHouseId))" +
             " AND ((:blockTypeId IS NULL) OR (:blockTypeId IS NOT NULL AND d.blockTypeId = :blockTypeId))" +
             " AND ((:status IS NULL) OR (:status IS NOT NULL AND d.status = :status))" +
-            " AND ((:clientId IS NULL) OR (:clientId IS NOT NULL AND d.clientId = :clientId))"
+            " AND ((:clientId IS NULL) OR (:clientId IS NOT NULL AND d.clientId = :clientId)) order by d.name asc"
             )
     Page<Allocations> findAllocations(@Param("name") String name,
                                       @Param("wareHouseId") Long wareHouseId,

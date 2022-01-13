@@ -165,44 +165,9 @@ public class OrderService {
     public Page<Order> findAll( String referenceNo, String deliveryStatus,
                                String customerName, String customerPhone, String deliveryAddress,
                                String barCode, String qrCode, PageRequest pageRequest ){
-        GenericSpecification<Order> genericSpecification = new GenericSpecification<Order>();
 
-        if (referenceNo != null && !referenceNo.isEmpty())
-        {
-            genericSpecification.add(new SearchCriteria("referenceNo", referenceNo, SearchOperation.EQUAL));
-        }
-
-        if (deliveryStatus != null && !deliveryStatus.isEmpty())
-        {
-            genericSpecification.add(new SearchCriteria("deliveryStatus", deliveryStatus, SearchOperation.MATCH));
-        }
-
-        if (customerName != null && !customerName.isEmpty())
-        {
-            genericSpecification.add(new SearchCriteria("customerName", customerName, SearchOperation.MATCH));
-        }
-
-        if (customerPhone != null && !customerPhone.isEmpty())
-        {
-            genericSpecification.add(new SearchCriteria("customerPhone", deliveryStatus, SearchOperation.MATCH));
-        }
-
-        if (deliveryAddress != null && !deliveryAddress.isEmpty())
-        {
-            genericSpecification.add(new SearchCriteria("deliveryAddress", deliveryAddress, SearchOperation.MATCH));
-        }
-
-        if (barCode != null && !barCode.isEmpty())
-        {
-            genericSpecification.add(new SearchCriteria("barCode", barCode, SearchOperation.MATCH));
-        }
-
-        if (qrCode != null && !qrCode.isEmpty())
-        {
-            genericSpecification.add(new SearchCriteria("QRcode", qrCode, SearchOperation.MATCH));
-        }
-
-        Page<Order> orders = orderRepository.findAll(genericSpecification, pageRequest);
+        Page<Order> orders = orderRepository.findOrder(referenceNo, deliveryStatus, customerName, customerPhone,
+                                                        deliveryAddress, barCode, qrCode, pageRequest);
         if(orders == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

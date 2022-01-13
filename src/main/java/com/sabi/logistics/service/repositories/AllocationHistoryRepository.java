@@ -1,7 +1,6 @@
 package com.sabi.logistics.service.repositories;
 
 import com.sabi.logistics.core.models.AllocationHistory;
-import com.sabi.logistics.core.models.Allocations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -27,7 +25,7 @@ public interface AllocationHistoryRepository extends JpaRepository<AllocationHis
             " AND ((:clientId IS NULL) OR (:clientId IS NOT NULL AND c.clientId = :clientId))" +
             " AND ((:amountPaid IS NULL) OR (:amountPaid IS NOT NULL AND c.amountPaid = :amountPaid))" +
             " AND ((:totalAmount IS NULL) OR (:totalAmount  IS NOT NULL AND c.totalAmount = :totalAmount))" +
-            " AND ((:balance IS NULL) OR (:balance  IS NOT NULL AND c.balance = :balance))"
+            " AND ((:balance IS NULL) OR (:balance  IS NOT NULL AND c.balance = :balance)) order by c.createdDate desc"
 
 
     )
