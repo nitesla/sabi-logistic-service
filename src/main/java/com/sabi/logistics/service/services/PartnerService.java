@@ -162,9 +162,9 @@ public class PartnerService {
 
         auditTrailService
                 .logEvent(response.getUsername(),
-                        "SignUp user :" + response.getUsername(),
+                        "SignUp partner :" + response.getUsername(),
                         AuditTrailFlag.SIGNUP,
-                        " Sign up User Request for:" + user.getFirstName() + " " + user.getLastName() + " " + user.getEmail()
+                        " Sign up partner Request for:" + user.getFirstName() + " " + user.getLastName() + " " + user.getEmail()
                         , 1, Utility.getClientIp(request1));
         return response;
     }

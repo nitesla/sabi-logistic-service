@@ -6,6 +6,7 @@ import com.sabi.framework.models.Role;
 import com.sabi.framework.models.User;
 import com.sabi.framework.repositories.RoleRepository;
 import com.sabi.framework.repositories.UserRepository;
+import com.sabi.framework.service.AuditTrailService;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.WareHouseUserRequestDto;
@@ -42,11 +43,13 @@ public class WarehouseUserService {
     private WarehouseUserRepository wareHouseUserRepository;
     @Autowired
     private RoleRepository roleRepository;
+    private final AuditTrailService auditTrailService;
 
-    public WarehouseUserService( UserRepository userRepository, ModelMapper mapper, Validations validations) {
+    public WarehouseUserService( UserRepository userRepository, ModelMapper mapper, Validations validations,AuditTrailService auditTrailService) {
         this.userRepository = userRepository;
         this.mapper = mapper;
         this.validations = validations;
+        this.auditTrailService = auditTrailService;
     }
 
     public List<WareHouseUserResponseDto> createWareHouseUser(List<WareHouseUserRequestDto> requests) {
@@ -62,6 +65,7 @@ public class WarehouseUserService {
             warehouseUsers.add(mapper.map(warehouseUser, WareHouseUserResponseDto.class));
 
         });
+
         return warehouseUsers;
     }
 

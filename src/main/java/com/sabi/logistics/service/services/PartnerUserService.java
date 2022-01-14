@@ -9,12 +9,14 @@ import com.sabi.framework.models.User;
 import com.sabi.framework.notification.requestDto.NotificationRequestDto;
 import com.sabi.framework.notification.requestDto.RecipientRequest;
 import com.sabi.framework.notification.requestDto.SmsRequest;
+import com.sabi.framework.notification.requestDto.WhatsAppRequest;
 import com.sabi.framework.repositories.PreviousPasswordRepository;
 import com.sabi.framework.repositories.RoleRepository;
 import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.service.AuditTrailService;
 import com.sabi.framework.service.NotificationService;
 import com.sabi.framework.service.TokenService;
+import com.sabi.framework.service.WhatsAppService;
 import com.sabi.framework.utils.AuditTrailFlag;
 import com.sabi.framework.utils.Constants;
 import com.sabi.framework.utils.CustomResponseCode;
@@ -59,12 +61,14 @@ public class PartnerUserService {
     private final ModelMapper mapper;
     private final Validations validations;
     private final AuditTrailService auditTrailService;
+    private final WhatsAppService whatsAppService;
 
     public PartnerUserService(PartnerRepository partnerRepository,UserRepository userRepository,PreviousPasswordRepository previousPasswordRepository,
                               PartnerUserRepository partnerUserRepository,DriverRepository driverRepository,
                               RoleRepository roleRepository,
                               NotificationService notificationService,
-                              ModelMapper mapper, Validations validations,AuditTrailService auditTrailService) {
+                              ModelMapper mapper, Validations validations,AuditTrailService auditTrailService,
+                              WhatsAppService whatsAppService) {
         this.partnerRepository = partnerRepository;
         this.userRepository = userRepository;
         this.previousPasswordRepository = previousPasswordRepository;
@@ -75,6 +79,7 @@ public class PartnerUserService {
         this.mapper = mapper;
         this.validations = validations;
         this.auditTrailService = auditTrailService;
+        this.whatsAppService = whatsAppService;
     }
 
     public PartnerUserResponseDto createPartnerUser(PartnerUserRequestDto request,HttpServletRequest request1) {
@@ -185,10 +190,16 @@ public class PartnerUserService {
             notificationService.emailNotificationRequest(notificationRequestDto);
 
             SmsRequest smsRequest = SmsRequest.builder()
-                    .message("Activation Otp " + " " + user.getResetToken())
+                    .message(msg)
                     .phoneNumber(emailRecipient.getPhone())
                     .build();
             notificationService.smsNotificationRequest(smsRequest);
+
+             WhatsAppRequest whatsAppRequest = WhatsAppRequest.builder()
+                     .message(msg)
+                     .phoneNumber(emailRecipient.getPhone())
+                     .build();
+             whatsAppService.whatsAppNotification(whatsAppRequest);
 
 
 
@@ -208,11 +219,12 @@ public class PartnerUserService {
         }
         users.getContent().forEach(partnerUsers ->{
             User user = userRepository.getOne(partnerUsers.getId());
+            PartnerUser partnerUser = partnerUserRepository.findByUserId(partnerUsers.getId());
             if(user.getRoleId() !=null){
                 Role role = roleRepository.getOne(user.getRoleId());
                 partnerUsers.setRoleName(role.getName());
             }
-            partnerUsers.setUserType(partner.getUserType());
+            partnerUsers.setUserType(partnerUser.getUserType());
         });
         return users;
 
