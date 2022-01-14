@@ -84,27 +84,7 @@ public class TripItemService {
 
     public Page<TripItem> findAll(Long thirdPartyProductId, Long tripRequestId, String productName, PageRequest pageRequest ){
 
-
-        GenericSpecification<TripItem> genericSpecification = new GenericSpecification<TripItem>();
-
-        if (thirdPartyProductId != null)
-        {
-            genericSpecification.add(new SearchCriteria("thirdPartyProductId", thirdPartyProductId, SearchOperation.EQUAL));
-        }
-
-        if (tripRequestId != null)
-        {
-            genericSpecification.add(new SearchCriteria("tripRequestId", tripRequestId, SearchOperation.EQUAL));
-        }
-
-        if (productName != null && !productName.isEmpty())
-        {
-            genericSpecification.add(new SearchCriteria("productName", productName, SearchOperation.MATCH));
-        }
-
-
-
-        Page<TripItem> tripItems = repository.findAll(genericSpecification,pageRequest);
+        Page<TripItem> tripItems = repository.findByTripItem(thirdPartyProductId, tripRequestId, productName, pageRequest);
         if(tripItems == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

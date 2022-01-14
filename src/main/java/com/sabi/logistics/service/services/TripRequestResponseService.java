@@ -97,27 +97,9 @@ public class TripRequestResponseService {
     }
 
 
-    public Page<TripRequestResponse> findAll(Long tripRequest, Long partnerId, String status, PageRequest pageRequest ){
-        GenericSpecification<TripRequestResponse> genericSpecification = new GenericSpecification<TripRequestResponse>();
+    public Page<TripRequestResponse> findAll(Long tripRequestId, Long partnerId, String status, PageRequest pageRequest ){
 
-        if (tripRequest != null)
-        {
-            genericSpecification.add(new SearchCriteria("tripRequest", tripRequest, SearchOperation.EQUAL));
-        }
-
-        if (partnerId != null)
-        {
-            genericSpecification.add(new SearchCriteria("partnerId", partnerId, SearchOperation.EQUAL));
-        }
-
-        if (status != null && !status.isEmpty())
-        {
-            genericSpecification.add(new SearchCriteria("status", status, SearchOperation.MATCH));
-        }
-
-
-
-        Page<TripRequestResponse> requestResponses = tripRequestResponseRepository.findAll(genericSpecification, pageRequest);
+        Page<TripRequestResponse> requestResponses = tripRequestResponseRepository.findTripRequestResponse(tripRequestId, partnerId, status, pageRequest);
         if(requestResponses == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

@@ -18,7 +18,7 @@ public interface BlockTypeRepository extends JpaRepository<BlockType, Long> {
     List<BlockType> findByPrice(double price);
     List<BlockType> findByIsActive(Boolean isActive);
 
-    @Query("SELECT c FROM BlockType c WHERE ((:name IS NULL) OR (:name IS NOT NULL AND c.name = :name))" )
+    @Query("SELECT c FROM BlockType c WHERE ((:name IS NULL) OR (:name IS NOT NULL AND c.name = :name)) order by c.id desc" )
 //            " AND ((:length IS NULL) OR (:length IS NOT NULL AND c.length = :length))" +
 //            " AND ((:width IS NULL) OR (:width IS NOT NULL AND c.width = :width))" +
 //            " AND ((:height IS NULL) OR (:height IS NOT NULL AND c.height = :height))" +

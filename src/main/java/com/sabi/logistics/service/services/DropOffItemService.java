@@ -239,26 +239,7 @@ public class DropOffItemService {
     public Page<DropOffItem> findAll(Long orderItemId, Long dropOffId,
                                    String status, PageRequest pageRequest ){
 
-        GenericSpecification<DropOffItem> genericSpecification = new GenericSpecification<DropOffItem>();
-
-        if (orderItemId != null)
-        {
-            genericSpecification.add(new SearchCriteria("orderItemId", orderItemId, SearchOperation.EQUAL));
-        }
-
-        if (dropOffId != null)
-        {
-            genericSpecification.add(new SearchCriteria("dropOffId", dropOffId, SearchOperation.EQUAL));
-        }
-
-        if (status != null && !status.isEmpty())
-        {
-            genericSpecification.add(new SearchCriteria("status", status, SearchOperation.MATCH));
-        }
-
-
-
-        Page<DropOffItem> tripItems = dropOffItemRepository.findAll(genericSpecification,pageRequest);
+        Page<DropOffItem> tripItems = dropOffItemRepository.findDropOffItem(orderItemId, dropOffId, status,  pageRequest);
         if(tripItems == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

@@ -85,6 +85,13 @@ public class OrderItemService {
             if(orderItemExists !=null){
                 throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order Item already exist");
             }
+
+            if(orderItem.getInventoryId() != null) {
+                inventoryRepository.findById(request.getInventoryId()).orElseThrow(() ->
+                        new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                                " Inventory Id does not Exist!")
+                );
+            }
             orderItem.setCreatedBy(userCurrent.getId());
             orderItem.setIsActive(true);
             orderItem = orderItemRepository.save(orderItem);

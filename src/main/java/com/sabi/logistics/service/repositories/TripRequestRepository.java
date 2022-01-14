@@ -2,6 +2,8 @@ package com.sabi.logistics.service.repositories;
 
 
 import com.sabi.logistics.core.models.TripRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -43,6 +45,24 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
     @Query("SELECT t FROM TripRequest t ")
     List<TripRequest> listTrips();
 
+
+    @Query("SELECT t FROM TripRequest t WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND t.partnerId = :partnerId))" +
+            " AND ((:status IS NULL) OR (:status IS NOT NULL AND t.status = :status))" +
+            " AND ((:referenceNo IS NULL) OR (:referenceNo IS NOT NULL AND t.referenceNo = :referenceNo))" +
+            " AND ((:driverId IS NULL) OR (:driverId IS NOT NULL AND t.driverId = :driverId))" +
+            " AND ((:driverAssistantId IS NULL) OR (:driverAssistantId IS NOT NULL AND t.driverAssistantId = :driverAssistantId))" +
+            " AND ((:wareHouseId IS NULL) OR (:wareHouseId IS NOT NULL AND t.wareHouseId = :wareHouseId))" +
+            " AND ((:wareHouseAddress IS NULL) OR (:wareHouseAddress IS NOT NULL AND t.wareHouseAddress = :wareHouseAddress))" +
+            " AND ((:partnerAssetId IS NULL) OR (:partnerAssetId IS NOT NULL AND t.partnerAssetId = :partnerAssetId)) order by t.id desc")
+    Page<TripRequest> findTripRequest(@Param("partnerId") Long partnerId,
+                          @Param("status") String status,
+                          @Param("referenceNo") String referenceNo,
+                          @Param("driverId") Long driverId,
+                          @Param("driverAssistantId") Long driverAssistantId,
+                          @Param("wareHouseId") Long wareHouseId,
+                          @Param("wareHouseAddress") String wareHouseAddress,
+                          @Param("partnerAssetId") Long partnerAssetId,
+                          Pageable pageable);
 
 
 

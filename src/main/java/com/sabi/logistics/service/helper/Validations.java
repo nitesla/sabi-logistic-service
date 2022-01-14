@@ -67,6 +67,9 @@ public class Validations {
     private ProductRepository productRepository;
 
     @Autowired
+    private InventoryRepository inventoryRepository;
+
+    @Autowired
     private PricingConfigurationRepository pricingConfigurationRepository;
 
     @Autowired
@@ -513,6 +516,13 @@ public class Validations {
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " Warehouse Id does not Exist!")
         );
+
+        if(request.getInventoryId() != null) {
+            inventoryRepository.findById(request.getInventoryId()).orElseThrow(() ->
+                    new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                            " Inventory Id does not Exist!")
+            );
+        }
     }
 
     public void validateTripRequestResponse (TripRequestResponseReqDto request){

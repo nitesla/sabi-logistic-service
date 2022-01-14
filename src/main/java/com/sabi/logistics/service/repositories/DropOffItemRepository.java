@@ -2,6 +2,8 @@ package com.sabi.logistics.service.repositories;
 
 
 import com.sabi.logistics.core.models.DropOffItem;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -27,6 +29,14 @@ public interface DropOffItemRepository extends JpaRepository<DropOffItem, Long>,
                                                 @Param("orderId") Long orderId);
 
     List<DropOffItem> findByDropOffId(Long dropOffId);
+
+    @Query("SELECT d FROM DropOffItem d WHERE ((:orderItemId IS NULL) OR (:orderItemId IS NOT NULL AND d.orderItemId = :orderItemId))" +
+            " AND ((:dropOffId IS NULL) OR (:dropOffId IS NOT NULL AND d.dropOffId = :dropOffId))" +
+            " AND ((:status IS NULL) OR (:status IS NOT NULL AND d.status = :status)) order by d.id desc")
+    Page<DropOffItem> findDropOffItem(@Param("orderItemId") Long orderItemId,
+                                      @Param("dropOffId") Long dropOffId,
+                                      @Param("status") String status,
+                                                      Pageable pageable);
 
 
 }
