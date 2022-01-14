@@ -16,7 +16,7 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
             " AND ((:name IS NULL) OR (:name IS NOT NULL AND s.name = :name))" +
             " AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND s.partnerId = :partnerId))"+
             " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND s.isActive = :isActive))"+
-            " AND ((:lgaId IS NULL) OR (:lgaId IS NOT NULL AND s.lgaId = :lgaId)) order by s.name asc")
+            " AND ((:lgaId IS NULL) OR (:lgaId IS NOT NULL AND s.lgaId = :lgaId)) order by s.id desc")
     Page<Warehouse> findWarehouse(@Param("owner") String owner,
                                   @Param("name") String name,
                                   @Param("partnerId") Long partnerId,

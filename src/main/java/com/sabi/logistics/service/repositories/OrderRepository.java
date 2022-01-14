@@ -1,9 +1,7 @@
 package com.sabi.logistics.service.repositories;
 
 
-
 import com.sabi.logistics.core.models.Order;
-import com.sabi.logistics.core.models.TripRequestResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,8 +10,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -31,7 +27,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
             " AND ((:customerPhone IS NULL) OR (:customerPhone IS NOT NULL AND o.customerPhone = :customerPhone))" +
             " AND ((:deliveryAddress IS NULL) OR (:deliveryAddress IS NOT NULL AND o.deliveryAddress = :deliveryAddress))" +
             " AND ((:barCode IS NULL) OR (:barCode IS NOT NULL AND o.barCode = :barCode))" +
-            " AND ((:qrCode IS NULL) OR (:qrCode IS NOT NULL AND o.qrCode = :qrCode)) order by o.createdDate desc")
+            " AND ((:qrCode IS NULL) OR (:qrCode IS NOT NULL AND o.qrCode = :qrCode)) order by o.id desc")
     Page<Order> findOrder(@Param("referenceNo") String referenceNo,
                           @Param("deliveryStatus") String deliveryStatus,
                           @Param("customerName") String customerName,

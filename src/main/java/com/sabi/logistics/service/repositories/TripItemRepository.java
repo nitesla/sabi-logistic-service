@@ -2,7 +2,6 @@ package com.sabi.logistics.service.repositories;
 
 
 import com.sabi.logistics.core.models.TripItem;
-import com.sabi.logistics.core.models.TripRequestResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,7 +25,7 @@ public interface TripItemRepository extends JpaRepository<TripItem, Long>, JpaSp
 
     @Query("SELECT t FROM TripItem t WHERE ((:thirdPartyProductId IS NULL) OR (:thirdPartyProductId IS NOT NULL AND t.thirdPartyProductId = :thirdPartyProductId))" +
             " AND ((:tripRequestId IS NULL) OR (:tripRequestId IS NOT NULL AND t.tripRequestId = :tripRequestId))" +
-            " AND ((:productName IS NULL) OR (:productName IS NOT NULL AND t.productName = :productName)) order by t.createdDate desc")
+            " AND ((:productName IS NULL) OR (:productName IS NOT NULL AND t.productName = :productName)) order by t.id desc")
     Page<TripItem> findByTripItem(@Param("thirdPartyProductId") Long thirdPartyProductId,
                                                       @Param("tripRequestId") Long tripRequestId, @Param("productName") String productName,
                                                       Pageable pageable);

@@ -1,6 +1,5 @@
 package com.sabi.logistics.service.repositories;
 
-import com.sabi.logistics.core.models.Warehouse;
 import com.sabi.logistics.core.models.WarehouseProduct;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +19,7 @@ public interface WarehouseProductRepository extends JpaRepository<WarehouseProdu
 
     @Query("SELECT s FROM WarehouseProduct s WHERE ((:warehouseId IS NULL) OR (:warehouseId IS NOT NULL AND s.warehouseId = :warehouseId))" +
             " AND ((:thirdPartyProductID IS NULL) OR (:thirdPartyProductID IS NOT NULL AND s.thirdPartyProductID = :thirdPartyProductID))" +
-            " AND ((:productName IS NULL) OR (:productName IS NOT NULL AND s.productName = :productName)) order by s.productName asc"
+            " AND ((:productName IS NULL) OR (:productName IS NOT NULL AND s.productName = :productName)) order by s.id desc"
     )
     Page<WarehouseProduct> findAllWarehouseProducts(@Param("warehouseId") Long warehouseId,
                                       @Param("thirdPartyProductID") String thirdPartyProductID,

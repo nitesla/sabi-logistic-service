@@ -1,8 +1,6 @@
 package com.sabi.logistics.service.repositories;
 
 
-
-import com.sabi.logistics.core.models.State;
 import com.sabi.logistics.core.models.TripRequestResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +27,7 @@ public interface TripRequestResponseRepository extends JpaRepository<TripRequest
 
     @Query("SELECT t FROM TripRequestResponse t WHERE ((:tripRequestId IS NULL) OR (:tripRequestId IS NOT NULL AND t.tripRequestId = :tripRequestId))" +
             " AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND t.partnerId = :partnerId))" +
-            " AND ((:status IS NULL) OR (:status IS NOT NULL AND t.status = :status)) order by t.createdDate desc")
+            " AND ((:status IS NULL) OR (:status IS NOT NULL AND t.status = :status)) order by t.id desc")
     Page<TripRequestResponse> findTripRequestResponse(@Param("tripRequestId") Long tripRequestId,
                            @Param("partnerId") Long partnerId, @Param("status") String status,
                            Pageable pageable);

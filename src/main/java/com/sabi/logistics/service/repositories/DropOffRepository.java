@@ -2,7 +2,6 @@ package com.sabi.logistics.service.repositories;
 
 
 import com.sabi.logistics.core.models.DropOff;
-import com.sabi.logistics.core.models.TripRequestResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,7 +26,7 @@ public interface DropOffRepository extends JpaRepository<DropOff, Long>, JpaSpec
     Integer countByTripRequestId(Long ID);
 
     @Query("SELECT d FROM DropOff d WHERE ((:orderId IS NULL) OR (:orderId IS NOT NULL AND d.orderId = :orderId))" +
-            " AND ((:tripRequestId IS NULL) OR (:tripRequestId IS NOT NULL AND d.tripRequestId = :tripRequestId)) order by d.createdDate desc")
+            " AND ((:tripRequestId IS NULL) OR (:tripRequestId IS NOT NULL AND d.tripRequestId = :tripRequestId)) order by d.id desc")
     Page<DropOff> findDropOff(@Param("orderId") Long orderId,
                               @Param("tripRequestId") Long tripRequestId,
                               Pageable pageable);

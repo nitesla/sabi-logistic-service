@@ -23,7 +23,7 @@ public interface BankRepository extends JpaRepository<Bank, Long>, JpaSpecificat
     List<Bank> findByIsActive(Boolean isActive);
 
     @Query("SELECT b FROM Bank b WHERE ((:name IS NULL) OR (:name IS NOT NULL AND b.name = :name))" +
-            " AND ((:code IS NULL) OR (:code IS NOT NULL AND b.code = :code)) order by b.name asc")
+            " AND ((:code IS NULL) OR (:code IS NOT NULL AND b.code = :code)) order by b.id desc")
     Page<Bank> findBanks(@Param("name")String name,
                                 @Param("code")String bankCode,
                                 Pageable pageable);

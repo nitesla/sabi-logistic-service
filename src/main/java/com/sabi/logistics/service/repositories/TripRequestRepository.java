@@ -1,7 +1,6 @@
 package com.sabi.logistics.service.repositories;
 
 
-import com.sabi.logistics.core.models.Order;
 import com.sabi.logistics.core.models.TripRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -54,7 +53,7 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
             " AND ((:driverAssistantId IS NULL) OR (:driverAssistantId IS NOT NULL AND t.driverAssistantId = :driverAssistantId))" +
             " AND ((:wareHouseId IS NULL) OR (:wareHouseId IS NOT NULL AND t.wareHouseId = :wareHouseId))" +
             " AND ((:wareHouseAddress IS NULL) OR (:wareHouseAddress IS NOT NULL AND t.wareHouseAddress = :wareHouseAddress))" +
-            " AND ((:partnerAssetId IS NULL) OR (:partnerAssetId IS NOT NULL AND t.partnerAssetId = :partnerAssetId)) order by t.createdDate desc")
+            " AND ((:partnerAssetId IS NULL) OR (:partnerAssetId IS NOT NULL AND t.partnerAssetId = :partnerAssetId)) order by t.id desc")
     Page<TripRequest> findTripRequest(@Param("partnerId") Long partnerId,
                           @Param("status") String status,
                           @Param("referenceNo") String referenceNo,

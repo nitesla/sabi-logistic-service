@@ -25,7 +25,7 @@ public interface AllocationHistoryRepository extends JpaRepository<AllocationHis
             " AND ((:clientId IS NULL) OR (:clientId IS NOT NULL AND c.clientId = :clientId))" +
             " AND ((:amountPaid IS NULL) OR (:amountPaid IS NOT NULL AND c.amountPaid = :amountPaid))" +
             " AND ((:totalAmount IS NULL) OR (:totalAmount  IS NOT NULL AND c.totalAmount = :totalAmount))" +
-            " AND ((:balance IS NULL) OR (:balance  IS NOT NULL AND c.balance = :balance)) order by c.createdDate desc"
+            " AND ((:balance IS NULL) OR (:balance  IS NOT NULL AND c.balance = :balance)) order by c.id desc"
 
 
     )

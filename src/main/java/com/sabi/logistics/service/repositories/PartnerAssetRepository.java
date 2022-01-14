@@ -33,7 +33,7 @@ List<PartnerAsset> findByIsActiveAndId(@Param("partnerId") Long partnerId,
             " AND ((:status IS NULL) OR (:status IS NOT NULL AND pa.status = :status))" +
             " AND ((:driverId IS NULL) OR (:driverId IS NOT NULL AND pa.driverId = :driverId))" +
             " AND ((:partnerAssetTypeId IS NULL) OR (:partnerAssetTypeId IS NOT NULL AND pa.partnerAssetTypeId = :partnerAssetTypeId))" +
-            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND pa.isActive = :isActive)) order by pa.name asc")
+            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND pa.isActive = :isActive)) order by pa.id desc")
     Page<PartnerAsset> findPartnerAsset(@Param("name") String name,
                                         @Param("brandId") Long brandId,
                                         @Param("status") String status,

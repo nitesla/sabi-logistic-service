@@ -31,7 +31,7 @@ public interface StateRepository extends JpaRepository<State, Long> {
 
 
     @Query("SELECT s FROM State s WHERE ((:name IS NULL) OR (:name IS NOT NULL AND s.name = :name))" +
-            " AND ((:countryId IS NULL) OR (:countryId IS NOT NULL AND s.countryId = :countryId)) order by s.name asc")
+            " AND ((:countryId IS NULL) OR (:countryId IS NOT NULL AND s.countryId = :countryId)) order by s.id desc")
     Page<State> findStates(@Param("name") String name,
                            @Param("countryId") Long countryId,
                            Pageable pageable);
