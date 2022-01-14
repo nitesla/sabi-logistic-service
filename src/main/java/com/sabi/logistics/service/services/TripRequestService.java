@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@SuppressWarnings("All")
+//@SuppressWarnings("All")
 @Service
 @Slf4j
 public class TripRequestService {
@@ -553,6 +553,10 @@ public class TripRequestService {
             Order order = orderRepository.getOne(orderItem.getOrderId());
             dropOffItem.setCustomerName(order.getCustomerName());
             dropOffItem.setCustomerPhone(order.getCustomerPhone());
+            dropOffItem.setOrderItemName(orderItem.getProductName());
+            dropOffItem.setThirdPartyProductId(orderItem.getThirdPartyProductId());
+            dropOffItem.setQty(orderItem.getQty());
+            dropOffItem.setOrderId(orderItem.getOrderId());
         }
 
 

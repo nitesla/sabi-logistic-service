@@ -14,9 +14,6 @@ import com.sabi.logistics.core.models.DropOff;
 import com.sabi.logistics.core.models.DropOffItem;
 import com.sabi.logistics.core.models.Order;
 import com.sabi.logistics.core.models.OrderItem;
-import com.sabi.logistics.service.helper.GenericSpecification;
-import com.sabi.logistics.service.helper.SearchCriteria;
-import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
@@ -141,6 +138,7 @@ public class DropOffService {
         dropOffResponseDto.setDropOffItem(getAllDropOffItems(id));
         dropOffResponseDto.setCustomerName(order.getCustomerName());
         dropOffResponseDto.setCustomerPhone(order.getCustomerPhone());
+        dropOffResponseDto.setDeliveryAddress(order.getDeliveryAddress());
 
         if (dropOff.getPaymentStatus() != null && dropOffResponseDto.getPaymentStatus().equalsIgnoreCase("Pay On Delivery")) {
             List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(id);
@@ -192,6 +190,10 @@ public class DropOffService {
             Order order = orderRepository.getOne(orderItem.getOrderId());
             dropOffItem.setCustomerName(order.getCustomerName());
             dropOffItem.setCustomerPhone(order.getCustomerPhone());
+            dropOffItem.setOrderItemName(orderItem.getProductName());
+            dropOffItem.setThirdPartyProductId(orderItem.getThirdPartyProductId());
+            dropOffItem.setQty(orderItem.getQty());
+            dropOffItem.setOrderId(orderItem.getOrderId());
         }
         return dropOffItems;
     }
