@@ -324,6 +324,10 @@ public class PartnerService {
         Partner partnerProperties  = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner properties Id does not exist!"));
+        LGA lga = lgaRepository.findLGAById(partnerProperties.getLgaId());
+
+        partnerProperties.setLga(lga.getName());
+
         return mapper.map(partnerProperties,PartnerResponseDto.class);
     }
 
