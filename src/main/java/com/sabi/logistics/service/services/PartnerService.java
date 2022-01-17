@@ -62,6 +62,7 @@ public class PartnerService {
     private final PartnerUserRepository partnerUserRepository;
     private LGARepository lgaRepository;
     private final AuditTrailService auditTrailService;
+    private final StateRepository stateRepository;
 
 
     public PartnerService(PartnerRepository repository,PartnerAssetTypeRepository partnerAssetTypeRepository,
@@ -69,7 +70,8 @@ public class PartnerService {
                           UserRepository userRepository,PreviousPasswordRepository previousPasswordRepository,
                           ModelMapper mapper, ObjectMapper objectMapper,
                           Validations validations,NotificationService notificationService,
-                          PartnerUserRepository partnerUserRepository,LGARepository lgaRepository,AuditTrailService auditTrailService) {
+                          PartnerUserRepository partnerUserRepository,LGARepository lgaRepository,AuditTrailService auditTrailService,
+                          StateRepository stateRepository) {
         this.repository = repository;
         this.partnerAssetTypeRepository = partnerAssetTypeRepository;
         this.partnerCategoriesRepository = partnerCategoriesRepository;
@@ -83,6 +85,7 @@ public class PartnerService {
         this.partnerUserRepository = partnerUserRepository;
         this.lgaRepository = lgaRepository;
         this.auditTrailService = auditTrailService;
+        this.stateRepository = stateRepository;
     }
 
 
@@ -326,7 +329,10 @@ public class PartnerService {
                         "Requested partner properties Id does not exist!"));
         LGA lga = lgaRepository.findLGAById(partnerProperties.getLgaId());
 
+        State state = stateRepository.getOne(lga.getStateId());
+
         partnerProperties.setLga(lga.getName());
+        partnerProperties.setState(state.getName());
 
         return mapper.map(partnerProperties,PartnerResponseDto.class);
     }
