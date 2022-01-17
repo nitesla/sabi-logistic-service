@@ -86,17 +86,7 @@ public class PartnerRoleService {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
 
         PartnerUser partner = partnerUserRepository.findByUserId(userCurrent.getId());
-
-        Page<Role> roles  = null;
-
-        if (name == null || name.isEmpty()){
-
-            roles = roleRepository.findRolesByClientId(partner.getPartnerId(), isActive, pageRequest);
-
-        } else {
-            roles = roleRepository.findRolesByClientIdAndName(name, partner.getPartnerId(), isActive, pageRequest);
-        }
-
+        Page<Role> roles = roleRepository.findRolesByClientId(name,partner.getPartnerId(),isActive,pageRequest);
         if(roles == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
