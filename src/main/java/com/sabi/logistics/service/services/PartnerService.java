@@ -162,9 +162,9 @@ public class PartnerService {
 
         auditTrailService
                 .logEvent(response.getUsername(),
-                        "SignUp user :" + response.getUsername(),
+                        "SignUp partner :" + response.getUsername(),
                         AuditTrailFlag.SIGNUP,
-                        " Sign up User Request for:" + user.getFirstName() + " " + user.getLastName() + " " + user.getEmail()
+                        " Sign up partner Request for:" + user.getFirstName() + " " + user.getLastName() + " " + user.getEmail()
                         , 1, Utility.getClientIp(request1));
         return response;
     }
@@ -324,6 +324,10 @@ public class PartnerService {
         Partner partnerProperties  = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner properties Id does not exist!"));
+        LGA lga = lgaRepository.findLGAById(partnerProperties.getLgaId());
+
+        partnerProperties.setLga(lga.getName());
+
         return mapper.map(partnerProperties,PartnerResponseDto.class);
     }
 
