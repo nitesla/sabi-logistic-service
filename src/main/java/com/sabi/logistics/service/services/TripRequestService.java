@@ -156,17 +156,20 @@ public class TripRequestService {
         TripResponseDto tripResponseDto = mapper.map(tripRequest, TripResponseDto.class);
 
 
-        PartnerAsset partnerAsset = partnerAssetRepository.findPartnerAssetById(request.getPartnerAssetId());
-        if ((request.getPartnerAssetId() != null || request.getPartnerId() != null)) {
+
+        if (request.getPartnerId() != null) {
             Partner partner = partnerRepository.findPartnerById(request.getPartnerId());
             if (partner == null) {
-                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Partner Id");
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Partner Id");
             }
+            tripResponseDto.setPartnerName(partner.getName());
+        }
+
+        if (request.getPartnerAssetId() != null ) {
+            PartnerAsset partnerAsset = partnerAssetRepository.findPartnerAssetById(request.getPartnerAssetId());
             if (partnerAsset == null) {
                 throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAsset Id");
             }
-
-            tripResponseDto.setPartnerName(partner.getName());
             tripResponseDto.setPartnerAssetName(partnerAsset.getName());
         }
         return tripResponseDto;
@@ -232,17 +235,19 @@ public class TripRequestService {
         log.debug("Create new trip Request - {}"+ new Gson().toJson(tripRequest));
         TripMasterResponseDto tripResponseDto = mapper.map(tripRequest, TripMasterResponseDto.class);
 
-        if ((request.getPartnerAssetId() != null || request.getPartnerId() != null)) {
+        if (request.getPartnerId() != null) {
             Partner partner = partnerRepository.findPartnerById(request.getPartnerId());
             if (partner == null) {
-                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Partner Id");
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Partner Id");
             }
+            tripResponseDto.setPartnerName(partner.getName());
+        }
+
+        if (request.getPartnerAssetId() != null) {
             PartnerAsset partnerAsset = partnerAssetRepository.findPartnerAssetById(request.getPartnerAssetId());
             if (partnerAsset == null) {
                 throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAsset Id");
-            };
-
-            tripResponseDto.setPartnerName(partner.getName());
+            }
             tripResponseDto.setPartnerAssetName(partnerAsset.getName());
         }
 
@@ -369,27 +374,38 @@ public class TripRequestService {
         tripResponseDto.setTripRequestResponse(getAllRequestResponse(id));
         tripResponseDto.setDropOff(getAllDropOffs(id));
         tripResponseDto.setDropOffCount(getDropOff(id));
-        Partner partner = partnerRepository.findPartnerById(tripResponseDto.getPartnerId());
-        if (partner == null) {
-            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Partner Id");
+
+        if (tripResponseDto.getPartnerId() != null) {
+            Partner partner = partnerRepository.findPartnerById(tripResponseDto.getPartnerId());
+            if (partner == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Partner Id");
+            }
+            tripResponseDto.setPartnerName(partner.getName());
         }
-        tripResponseDto.setPartnerName(partner.getName());
-        PartnerAsset partnerAsset = partnerAssetRepository.findPartnerAssetById(tripResponseDto.getPartnerAssetId());
-        if (partnerAsset == null) {
-            throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAsset Id");
+
+        if (tripResponseDto.getPartnerAssetId() != null) {
+            PartnerAsset partnerAsset = partnerAssetRepository.findPartnerAssetById(tripResponseDto.getPartnerAssetId());
+            if (partnerAsset == null) {
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid PartnerAsset Id");
+            }
+            tripResponseDto.setPartnerAssetName(partnerAsset.getName());
         }
-        tripResponseDto.setPartnerAssetName(partnerAsset.getName());
-        Driver driver = driverRepository.findDriverById(tripResponseDto.getDriverId());
 
-        User user = userRepository.getOne(driver.getUserId());
-        tripResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
-        tripResponseDto.setDriverPhone(user.getPhone());
+        if (tripResponseDto.getDriverId() != null) {
+            Driver driver = driverRepository.findDriverById(tripResponseDto.getDriverId());
 
-        Driver driver2 = driverRepository.findDriverById(tripResponseDto.getDriverAssistantId());
+            User user = userRepository.getOne(driver.getUserId());
+            tripResponseDto.setDriverName(user.getLastName() + " " + user.getFirstName());
+            tripResponseDto.setDriverPhone(user.getPhone());
+        }
 
-        User user2 = userRepository.getOne(driver2.getUserId());
-        tripResponseDto.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
-        tripResponseDto.setDriverAssistantPhone(user2.getPhone());
+        if (tripResponseDto.getDriverAssistantId() != null) {
+            Driver driver2 = driverRepository.findDriverById(tripResponseDto.getDriverAssistantId());
+
+            User user2 = userRepository.getOne(driver2.getUserId());
+            tripResponseDto.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
+            tripResponseDto.setDriverAssistantPhone(user2.getPhone());
+        }
         return tripResponseDto;
     }
 
