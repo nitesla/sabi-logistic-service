@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-//@SuppressWarnings("All")
+@SuppressWarnings("All")
 @Service
 @Slf4j
 public class TripRequestService {
@@ -435,33 +435,46 @@ public class TripRequestService {
         }
         tripRequests.getContent().forEach(request ->{
 
-            Partner partner = partnerRepository.findPartnerById(request.getPartnerId());
-            if (partner == null) {
-                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Partner Id");
+            if (request.getPartnerId() != null) {
+                Partner partner = partnerRepository.findPartnerById(request.getPartnerId());
+                if (partner == null) {
+                    throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Partner Id");
+                }
+                if (partner.getName() != null || !partner.getName().isEmpty()){
+                    request.setPartnerName(partner.getName());
+                }
             }
-            PartnerAsset partnerAsset = partnerAssetRepository.findPartnerAssetById(request.getPartnerAssetId());
-//            if (partnerAsset == null) {
-//                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAsset Id");
-//            };
-            Driver driver1 = driverRepository.findDriverById(request.getDriverId());
 
-            User user = userRepository.getOne(driver1.getUserId());
+            if (request.getPartnerAssetId() != null) {
+                PartnerAsset partnerAsset = partnerAssetRepository.findPartnerAssetById(request.getPartnerAssetId());
+                if (partnerAsset == null) {
+                    throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid PartnerAsset Id");
+                }
 
-            Driver driver2 = driverRepository.findDriverById(request.getDriverAssistantId());
+                if(partnerAsset.getName() != null || !partnerAsset.getName().isEmpty()){
+                    request.setPartnerAssetName(partnerAsset.getName());
+                }
+            }
 
-            User user2 = userRepository.getOne(driver2.getUserId());
+            if (request.getDriverId() != null) {
+                Driver driver1 = driverRepository.findDriverById(request.getDriverId());
+                User user = userRepository.getOne(driver1.getUserId());
+                if(user.getFirstName() != null || user.getLastName() != null || !(user.getFirstName().isEmpty() || user.getLastName().isEmpty())){
+                    request.setDriverName(user.getLastName() + " " + user.getFirstName());
+                    request.setDriverPhone(user.getPhone());
+                }
+            }
+
+            if (request.getDriverAssistantId() != null) {
+                Driver driver2 = driverRepository.findDriverById(request.getDriverAssistantId());
+                User user2 = userRepository.getOne(driver2.getUserId());
+                if(user2.getFirstName() != null || user2.getLastName() != null || !(user2.getFirstName().isEmpty() || user2.getLastName().isEmpty())){
+                    request.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
+                    request.setDriverAssistantPhone(user2.getPhone());
+                }
+            }
 
             request.setDropOffCount(getDropOff(request.getId()));
-
-            if ((partner.getName() != null || partnerAsset.getName() != null || user.getFirstName() != null || user.getLastName() != null
-            || !(partner.getName().isEmpty() || partnerAsset.getName().isEmpty() || user.getFirstName().isEmpty() || user.getLastName().isEmpty()))) {
-                request.setPartnerName(partner.getName());
-                request.setPartnerAssetName(partnerAsset.getName());
-                request.setDriverName(user.getLastName() + " " + user.getFirstName());
-                request.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
-                request.setDriverPhone(user.getPhone());
-                request.setDriverAssistantPhone(user2.getPhone());
-            }
 
         });
         return tripRequests;

@@ -111,7 +111,7 @@ public class OrderItemService {
 
         orderItem.setUpdatedBy(userCurrent.getId());
         orderItemRepository.save(orderItem);
-        log.debug("color record updated - {}"+ new Gson().toJson(orderItem));
+        log.debug("record updated - {}"+ new Gson().toJson(orderItem));
         OrderItemResponseDto orderItemResponseDto = mapper.map(orderItem, OrderItemResponseDto.class);
         if(request.getWareHouseId() != null ) {
             Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseId());

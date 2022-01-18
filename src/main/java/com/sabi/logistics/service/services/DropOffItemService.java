@@ -14,9 +14,6 @@ import com.sabi.logistics.core.dto.request.DropOffItemRequestDto;
 import com.sabi.logistics.core.dto.request.TripItemRequestDto;
 import com.sabi.logistics.core.dto.response.DropOffItemResponseDto;
 import com.sabi.logistics.core.models.*;
-import com.sabi.logistics.service.helper.GenericSpecification;
-import com.sabi.logistics.service.helper.SearchCriteria;
-import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
@@ -171,7 +168,7 @@ public class DropOffItemService {
         mapper.map(request, dropOffItem);
         dropOffItem.setUpdatedBy(userCurrent.getId());
         dropOffItemRepository.save(dropOffItem);
-        log.debug("color record updated - {}"+ new Gson().toJson(dropOffItem));
+        log.debug("record updated - {}"+ new Gson().toJson(dropOffItem));
         DropOffItemResponseDto dropOffItemResponseDto = mapper.map(dropOffItem, DropOffItemResponseDto.class);
 
         if(request.getOrderItemId() != null ) {

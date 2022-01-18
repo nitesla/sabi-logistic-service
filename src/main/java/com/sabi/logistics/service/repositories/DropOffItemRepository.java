@@ -38,5 +38,7 @@ public interface DropOffItemRepository extends JpaRepository<DropOffItem, Long>,
                                       @Param("status") String status,
                                                       Pageable pageable);
 
+    DropOffItem findDropOffItemByDropOffId(Long dropOffId);
+
 
 }

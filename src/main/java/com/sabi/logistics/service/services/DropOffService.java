@@ -68,6 +68,7 @@ public class DropOffService {
         }
         Order order = orderRepository.getOne(request.getOrderId());
         DropOff dropOff = mapper.map(request,DropOff.class);
+        dropOff.setDeliveryCode(validations.generateReferenceNumber(5));
         dropOff.setCreatedBy(userCurrent.getId());
         dropOff.setIsActive(true);
         dropOff.setDeliveryAddress(order.getDeliveryAddress());
@@ -89,6 +90,7 @@ public class DropOffService {
 
             Order order = orderRepository.getOne(request.getOrderId());
             DropOff dropOff = mapper.map(request, DropOff.class);
+            dropOff.setDeliveryCode(validations.generateReferenceNumber(5));
             dropOff.setCreatedBy(userCurrent.getId());
             dropOff.setIsActive(true);
             dropOff.setDeliveryAddress(order.getDeliveryAddress());
@@ -123,7 +125,7 @@ public class DropOffService {
         dropOff.setDeliveryAddress(order.getDeliveryAddress());
         dropOff.setPaymentStatus(order.getPaymentStatus());
         dropOffRepository.save(dropOff);
-        log.debug("color record updated - {}"+ new Gson().toJson(dropOff));
+        log.debug("record updated - {}"+ new Gson().toJson(dropOff));
         DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
         dropOffResponseDto.setDeliveryAddress(order.getDeliveryAddress());
         return dropOffResponseDto;
