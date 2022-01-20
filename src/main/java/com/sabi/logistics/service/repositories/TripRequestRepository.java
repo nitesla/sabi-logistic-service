@@ -46,7 +46,7 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
     List<TripRequest> listTrips();
 
 
-    @Query("SELECT t FROM TripRequest t WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND t.partnerId = :partnerId))" +
+    @Query("SELECT t FROM TripRequest t WHERE ((:partnerId IS NULL and :unassigned is null )OR (t.partnerId IS NULL and :unassigned = true ) OR (:partnerId IS NOT NULL AND t.partnerId = :partnerId))" +
             " AND ((:status IS NULL) OR (:status IS NOT NULL AND t.status = :status))" +
             " AND ((:referenceNo IS NULL) OR (:referenceNo IS NOT NULL AND t.referenceNo = :referenceNo))" +
             " AND ((:driverId IS NULL) OR (:driverId IS NOT NULL AND t.driverId = :driverId))" +
@@ -62,6 +62,7 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
                           @Param("wareHouseId") Long wareHouseId,
                           @Param("wareHouseAddress") String wareHouseAddress,
                           @Param("partnerAssetId") Long partnerAssetId,
+                          @Param("unassigned") Boolean unassigned,
                           Pageable pageable);
 
 

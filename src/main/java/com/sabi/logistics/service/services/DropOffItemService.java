@@ -161,7 +161,7 @@ public class DropOffItemService {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         DropOffItem dropOffItem = dropOffItemRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        "Requested trip item Id does not exist!"));
+                        "Requested dropOffItem Id does not exist!"));
         OrderItem orderItem = orderItemRepository.getOne(request.getOrderItemId());
         Order order = orderRepository.getOne(orderItem.getOrderId());
         DropOff dropOff = dropOffRepository.getOne(request.getDropOffId());
@@ -210,6 +210,18 @@ public class DropOffItemService {
                         AuditTrailFlag.UPDATE,
                         " Update dropOffItem Request for:" + dropOffItem.getId(),1, Utility.getClientIp(request1));
         return dropOffItemResponseDto;
+    }
+
+    public DropOffItemResponseDto updateDropOffItemStatus(DropOffItemRequestDto request) {
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        DropOffItem dropOffItem = dropOffItemRepository.findById(request.getId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Requested dropOffItem Id does not exist!"));
+        mapper.map(request, dropOffItem);
+        dropOffItem.setUpdatedBy(userCurrent.getId());
+        dropOffItemRepository.save(dropOffItem);
+        log.debug("record updated - {}"+ new Gson().toJson(dropOffItem));
+        return mapper.map(dropOffItem, DropOffItemResponseDto.class);
     }
 
     public DropOffItemResponseDto findDropOffItem(Long id){

@@ -19,6 +19,8 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
 
     Order findByReferenceNo(String referenceNo);
 
+    Order findOrderById(Long id);
+
     List<Order> findByIsActive(Boolean isActive);
 
     @Query("SELECT o FROM Order o WHERE ((:referenceNo IS NULL) OR (:referenceNo IS NOT NULL AND o.referenceNo = :referenceNo))" +

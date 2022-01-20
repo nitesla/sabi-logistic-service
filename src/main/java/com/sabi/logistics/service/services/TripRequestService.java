@@ -411,7 +411,7 @@ public class TripRequestService {
 
 
     public Page<TripRequest> findAll(Long partnerId, String status, String referenceNo, Long driverUserId, Long driverAssistantUserId,
-                                     Long wareHouseId, String wareHouseAddress, Long partnerAssetId, PageRequest pageRequest ){
+                                     Long wareHouseId, String wareHouseAddress, Long partnerAssetId, Boolean unassigned, PageRequest pageRequest ){
 
         Long driverId = null;
         Long driverAssistantId = null;
@@ -429,7 +429,7 @@ public class TripRequestService {
         }
 
         Page<TripRequest> tripRequests = tripRequestRepository.findTripRequest(partnerId, status, referenceNo, driverId, driverAssistantId,
-                                                                                wareHouseId, wareHouseAddress, partnerAssetId, pageRequest);
+                                                                                wareHouseId, wareHouseAddress, partnerAssetId, unassigned, pageRequest);
         if(tripRequests == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

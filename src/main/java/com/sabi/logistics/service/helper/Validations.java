@@ -707,6 +707,13 @@ public class Validations {
                             " wareHouseId does not Exist!")
             );
         }
+
+        if (request.getPartnerId() != null) {
+            partnerRepository.findById(request.getPartnerId()).orElseThrow(() ->
+                    new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                            " partnerId does not Exist!")
+            );
+        }
     }
 
     public void validateMasterTripRequest (TripMasterRequestDto request){
@@ -736,6 +743,13 @@ public class Validations {
             warehouseRepository.findById(request.getWareHouseId()).orElseThrow(() ->
                     new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                             " wareHouseId does not Exist!")
+            );
+        }
+
+        if (request.getPartnerId() != null) {
+            partnerRepository.findById(request.getPartnerId()).orElseThrow(() ->
+                    new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                            " partnerId does not Exist!")
             );
         }
     }
