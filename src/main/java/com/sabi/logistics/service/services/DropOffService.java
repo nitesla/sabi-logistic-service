@@ -7,8 +7,7 @@ import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
-import com.sabi.logistics.core.dto.request.DropOffMasterRequestDto;
-import com.sabi.logistics.core.dto.request.DropOffRequestDto;
+import com.sabi.logistics.core.dto.request.*;
 import com.sabi.logistics.core.dto.response.DropOffResponseDto;
 import com.sabi.logistics.core.models.DropOff;
 import com.sabi.logistics.core.models.DropOffItem;
@@ -52,6 +51,9 @@ public class DropOffService {
 
     @Autowired
     private DropOffItemService dropOffItemService;
+
+    @Autowired
+    private OrderService orderService;
 
 
     public DropOffService(DropOffRepository dropOffRepository, ModelMapper mapper) {
@@ -104,7 +106,6 @@ public class DropOffService {
                 List<DropOffItem> finalDropOffItemResponse = dropOffItemResponseDtos;
                 dropOffItemResponseDtos.forEach(itemResponse -> {
                     dropOffResponseDto.setDropOffItem(finalDropOffItemResponse);
-                    dropOffResponseDto.setTotalAmount(getTotalAmount(finalDropOffItemResponse));
                 });
             }
 
@@ -129,6 +130,58 @@ public class DropOffService {
         DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
         dropOffResponseDto.setDeliveryAddress(order.getDeliveryAddress());
         return dropOffResponseDto;
+    }
+
+
+    public DropOffResponseDto updateDropOffStatus(DropOffStatusDto request) {
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        DropOff dropOff = dropOffRepository.findById(request.getId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Requested DropOff Id does not exist!"));
+        log.info("request {}"+ request.getDeliveryCode());
+        log.info("Computer {}" + dropOff.getDeliveryCode());
+
+        if (!request.getDeliveryCode().equalsIgnoreCase(dropOff.getDeliveryCode())){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Delivery Code");
+        }
+
+        if (request.getDeliveryStatus().equalsIgnoreCase("Completed") && dropOff.getPaymentStatus().equalsIgnoreCase("Pay on Delivery") && (request.getTotalAmount() != dropOff.getTotalAmount())) {
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Amount");
+        }
+
+        if (request.getDeliveryStatus().equalsIgnoreCase("Partially Completed") && dropOff.getPaymentStatus().equalsIgnoreCase("Pay on Delivery") && request.getTotalAmount().equals(0)) {
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Amount");
+        }
+
+        DropOffItemRequestDto dropOffItemRequestDto = new DropOffItemRequestDto();
+        Order order = new Order();
+        OrderRequestDto orderRequestDto = new OrderRequestDto();
+        OrderItemRequestDto orderItemRequestDto = new OrderItemRequestDto();
+
+        mapper.map(request, dropOff);
+        dropOff.setUpdatedBy(userCurrent.getId());
+        dropOffRepository.save(dropOff);
+
+        List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
+        for (DropOffItem dropOffItem : dropOffItems) {
+            if (dropOffItem != null) {
+                dropOffItemRequestDto.setStatus(dropOff.getDeliveryStatus());
+                dropOffItemRequestDto.setDropOffId(dropOff.getId());
+                dropOffItemRequestDto.setId(dropOffItem.getId());
+                dropOffItemService.updateDropOffItemStatus(dropOffItemRequestDto);
+            }
+        }
+
+        order = orderRepository.findOrderById(dropOff.getOrderId());
+        if (order != null) {
+            orderRequestDto.setDeliveryStatus(dropOff.getDeliveryStatus());
+            orderRequestDto.setId(dropOff.getOrderId());
+            orderService.updateOrderStatus(orderRequestDto);
+        }
+
+        log.debug("record updated - {}"+ new Gson().toJson(dropOff));
+        return  mapper.map(dropOff, DropOffResponseDto.class);
+
     }
 
     public DropOffResponseDto findDropOff(Long id){

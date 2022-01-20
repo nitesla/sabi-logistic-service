@@ -17,9 +17,6 @@ import com.sabi.logistics.core.dto.response.OrderOrderItemResponseDto;
 import com.sabi.logistics.core.dto.response.OrderResponseDto;
 import com.sabi.logistics.core.models.Order;
 import com.sabi.logistics.core.models.OrderItem;
-import com.sabi.logistics.service.helper.GenericSpecification;
-import com.sabi.logistics.service.helper.SearchCriteria;
-import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.OrderItemRepository;
 import com.sabi.logistics.service.repositories.OrderRepository;
@@ -148,6 +145,18 @@ public class OrderService {
                         " Update order Request for:" + order.getId() ,1, Utility.getClientIp(request1));
         OrderResponseDto orderResponseDto = mapper.map(order, OrderResponseDto.class);
         return orderResponseDto;
+    }
+
+    public OrderResponseDto updateOrderStatus(OrderRequestDto request) {
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        Order order = orderRepository.findById(request.getId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Requested order Id does not exist!"));
+        mapper.map(request, order);
+        order.setUpdatedBy(userCurrent.getId());
+        orderRepository.save(order);
+        log.debug("order record updated - {}"+ new Gson().toJson(order));
+        return mapper.map(order, OrderResponseDto.class);
     }
 
     public OrderResponseDto findOrder(Long id){
