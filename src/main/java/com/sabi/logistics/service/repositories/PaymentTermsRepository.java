@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface PaymentTermsRepository extends JpaRepository<PaymentTerms, Long>, JpaSpecificationExecutor<PaymentTerms> {
 
-    PaymentTerms findByPartnerAssetTypeIdAndDays (Long partnerAssetTypeId, Integer days);
+    PaymentTerms findByPartnerAssetTypeId (Long partnerAssetTypeId);
 
 
 

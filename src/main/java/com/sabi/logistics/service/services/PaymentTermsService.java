@@ -63,7 +63,7 @@ public class PaymentTermsService {
         validations.validatePaymentTerms(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PaymentTerms paymentTerms = mapper.map(request,PaymentTerms.class);
-        PaymentTerms paymentTermsExist = paymentTermsRepository.findByPartnerAssetTypeIdAndDays(request.getPartnerAssetTypeId(), request.getDays());
+        PaymentTerms paymentTermsExist = paymentTermsRepository.findByPartnerAssetTypeId(request.getPartnerAssetTypeId());
         if(paymentTermsExist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Payment Terms already exist");
         }
