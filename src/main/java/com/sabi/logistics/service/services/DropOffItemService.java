@@ -133,7 +133,7 @@ public class DropOffItemService {
             dropOffItemResponseDto.setDropOffId(dropOffItem.getDropOffId());
             dropOffItemResponseDto.setOrderItemId(dropOffItem.getOrderItemId());
 
-            orderItem.setDeliveryStatus("Awaiting Delivery");
+            orderItem.setDeliveryStatus("AwaitingDelivery");
             orderItemRepository.save(orderItem);
 
             TripItem tripItem = new TripItem();

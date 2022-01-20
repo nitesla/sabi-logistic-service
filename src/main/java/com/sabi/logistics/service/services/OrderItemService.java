@@ -2,7 +2,6 @@ package com.sabi.logistics.service.services;
 
 import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
-import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
@@ -58,12 +57,6 @@ public class OrderItemService {
         validations.validateOrderItem(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         OrderItem orderItem = mapper.map(request,OrderItem.class);
-
-        OrderItem orderItemExists = orderItemRepository.findByThirdPartyProductId(orderItem.getThirdPartyProductId());
-
-        if(orderItemExists !=null){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order Item already exist");
-        }
         Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseId());
         orderItem.setCreatedBy(userCurrent.getId());
         orderItem.setIsActive(true);
@@ -80,12 +73,6 @@ public class OrderItemService {
         requests.forEach(request->{
             validations.validateOrderItem(request);
             OrderItem orderItem = mapper.map(request,OrderItem.class);
-            OrderItem orderItemExists = orderItemRepository.findByThirdPartyProductId(orderItem.getThirdPartyProductId());
-
-            if(orderItemExists !=null){
-                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order Item already exist");
-            }
-
             if(orderItem.getInventoryId() != null) {
                 inventoryRepository.findById(request.getInventoryId()).orElseThrow(() ->
                         new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
