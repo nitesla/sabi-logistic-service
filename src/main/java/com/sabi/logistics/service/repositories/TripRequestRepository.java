@@ -71,6 +71,6 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
 
 
 
-
+    TripRequest findByReferenceNo(String referenceNo);
 
 }

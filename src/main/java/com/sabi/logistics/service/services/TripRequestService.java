@@ -665,7 +665,10 @@ public class TripRequestService {
                 .barCode(validations.generateCode(String.valueOf(request.getId())))
                 .qrCode(validations.generateCode(String.valueOf(request.getId())))
                 .build();
-               tripRequestRepository.save(tripRequest);
+        TripRequest trip = tripRequestRepository.findByReferenceNo(tripRequest.getReferenceNo());
+        if(trip == null) {
+            tripRequestRepository.save(tripRequest);
+        }
 
 
     }

@@ -117,7 +117,7 @@ public class PartnerUserService {
         partnerUser.setUserId(user.getId());
         partnerUser.setCreatedBy(userCurrent.getId());
         partnerUser.setUserType(request.getUserType());
-        partnerUser.setIsActive(true);
+        partnerUser.setIsActive(false);
         partnerUserRepository.save(partnerUser);
         log.debug("save to partner user table - {}"+ new Gson().toJson(partnerUser));
 
@@ -231,11 +231,11 @@ public class PartnerUserService {
     }
 
 
-    public Page<PartnerUser> findPartnerUsers(String userType, PageRequest pageRequest ){
+    public Page<PartnerUser> findPartnerUsers(String userType,Boolean isActive, PageRequest pageRequest ){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
 
         PartnerUser partner = partnerUserRepository.findByUserId(userCurrent.getId());
-        Page<PartnerUser> partnerUsers = partnerUserRepository.findPartnerUsers(partner.getPartnerId(),userType,pageRequest);
+        Page<PartnerUser> partnerUsers = partnerUserRepository.findPartnerUsers(partner.getPartnerId(),userType,isActive,pageRequest);
         if(partnerUsers == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
@@ -245,6 +245,7 @@ public class PartnerUserService {
                 Role role = roleRepository.getOne(user.getRoleId());
              users.setRoleName(role.getName());
          }
+         users.setUserType(users.getUserType());
          users.setEmail(user.getEmail());
          users.setFirstName(user.getFirstName());
          users.setLastName(user.getLastName());
@@ -275,17 +276,19 @@ public class PartnerUserService {
                 Role role = roleRepository.getOne(partnerUsers.getRoleId());
                 partnerUsers.setRoleName(role.getName());
             }
+            PartnerUser partnerUserType = partnerUserRepository.findByUserId(partnerUsers.getId());
+            partnerUsers.setUserType(partnerUserType.getUserType());
         }
         return users;
     }
 
 
 
-    public List<PartnerUser> findPartnerUsersList(String userType){
+    public List<PartnerUser> findPartnerUsersList(String userType,Boolean isActive){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
 
         PartnerUser partner = partnerUserRepository.findByUserId(userCurrent.getId());
-        List<PartnerUser> partnerUsers = partnerUserRepository.findPartnerUsersList(partner.getPartnerId(),userType);
+        List<PartnerUser> partnerUsers = partnerUserRepository.findPartnerUsersList(partner.getPartnerId(),userType,isActive);
         for (PartnerUser users : partnerUsers
                 ) {
             User user = userRepository.getOne(users.getUserId());
@@ -293,6 +296,8 @@ public class PartnerUserService {
                 Role role = roleRepository.getOne(user.getRoleId());
                 users.setRoleName(role.getName());
             }
+
+            users.setUserType(users.getUserType());
             users.setEmail(user.getEmail());
             users.setFirstName(user.getFirstName());
             users.setLastName(user.getLastName());
