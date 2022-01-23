@@ -19,7 +19,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     List<Category> findByIsActive(Boolean isActive);
 
 
-    @Query("SELECT c FROM Category c WHERE ((:name IS NULL) OR (:name IS NOT NULL AND c.name = :name)) order by c.id desc")
+    @Query("SELECT c FROM Category c WHERE ((:name IS NULL) OR (:name IS NOT NULL AND c.name like %:name%)) order by c.id desc")
     Page<Category> findCategories(@Param("name") String name,
                                   Pageable pageable);
 }

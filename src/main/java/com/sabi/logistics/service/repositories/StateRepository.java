@@ -30,7 +30,7 @@ public interface StateRepository extends JpaRepository<State, Long> {
     List<State> findByIsActive(Boolean isActive);
 
 
-    @Query("SELECT s FROM State s WHERE ((:name IS NULL) OR (:name IS NOT NULL AND s.name = :name))" +
+    @Query("SELECT s FROM State s WHERE ((:name IS NULL) OR (:name IS NOT NULL AND s.name like %:name%))" +
             " AND ((:countryId IS NULL) OR (:countryId IS NOT NULL AND s.countryId = :countryId)) order by s.id desc")
     Page<State> findStates(@Param("name") String name,
                            @Param("countryId") Long countryId,

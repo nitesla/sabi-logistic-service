@@ -268,6 +268,15 @@ public class TripRequestService {
         TripRequest tripRequest = tripRequestRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Trip Request ID does not exist!"));
+
+        if (tripRequest.getPartnerId() == null) {
+            tripRequest.setPartnerId(request.getPartnerId());
+        }
+
+        if (tripRequest.getPartnerAssetId() == null) {
+            tripRequest.setPartnerAssetId(request.getPartnerAssetId());
+        }
+
         TripRequestResponse tripRequestResponse = new TripRequestResponse();
         TripRequestResponseReqDto tripRequestResponseReqDto = new TripRequestResponseReqDto();
 

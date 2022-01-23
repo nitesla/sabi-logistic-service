@@ -25,7 +25,7 @@ public interface TripItemRepository extends JpaRepository<TripItem, Long>, JpaSp
 
     @Query("SELECT t FROM TripItem t WHERE ((:thirdPartyProductId IS NULL) OR (:thirdPartyProductId IS NOT NULL AND t.thirdPartyProductId = :thirdPartyProductId))" +
             " AND ((:tripRequestId IS NULL) OR (:tripRequestId IS NOT NULL AND t.tripRequestId = :tripRequestId))" +
-            " AND ((:productName IS NULL) OR (:productName IS NOT NULL AND t.productName = :productName)) order by t.id desc")
+            " AND ((:productName IS NULL) OR (:productName IS NOT NULL AND t.productName like %:productName%)) order by t.id desc")
     Page<TripItem> findByTripItem(@Param("thirdPartyProductId") Long thirdPartyProductId,
                                                       @Param("tripRequestId") Long tripRequestId, @Param("productName") String productName,
                                                       Pageable pageable);

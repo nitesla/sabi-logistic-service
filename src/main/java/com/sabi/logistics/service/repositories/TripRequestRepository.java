@@ -30,14 +30,14 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
 
     @Query(value = "SELECT Count(d) FROM TripRequest d WHERE ((:startDate IS NULL) OR (:startDate IS NOT NULL AND d.createdDate >= :startDate)) AND ((:endDate IS NULL) OR (:endDate IS NOT NULL AND  d.createdDate <= :endDate))" +
             " AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND d.partnerId = :partnerId))" +
-            " AND ((:status IS NULL) OR (:status IS NOT NULL AND d.status = :status))")
+            " AND ((:status IS NULL) OR (:status IS NOT NULL AND d.status like %:status%))")
     Integer countByPartnerIDAndStatus(@Param("partnerId") Long partnerId, @Param("status") String status, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     TripRequest findByPartnerIdAndReferenceNo(Long partnerId, String referenceNo);
 
     @Query(value = "SELECT Count(d) FROM TripRequest d WHERE ((:driverId IS NULL) OR (:driverId IS NOT NULL AND d.driverId >= :driverId)) AND ((:status IS NULL) OR (:status IS NOT NULL AND  d.status <= :status))" +
             " AND ((:driverId IS NULL) OR (:driverId IS NOT NULL AND d.driverId = :driverId))" +
-            " AND ((:status IS NULL) OR (:status IS NOT NULL AND d.status = :status))")
+            " AND ((:status IS NULL) OR (:status IS NOT NULL AND d.status like %:status%))")
     Integer countByDriverIdAndStatus(@Param("driverId") Long partnerId, @Param("status") String status);
 
 
@@ -47,12 +47,12 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
 
 
     @Query("SELECT t FROM TripRequest t WHERE ((:partnerId IS NULL and :unassigned is null )OR (t.partnerId IS NULL and :unassigned = true ) OR (:partnerId IS NOT NULL AND t.partnerId = :partnerId))" +
-            " AND ((:status IS NULL) OR (:status IS NOT NULL AND t.status = :status))" +
-            " AND ((:referenceNo IS NULL) OR (:referenceNo IS NOT NULL AND t.referenceNo = :referenceNo))" +
+            " AND ((:status IS NULL) OR (:status IS NOT NULL AND t.status like %:status%))" +
+            " AND ((:referenceNo IS NULL) OR (:referenceNo IS NOT NULL AND t.referenceNo like %:referenceNo%))" +
             " AND ((:driverId IS NULL) OR (:driverId IS NOT NULL AND t.driverId = :driverId))" +
             " AND ((:driverAssistantId IS NULL) OR (:driverAssistantId IS NOT NULL AND t.driverAssistantId = :driverAssistantId))" +
             " AND ((:wareHouseId IS NULL) OR (:wareHouseId IS NOT NULL AND t.wareHouseId = :wareHouseId))" +
-            " AND ((:wareHouseAddress IS NULL) OR (:wareHouseAddress IS NOT NULL AND t.wareHouseAddress = :wareHouseAddress))" +
+            " AND ((:wareHouseAddress IS NULL) OR (:wareHouseAddress IS NOT NULL AND t.wareHouseAddress like %:wareHouseAddress%))" +
             " AND ((:partnerAssetId IS NULL) OR (:partnerAssetId IS NOT NULL AND t.partnerAssetId = :partnerAssetId)) order by t.id desc")
     Page<TripRequest> findTripRequest(@Param("partnerId") Long partnerId,
                           @Param("status") String status,

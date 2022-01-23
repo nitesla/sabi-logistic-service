@@ -30,7 +30,7 @@ public interface PartnerRepository extends JpaRepository<Partner, Long> {
 
     List<Partner> findByIsActive(Boolean isActive);
 
-    @Query("SELECT p FROM Partner p WHERE ((:name IS NULL) OR (:name IS NOT NULL AND p.name = :name)) order by p.id desc")
+    @Query("SELECT p FROM Partner p WHERE ((:name IS NULL) OR (:name IS NOT NULL AND p.name like %:name%)) order by p.id desc")
     Page<Partner> findPartnersProperties(@Param("name") String name, Pageable pageable);
 
 

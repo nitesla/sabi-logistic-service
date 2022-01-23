@@ -18,8 +18,8 @@ public interface WarehouseProductRepository extends JpaRepository<WarehouseProdu
     List<WarehouseProduct> findByIsActive(Boolean isActive);
 
     @Query("SELECT s FROM WarehouseProduct s WHERE ((:warehouseId IS NULL) OR (:warehouseId IS NOT NULL AND s.warehouseId = :warehouseId))" +
-            " AND ((:thirdPartyProductID IS NULL) OR (:thirdPartyProductID IS NOT NULL AND s.thirdPartyProductID = :thirdPartyProductID))" +
-            " AND ((:productName IS NULL) OR (:productName IS NOT NULL AND s.productName = :productName)) order by s.id desc"
+            " AND ((:thirdPartyProductID IS NULL) OR (:thirdPartyProductID IS NOT NULL AND s.thirdPartyProductID like %:thirdPartyProductID%))" +
+            " AND ((:productName IS NULL) OR (:productName IS NOT NULL AND s.productName like %:productName%)) order by s.id desc"
     )
     Page<WarehouseProduct> findAllWarehouseProducts(@Param("warehouseId") Long warehouseId,
                                       @Param("thirdPartyProductID") String thirdPartyProductID,

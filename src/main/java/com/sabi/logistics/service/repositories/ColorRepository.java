@@ -15,7 +15,7 @@ public interface ColorRepository extends JpaRepository<Color, Long> {
 
     Color findColorById(Long Id);
 
-    @Query("SELECT c FROM Color c WHERE ((:name IS NULL) OR (:name IS NOT NULL AND c.name = :name)) order by c.id desc")
+    @Query("SELECT c FROM Color c WHERE ((:name IS NULL) OR (:name IS NOT NULL AND c.name like %:name%)) order by c.id desc")
     Page<Color> findColor(String name, Pageable pageRequest);
 
     List<Color> findByIsActive(Boolean isActive);

@@ -25,7 +25,7 @@ public interface PartnerBankRepository extends JpaRepository<PartnerBank, Long>,
 
     @Query("SELECT b FROM PartnerBank b WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND b.partnerId = :partnerId))" +
             " AND ((:bankId IS NULL) OR (:bankId IS NOT NULL AND b.bankId = :bankId))" +
-            " AND ((:accountNumber IS NULL) OR (:accountNumber IS NOT NULL AND b.accountNumber = :accountNumber))")
+            " AND ((:accountNumber IS NULL) OR (:accountNumber IS NOT NULL AND b.accountNumber like %:accountNumber%))")
     Page<PartnerBank> findPartnerBanks(@Param("partnerId")Long partnerId,
                                        @Param("bankId")Long bankId,
                                        @Param("accountNumber")String accountNumber,

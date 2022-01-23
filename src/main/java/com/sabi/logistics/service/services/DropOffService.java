@@ -8,6 +8,7 @@ import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.*;
+import com.sabi.logistics.core.dto.response.DropOffItemResponseDto;
 import com.sabi.logistics.core.dto.response.DropOffResponseDto;
 import com.sabi.logistics.core.models.DropOff;
 import com.sabi.logistics.core.models.DropOffItem;
@@ -162,15 +163,21 @@ public class DropOffService {
         dropOff.setUpdatedBy(userCurrent.getId());
         dropOffRepository.save(dropOff);
 
-        List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
-        for (DropOffItem dropOffItem : dropOffItems) {
-            if (dropOffItem != null) {
-                dropOffItemRequestDto.setStatus(dropOff.getDeliveryStatus());
-                dropOffItemRequestDto.setDropOffId(dropOff.getId());
-                dropOffItemRequestDto.setId(dropOffItem.getId());
-                dropOffItemService.updateDropOffItemStatus(dropOffItemRequestDto);
-            }
+        DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
+
+        if(request.getDropOffItem() != null) {
+            List<DropOffItemResponseDto> dropOffItems = dropOffItemService.updateDropOffItemStatus(request.getDropOffItem());
         }
+
+//        List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
+//        for (DropOffItem dropOffItem : dropOffItems) {
+//            if (dropOffItem != null) {
+//                dropOffItemRequestDto.setStatus(dropOff.getDeliveryStatus());
+//                dropOffItemRequestDto.setDropOffId(dropOff.getId());
+//                dropOffItemRequestDto.setId(dropOffItem.getId());
+//                dropOffItemService.updateDropOffItemStatus(dropOffItemRequestDto);
+//            }
+//        }
 
         order = orderRepository.findOrderById(dropOff.getOrderId());
         if (order != null) {

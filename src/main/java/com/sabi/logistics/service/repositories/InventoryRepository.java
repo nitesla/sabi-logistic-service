@@ -19,13 +19,13 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
 
 
     @Query("SELECT c FROM Inventory c WHERE ((:thirdPartyId IS NULL) OR (:thirdPartyId IS NOT NULL AND c.thirdPartyId = :thirdPartyId))" +
-            " AND ((:productName IS NULL) OR (:productName IS NOT NULL AND c.productName = :productName))" +
+            " AND ((:productName IS NULL) OR (:productName IS NOT NULL AND c.productName like %:productName%))" +
 //            " AND ((:qty IS NULL) OR (:qty IS NOT NULL AND c.qty = :qty))" +
             " AND ((:totalAmount IS NULL) OR (:totalAmount IS NOT NULL AND c.totalAmount = :totalAmount))" +
-            " AND ((:status IS NULL) OR (:status IS NOT NULL AND c.status = :status))" +
-            " AND ((:deliveryPartnerName IS NULL) OR (:deliveryPartnerName IS NOT NULL AND c.deliveryPartnerName = :deliveryPartnerName))" +
-            " AND ((:deliveryPartnerEmail IS NULL) OR (:deliveryPartnerEmail IS NOT NULL AND c.deliveryPartnerEmail = :deliveryPartnerEmail))" +
-            " AND ((:deliveryPartnerPhone IS NULL) OR (:deliveryPartnerPhone IS NOT NULL AND c.deliveryPartnerPhone = :deliveryPartnerPhone))" +
+            " AND ((:status IS NULL) OR (:status IS NOT NULL AND c.status like %:status%))" +
+            " AND ((:deliveryPartnerName IS NULL) OR (:deliveryPartnerName IS NOT NULL AND c.deliveryPartnerName like %:deliveryPartnerName%))" +
+            " AND ((:deliveryPartnerEmail IS NULL) OR (:deliveryPartnerEmail IS NOT NULL AND c.deliveryPartnerEmail like %:deliveryPartnerEmail%))" +
+            " AND ((:deliveryPartnerPhone IS NULL) OR (:deliveryPartnerPhone IS NOT NULL AND c.deliveryPartnerPhone like %:deliveryPartnerPhone%))" +
             " AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND c.partnerId = :partnerId))" +
             " AND ((:wareHouseId IS NULL) OR (:wareHouseId IS NOT NULL AND c.wareHouseId = :wareHouseId))" +
             " AND ((:shippingId IS NULL) OR (:shippingId IS NOT NULL AND c.shippingId = :shippingId)) order by c.id desc "

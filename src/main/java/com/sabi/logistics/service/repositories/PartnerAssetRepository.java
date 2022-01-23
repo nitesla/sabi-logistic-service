@@ -16,7 +16,7 @@ public interface PartnerAssetRepository extends JpaRepository<PartnerAsset, Long
 
     PartnerAsset findPartnerAssetById(Long Id);
 
-    @Query("SELECT Count(pa) from PartnerAsset pa inner join PartnerAssetType pt on pa.partnerAssetTypeId = pt.id  where (pt.partnerId = :partnerId) and (:status IS NOT NULL AND pa.status = :status)" +
+    @Query("SELECT Count(pa) from PartnerAsset pa inner join PartnerAssetType pt on pa.partnerAssetTypeId = pt.id  where (pt.partnerId = :partnerId) and (:status IS NOT NULL AND pa.status like %:status%)" +
             " AND (:isActive IS NOT NULL AND pa.isActive = :isActive)")
     Integer countByPartnerId(@Param("partnerId") Long partnerId,
                                 @Param("status") String status,
@@ -28,9 +28,9 @@ public interface PartnerAssetRepository extends JpaRepository<PartnerAsset, Long
 List<PartnerAsset> findByIsActiveAndId(@Param("partnerId") Long partnerId,
                                            @Param("isActive") Boolean isActive);
 
-    @Query("SELECT pa FROM PartnerAsset pa inner join PartnerAssetType pt on pa.partnerAssetTypeId = pt.id WHERE ((:partnerId IS NULL) OR (pt.partnerId = :partnerId)) and ((:name IS NULL) OR (:name IS NOT NULL AND pa.name = :name))" +
+    @Query("SELECT pa FROM PartnerAsset pa inner join PartnerAssetType pt on pa.partnerAssetTypeId = pt.id WHERE ((:partnerId IS NULL) OR (pt.partnerId = :partnerId)) and ((:name IS NULL) OR (:name IS NOT NULL AND pa.name like %:name%))" +
             " AND ((:brandId IS NULL) OR (:brandId IS NOT NULL AND pa.brandId = :brandId))" +
-            " AND ((:status IS NULL) OR (:status IS NOT NULL AND pa.status = :status))" +
+            " AND ((:status IS NULL) OR (:status IS NOT NULL AND pa.status like %:status%))" +
             " AND ((:driverId IS NULL) OR (:driverId IS NOT NULL AND pa.driverId = :driverId))" +
             " AND ((:partnerAssetTypeId IS NULL) OR (:partnerAssetTypeId IS NOT NULL AND pa.partnerAssetTypeId = :partnerAssetTypeId))" +
             " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND pa.isActive = :isActive)) order by pa.id desc")

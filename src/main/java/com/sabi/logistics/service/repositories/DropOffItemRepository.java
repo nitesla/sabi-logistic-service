@@ -32,13 +32,15 @@ public interface DropOffItemRepository extends JpaRepository<DropOffItem, Long>,
 
     @Query("SELECT d FROM DropOffItem d WHERE ((:orderItemId IS NULL) OR (:orderItemId IS NOT NULL AND d.orderItemId = :orderItemId))" +
             " AND ((:dropOffId IS NULL) OR (:dropOffId IS NOT NULL AND d.dropOffId = :dropOffId))" +
-            " AND ((:status IS NULL) OR (:status IS NOT NULL AND d.status = :status)) order by d.id desc")
+            " AND ((:status IS NULL) OR (:status IS NOT NULL AND d.status like %:status%)) order by d.id desc")
     Page<DropOffItem> findDropOffItem(@Param("orderItemId") Long orderItemId,
                                       @Param("dropOffId") Long dropOffId,
                                       @Param("status") String status,
                                                       Pageable pageable);
 
     DropOffItem findDropOffItemByDropOffId(Long dropOffId);
+
+//    List<DropOffItem> findByTripRequestIdAndThirdPartyProductId(Long tripRequestId, Long thirdPartyProductId);
 
 
 }

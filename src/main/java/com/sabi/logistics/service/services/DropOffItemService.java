@@ -2,6 +2,7 @@ package com.sabi.logistics.service.services;
 
 import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
+import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
@@ -11,6 +12,7 @@ import com.sabi.framework.utils.AuditTrailFlag;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.DropOffItemRequestDto;
+import com.sabi.logistics.core.dto.request.DropOffItemStatusDto;
 import com.sabi.logistics.core.dto.request.TripItemRequestDto;
 import com.sabi.logistics.core.dto.response.DropOffItemResponseDto;
 import com.sabi.logistics.core.models.*;
@@ -182,10 +184,12 @@ public class DropOffItemService {
             dropOffItemResponseDto.setOrderItemId(dropOffItem.getOrderItemId());
         }
 
+        List<DropOffItem> dropOffItems = new ArrayList<>();
         TripItem tripItem = new TripItem();
         TripItemRequestDto tripItemRequestDto = new TripItemRequestDto();
 
         tripItem = tripItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), orderItem.getThirdPartyProductId());
+//        DropOffItem = dropOffItemRepository.findTripItemByByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), orderItem.getThirdPartyProductId());
         if(tripItem == null) {
             tripItemRequestDto.setTripRequestId(dropOff.getTripRequestId());
             tripItemRequestDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
@@ -212,16 +216,27 @@ public class DropOffItemService {
         return dropOffItemResponseDto;
     }
 
-    public DropOffItemResponseDto updateDropOffItemStatus(DropOffItemRequestDto request) {
+    public List<DropOffItemResponseDto> updateDropOffItemStatus(List<DropOffItemStatusDto> requests) {
+
+        List<DropOffItemResponseDto> responseDtos = new ArrayList<>();
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-        DropOffItem dropOffItem = dropOffItemRepository.findById(request.getId())
-                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        "Requested dropOffItem Id does not exist!"));
-        mapper.map(request, dropOffItem);
-        dropOffItem.setUpdatedBy(userCurrent.getId());
-        dropOffItemRepository.save(dropOffItem);
-        log.debug("record updated - {}"+ new Gson().toJson(dropOffItem));
-        return mapper.map(dropOffItem, DropOffItemResponseDto.class);
+        requests.forEach(request-> {
+            DropOffItem dropOffItem = dropOffItemRepository.findById(request.getId())
+                    .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                            "Requested dropOffItem Id does not exist!"));
+            OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
+            if(request.getQtyGoodsDelivered() > orderItem.getQty()){
+                throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Quantity of Items Delivered can't be greater than Total Quantity");
+            }
+            mapper.map(request, dropOffItem);
+            dropOffItem.setUpdatedBy(userCurrent.getId());
+            dropOffItemRepository.save(dropOffItem);
+            log.debug("record updated - {}"+ new Gson().toJson(dropOffItem));
+            DropOffItemResponseDto dropOffItemResponseDto = mapper.map(dropOffItem, DropOffItemResponseDto.class);
+            responseDtos.add(dropOffItemResponseDto);
+        });
+
+        return responseDtos;
     }
 
     public DropOffItemResponseDto findDropOffItem(Long id){
