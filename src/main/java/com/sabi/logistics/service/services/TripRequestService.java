@@ -8,6 +8,7 @@ import com.sabi.framework.models.User;
 import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabi.logistics.core.dto.request.ShipmentTripRequest;
 import com.sabi.logistics.core.dto.request.TripMasterRequestDto;
 import com.sabi.logistics.core.dto.request.TripRequestDto;
 import com.sabi.logistics.core.dto.request.TripRequestResponseReqDto;
@@ -650,4 +651,35 @@ public class TripRequestService {
     private BigDecimal getTotalAmount(List<DropOffItem> dropOffItems) {
         return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getAmountCollected).reduce(BigDecimal.ZERO, BigDecimal::add));
     }
+
+
+
+
+    public void shipmentTripRequest(ShipmentTripRequest request){
+
+        TripRequest tripRequest = TripRequest.builder()
+                .partnerId(request.getLogisticPartnerId())
+                .deliveryDate(request.getDeliveryDate())
+                .wareHouseId(request.getWarehouseId())
+                .referenceNo(String.valueOf(request.getId()))
+                .contactPhone(request.getPhoneNumber())
+                .partnerAssetId(request.getAssestId())
+                .earnings(request.getTotalAmount())
+                .status(request.getStatus())
+                .startTime(request.getStartTime())
+                .endTime(request.getEndTime())
+                .driverAssistantId(0l)
+                .driverId(0l)
+                .weight(0)
+                .barCode(validations.generateCode(String.valueOf(request.getId())))
+                .qrCode(validations.generateCode(String.valueOf(request.getId())))
+                .build();
+        TripRequest trip = tripRequestRepository.findByReferenceNo(tripRequest.getReferenceNo());
+        if(trip == null) {
+            tripRequestRepository.save(tripRequest);
+        }
+
+
+    }
+
 }

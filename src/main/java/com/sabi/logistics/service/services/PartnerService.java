@@ -149,7 +149,7 @@ public class PartnerService {
         partnerUser.setPartnerId(partnerResponse.getId());
         partnerUser.setUserId(user.getId());
         partnerUser.setCreatedBy(0l);
-        partnerUser.setIsActive(true);
+        partnerUser.setIsActive(false);
         partnerUserRepository.save(partnerUser);
 
         PartnerSignUpResponseDto response = PartnerSignUpResponseDto.builder()
@@ -232,6 +232,10 @@ public class PartnerService {
         user.setPasswordChangedOn(LocalDateTime.now());
         userRepository.save(user);
 
+        PartnerUser partnerUser = partnerUserRepository.findByUserId(user.getId());
+         partnerUser.setIsActive(true);
+        partnerUserRepository.save(partnerUser);
+
         CompleteSignUpResponse response = CompleteSignUpResponse.builder()
                 .partnerId(partner.getId())
                 .email(partner.getEmail())
@@ -273,6 +277,9 @@ public class PartnerService {
         previousPasswordRepository.save(previousPasswords);
 
         PartnerUser partner = partnerUserRepository.findByUserId(user.getId());
+          partner.setIsActive(true);
+        partnerUserRepository.save(partner);
+
 
         PartnerActivationResponse response = PartnerActivationResponse.builder()
                 .userId(user.getId())
