@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 @SuppressWarnings("All")
@@ -91,16 +92,30 @@ public class DropOffItemService {
         dropOffItemResponseDto.setDropOffId(dropOffItem.getDropOffId());
         dropOffItemResponseDto.setOrderItemId(dropOffItem.getOrderItemId());
 
+        List<DropOffItem> dropOffItems = new ArrayList<>();
+        List<OrderItem> orderItems = new ArrayList<>();
         TripItem tripItem = new TripItem();
         TripItemRequestDto tripItemRequestDto = new TripItemRequestDto();
+
         tripItem = tripItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), orderItem.getThirdPartyProductId());
+        dropOffItems = dropOffItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), orderItem.getThirdPartyProductId());
+        orderItems = orderItemRepository.findByOrderIdAndThirdPartyProductId(dropOff.getOrderId(), orderItem.getThirdPartyProductId());
+
         if(tripItem == null) {
             tripItemRequestDto.setTripRequestId(dropOff.getTripRequestId());
             tripItemRequestDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
             tripItemRequestDto.setProductName(orderItem.getProductName());
-            tripItemRequestDto.setQty(orderItem.getQty());
-            tripItemRequestDto.setQtyPickedUp(dropOffItem.getQtyGoodsDelivered());
+            tripItemRequestDto.setQty(getQty(orderItems));
+            tripItemRequestDto.setQtyPickedUp(getQtyPickedUp(dropOffItems));
             tripItemService.createTripItem(tripItemRequestDto);
+        } else {
+            tripItemRequestDto.setTripRequestId(dropOff.getTripRequestId());
+            tripItemRequestDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
+            tripItemRequestDto.setProductName(orderItem.getProductName());
+            tripItemRequestDto.setQty(getQty(orderItems));
+            tripItemRequestDto.setQtyPickedUp(getQtyPickedUp(dropOffItems));
+            tripItemRequestDto.setId(tripItem.getId());
+            tripItemService.updateTripItem(tripItemRequestDto);
         }
         auditTrailService
                 .logEvent(userCurrent.getUsername(),
@@ -138,16 +153,30 @@ public class DropOffItemService {
             orderItem.setDeliveryStatus("AwaitingDelivery");
             orderItemRepository.save(orderItem);
 
+            List<DropOffItem> dropOffItems = new ArrayList<>();
+            List<OrderItem> orderItems = new ArrayList<>();
             TripItem tripItem = new TripItem();
             TripItemRequestDto tripItemRequestDto = new TripItemRequestDto();
+
             tripItem = tripItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), orderItem.getThirdPartyProductId());
+            dropOffItems = dropOffItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), orderItem.getThirdPartyProductId());
+            orderItems = orderItemRepository.findByOrderIdAndThirdPartyProductId(dropOff.getOrderId(), orderItem.getThirdPartyProductId());
+
             if (tripItem == null) {
                 tripItemRequestDto.setTripRequestId(dropOff.getTripRequestId());
                 tripItemRequestDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
                 tripItemRequestDto.setProductName(orderItem.getProductName());
-                tripItemRequestDto.setQty(orderItem.getQty());
-                tripItemRequestDto.setQtyPickedUp(dropOffItem.getQtyGoodsDelivered());
+                tripItemRequestDto.setQty(getQty(orderItems));
+                tripItemRequestDto.setQtyPickedUp(getQtyPickedUp(dropOffItems));
                 tripItemService.createTripItem(tripItemRequestDto);
+            } else {
+                tripItemRequestDto.setTripRequestId(dropOff.getTripRequestId());
+                tripItemRequestDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
+                tripItemRequestDto.setProductName(orderItem.getProductName());
+                tripItemRequestDto.setQty(getQty(orderItems));
+                tripItemRequestDto.setQtyPickedUp(getQtyPickedUp(dropOffItems));
+                tripItemRequestDto.setId(tripItem.getId());
+                tripItemService.updateTripItem(tripItemRequestDto);
             }
 
 
@@ -169,6 +198,9 @@ public class DropOffItemService {
         DropOff dropOff = dropOffRepository.getOne(request.getDropOffId());
         mapper.map(request, dropOffItem);
         dropOffItem.setUpdatedBy(userCurrent.getId());
+        if(request.getQtyGoodsDelivered() != null && request.getQtyGoodsDelivered() > orderItem.getQty()){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Quantity of Items Delivered can't be greater than Total Quantity");
+        }
         dropOffItemRepository.save(dropOffItem);
         log.debug("record updated - {}"+ new Gson().toJson(dropOffItem));
         DropOffItemResponseDto dropOffItemResponseDto = mapper.map(dropOffItem, DropOffItemResponseDto.class);
@@ -185,24 +217,27 @@ public class DropOffItemService {
         }
 
         List<DropOffItem> dropOffItems = new ArrayList<>();
+        List<OrderItem> orderItems = new ArrayList<>();
         TripItem tripItem = new TripItem();
         TripItemRequestDto tripItemRequestDto = new TripItemRequestDto();
 
         tripItem = tripItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), orderItem.getThirdPartyProductId());
-//        DropOffItem = dropOffItemRepository.findTripItemByByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), orderItem.getThirdPartyProductId());
+        dropOffItems = dropOffItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), orderItem.getThirdPartyProductId());
+        orderItems = orderItemRepository.findByOrderIdAndThirdPartyProductId(dropOff.getOrderId(), orderItem.getThirdPartyProductId());
+
         if(tripItem == null) {
             tripItemRequestDto.setTripRequestId(dropOff.getTripRequestId());
             tripItemRequestDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
             tripItemRequestDto.setProductName(orderItem.getProductName());
-            tripItemRequestDto.setQty(orderItem.getQty());
-            tripItemRequestDto.setQtyPickedUp(dropOffItem.getQtyGoodsDelivered());
+            tripItemRequestDto.setQty(getQty(orderItems));
+            tripItemRequestDto.setQtyPickedUp(getQtyPickedUp(dropOffItems));
             tripItemService.createTripItem(tripItemRequestDto);
         } else {
             tripItemRequestDto.setTripRequestId(dropOff.getTripRequestId());
             tripItemRequestDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
             tripItemRequestDto.setProductName(orderItem.getProductName());
-            tripItemRequestDto.setQty(orderItem.getQty());
-            tripItemRequestDto.setQtyPickedUp(dropOffItem.getQtyGoodsDelivered());
+            tripItemRequestDto.setQty(getQty(orderItems));
+            tripItemRequestDto.setQtyPickedUp(getQtyPickedUp(dropOffItems));
             tripItemRequestDto.setId(tripItem.getId());
             tripItemService.updateTripItem(tripItemRequestDto);
         }
@@ -225,7 +260,8 @@ public class DropOffItemService {
                     .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                             "Requested dropOffItem Id does not exist!"));
             OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
-            if(request.getQtyGoodsDelivered() > orderItem.getQty()){
+
+            if(request.getQtyGoodsDelivered() != null && request.getQtyGoodsDelivered() > orderItem.getQty()){
                 throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Quantity of Items Delivered can't be greater than Total Quantity");
             }
             mapper.map(request, dropOffItem);
@@ -356,5 +392,13 @@ public class DropOffItemService {
         }
         return tripItems;
 
+    }
+
+    private Integer getQty(List<OrderItem> orderItems) {
+        return ((Integer)orderItems.stream().filter(Objects::nonNull).map(OrderItem::getQty).reduce(Integer.valueOf(0), Integer::sum));
+    }
+
+    private Integer getQtyPickedUp(List<DropOffItem> dropOffItems) {
+        return ((Integer)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getQtyGoodsDelivered).reduce(Integer.valueOf(0), Integer::sum));
     }
 }

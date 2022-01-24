@@ -120,6 +120,7 @@ public class OrderItemService {
         orderItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
         orderItemResponseDto.setUnitPrice(orderItem.getUnitPrice());
         orderItemResponseDto.setTotalPrice(orderItem.getTotalPrice());
+        orderItemResponseDto.setReferenceNo(order.getReferenceNo());
 
         if(orderItem.getInventoryId() != null) {
             Inventory inventory = inventoryRepository.getOne(orderItem.getInventoryId());
