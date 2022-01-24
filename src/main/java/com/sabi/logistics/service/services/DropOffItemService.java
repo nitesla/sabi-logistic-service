@@ -6,6 +6,7 @@ import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
+import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.service.AuditTrailService;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.AuditTrailFlag;
@@ -14,6 +15,7 @@ import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.DropOffItemRequestDto;
 import com.sabi.logistics.core.dto.request.DropOffItemStatusDto;
 import com.sabi.logistics.core.dto.request.TripItemRequestDto;
+import com.sabi.logistics.core.dto.response.DropOffItemDetailDto;
 import com.sabi.logistics.core.dto.response.DropOffItemResponseDto;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.Validations;
@@ -60,6 +62,12 @@ public class DropOffItemService {
 
     @Autowired
     private AuditTrailService auditTrailService;
+
+    @Autowired
+    private DriverRepository driverRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
 
     public DropOffItemService(DropOffItemRepository dropOffItemRepository, ModelMapper mapper) {
@@ -293,6 +301,46 @@ public class DropOffItemService {
         dropOffItemResponseDto.setOrderItemId(dropOffItem.getOrderItemId());
 
         return dropOffItemResponseDto;
+    }
+
+    public DropOffItemDetailDto findDropOffItemDetails(Long orderItemId){
+        DropOffItem dropOffItem  = dropOffItemRepository.findFirstByOrderItemId(orderItemId);
+        if(dropOffItem == null){
+            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
+        }
+        DropOffItemDetailDto dropOffItemDetailDto = mapper.map(dropOffItem, DropOffItemDetailDto.class);
+        OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
+
+        Order order = orderRepository.getOne(orderItem.getOrderId());
+
+        DropOff dropOff = dropOffRepository.getOne(dropOffItem.getDropOffId());
+
+        TripRequest tripRequest = tripRequestRepository.getOne(dropOff.getTripRequestId());
+
+        dropOffItemDetailDto.setOrderItemName(orderItem.getProductName());
+        dropOffItemDetailDto.setQty(orderItem.getQty());
+        dropOffItemDetailDto.setCustomerName(order.getCustomerName());
+        dropOffItemDetailDto.setCustomerPhone(order.getCustomerPhone());
+        dropOffItemDetailDto.setOrderId(orderItem.getOrderId());
+        dropOffItemDetailDto.setDropOffId(dropOffItem.getDropOffId());
+        dropOffItemDetailDto.setOrderItemId(dropOffItem.getOrderItemId());
+        if (tripRequest.getDriverId() != null) {
+            Driver driver = driverRepository.findDriverById(tripRequest.getDriverId());
+
+            User user = userRepository.getOne(driver.getUserId());
+            dropOffItemDetailDto.setDriverName(user.getLastName() + " " + user.getFirstName());
+            dropOffItemDetailDto.setDriverPhone(user.getPhone());
+        }
+
+        if (tripRequest.getDriverAssistantId() != null) {
+            Driver driver2 = driverRepository.findDriverById(tripRequest.getDriverAssistantId());
+
+            User user2 = userRepository.getOne(driver2.getUserId());
+            dropOffItemDetailDto.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
+            dropOffItemDetailDto.setDriverAssistantPhone(user2.getPhone());
+        }
+
+        return dropOffItemDetailDto;
     }
 
 

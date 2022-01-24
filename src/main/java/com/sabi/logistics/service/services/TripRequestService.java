@@ -358,19 +358,22 @@ public class TripRequestService {
         log.debug("tripRequest record updated - {}"+ new Gson().toJson(tripRequest));
         TripResponseDto tripResponseDto = mapper.map(tripRequest, TripResponseDto.class);
 
-        if(request.getPartnerId() != null || request.getPartnerAssetId() != null ) {
+        if(request.getPartnerId() != null) {
             Partner partner = partnerRepository.findPartnerById(request.getPartnerId());
             if (partner == null) {
-                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Partner Id");
+                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Partner Id");
             }
             tripResponseDto.setPartnerName(partner.getName());
+        }
+
+        if (request.getPartnerAssetId() != null) {
             PartnerAsset partnerAsset = partnerAssetRepository.findPartnerAssetById(request.getPartnerAssetId());
             if (partnerAsset == null) {
                 throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAsset Id");
             };
             tripResponseDto.setPartnerAssetName(partnerAsset.getName());
-
         }
+
         return tripResponseDto;
     }
 
