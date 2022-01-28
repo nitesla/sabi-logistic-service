@@ -75,6 +75,9 @@ public class Validations {
     @Autowired
     private DashboardSummaryRepository dashboardSummaryRepository;
 
+    @Autowired
+    private  RouteLocationRepository routeLocationRepository;
+
 
 
 
@@ -931,12 +934,26 @@ public class Validations {
                 " Enter a valid state id!"));
     }
 
+    public void validaterouteLocationTollPrice(RouteLocationTollPriceRequest request) {
+        stateRepository.findById(request.getStateId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                " Enter a valid state id!"));
+    }
+
 
 //    public void validatedashBoard(DashboardSummary dashboardSummary){
 //        DashboardSummary dashboard = dashboardSummaryRepository.findByPartnerIdAndReferenceNo(dashboardSummary.getPartnerId(),dashboardSummary.getReferenceNo());
 //        if(dashboard ==null)
 //            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " DashBoard record already exist");
 //    }
+
+    public void validateTollPrices(TollPricesDto request) {
+        assetTypePropertiesRepository.findById(request.getAssestTypeId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                " Enter a valid assestType id!"));
+        if (request.getRouteLocationId() != null) {
+            routeLocationRepository.findById(request.getRouteLocationId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                    " Enter a valid route location id!"));
+        }
+    }
 
 
 }

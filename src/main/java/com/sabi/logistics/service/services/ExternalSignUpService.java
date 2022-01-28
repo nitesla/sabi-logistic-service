@@ -9,6 +9,7 @@ import com.sabi.framework.models.PreviousPasswords;
 import com.sabi.framework.models.User;
 import com.sabi.framework.repositories.PreviousPasswordRepository;
 import com.sabi.framework.repositories.UserRepository;
+import com.sabi.framework.repositories.UserRoleRepository;
 import com.sabi.framework.service.NotificationService;
 import com.sabi.framework.utils.Constants;
 import com.sabi.framework.utils.CustomResponseCode;
@@ -52,13 +53,14 @@ public class ExternalSignUpService {
     private NotificationService notificationService;
     private final PartnerUserRepository partnerUserRepository;
     private LGARepository lgaRepository;
+    private final UserRoleRepository userRoleRepository;
 
 
     public ExternalSignUpService(PartnerRepository repository,PartnerAssetTypeRepository partnerAssetTypeRepository,
                           UserRepository userRepository,PreviousPasswordRepository previousPasswordRepository,
                           ModelMapper mapper, ObjectMapper objectMapper,
                           Validations validations,NotificationService notificationService,
-                          PartnerUserRepository partnerUserRepository,LGARepository lgaRepository) {
+                          PartnerUserRepository partnerUserRepository,LGARepository lgaRepository,UserRoleRepository userRoleRepository) {
         this.repository = repository;
         this.partnerAssetTypeRepository = partnerAssetTypeRepository;
         this.userRepository = userRepository;
@@ -69,6 +71,7 @@ public class ExternalSignUpService {
         this.notificationService = notificationService;
         this.partnerUserRepository = partnerUserRepository;
         this.lgaRepository = lgaRepository;
+        this.userRoleRepository = userRoleRepository;
     }
 
 
@@ -84,12 +87,14 @@ public class ExternalSignUpService {
         user.setPassword(passwordEncoder.encode(password));
         user.setUserCategory(Constants.OTHER_USER);
         user.setUsername(request.getEmail());
-        user.setLoginAttempts(0l);
+        user.setLoginAttempts(0);
         user.setCreatedBy(0l);
         user.setIsActive(true);
         user.setPasswordChangedOn(LocalDateTime.now());
         user = userRepository.save(user);
         log.debug("Create new agent user - {}"+ new Gson().toJson(user));
+
+
 
         PreviousPasswords previousPasswords = PreviousPasswords.builder()
                 .userId(user.getId())

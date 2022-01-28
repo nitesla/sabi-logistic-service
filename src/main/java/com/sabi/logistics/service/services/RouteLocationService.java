@@ -8,13 +8,19 @@ import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.RouteLocationRequest;
+import com.sabi.logistics.core.dto.request.RouteLocationTollPriceRequest;
 import com.sabi.logistics.core.dto.response.RouteLocationResponse;
+import com.sabi.logistics.core.dto.response.RouteLocationTollPriceResponse;
+import com.sabi.logistics.core.dto.response.TollPricesResponseDto;
 import com.sabi.logistics.core.models.RouteLocation;
+import com.sabi.logistics.core.models.State;
+import com.sabi.logistics.core.models.TollPrices;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.RouteLocationRepository;
+import com.sabi.logistics.service.repositories.StateRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +29,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -32,6 +39,10 @@ public class RouteLocationService {
     private final ModelMapper mapper;
     @Autowired
     private Validations validations;
+    @Autowired
+    private StateRepository stateRepository;
+    @Autowired
+    private TollPriceService tollPriceService;
 
 
     public RouteLocationService(RouteLocationRepository routeLocationRepository, ModelMapper mapper) {
@@ -49,11 +60,42 @@ public class RouteLocationService {
         if (routeLocationExists != null) {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "routeLocation already exist");
         }
+        State SavedState = stateRepository.findStateById(request.getStateId());
         routeLocation.setCreatedBy(userCurrent.getId());
         routeLocation.setIsActive(true);
+        routeLocation.setStateName(SavedState.getName());
         routeLocation = routeLocationRepository.save(routeLocation);
         log.debug("Create new tripRequestResponse - {}" + new Gson().toJson(routeLocation));
         return mapper.map(routeLocation, RouteLocationResponse.class);
+    }
+
+    public RouteLocationTollPriceResponse createrouteLocationTollPrice(RouteLocationTollPriceRequest request) {
+        List<TollPricesResponseDto> responseDtos = new ArrayList<>();
+        validations.validaterouteLocationTollPrice(request);
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        RouteLocation routeLocation = mapper.map(request,RouteLocation.class);
+        TollPrices shipmentItem = mapper.map(request, TollPrices.class);
+
+        RouteLocation routeLocationExists = routeLocationRepository.findByName(request.getName());
+        if (routeLocationExists != null) {
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "routeLocation already exist");
+        }
+        State SavedState = stateRepository.findStateById(request.getStateId());
+        routeLocation.setCreatedBy(userCurrent.getId());
+        routeLocation.setIsActive(true);
+        routeLocation.setStateName(SavedState.getName());
+        log.debug("Create new shipment - {}"+ new Gson().toJson(routeLocation));
+        RouteLocationTollPriceResponse orderResponseDto = mapper.map(routeLocation, RouteLocationTollPriceResponse.class);
+        log.info("request sent ::::::::::::::::::::::::::::::::: " + request.getTollPricesDtos());
+        request.getTollPricesDtos().forEach(orderItemRequest ->{
+            orderItemRequest.setId(orderResponseDto.getId());
+        });
+        responseDtos = tollPriceService.createTollPrices(request.getTollPricesDtos());
+        List<TollPricesResponseDto> finalResponseDtos = responseDtos;
+        responseDtos.forEach(orderItemResponseDto -> {
+            orderResponseDto.setTollPricesResponseDtos(finalResponseDtos);
+        });
+        return orderResponseDto;
     }
 
     /**
