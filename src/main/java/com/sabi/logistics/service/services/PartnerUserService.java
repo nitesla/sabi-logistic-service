@@ -6,6 +6,7 @@ import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.PreviousPasswords;
 import com.sabi.framework.models.Role;
 import com.sabi.framework.models.User;
+import com.sabi.framework.models.UserRole;
 import com.sabi.framework.notification.requestDto.NotificationRequestDto;
 import com.sabi.framework.notification.requestDto.RecipientRequest;
 import com.sabi.framework.notification.requestDto.SmsRequest;
@@ -13,6 +14,7 @@ import com.sabi.framework.notification.requestDto.WhatsAppRequest;
 import com.sabi.framework.repositories.PreviousPasswordRepository;
 import com.sabi.framework.repositories.RoleRepository;
 import com.sabi.framework.repositories.UserRepository;
+import com.sabi.framework.repositories.UserRoleRepository;
 import com.sabi.framework.service.AuditTrailService;
 import com.sabi.framework.service.NotificationService;
 import com.sabi.framework.service.TokenService;
@@ -62,13 +64,14 @@ public class PartnerUserService {
     private final Validations validations;
     private final AuditTrailService auditTrailService;
     private final WhatsAppService whatsAppService;
+    private final UserRoleRepository userRoleRepository;
 
     public PartnerUserService(PartnerRepository partnerRepository,UserRepository userRepository,PreviousPasswordRepository previousPasswordRepository,
                               PartnerUserRepository partnerUserRepository,DriverRepository driverRepository,
                               RoleRepository roleRepository,
                               NotificationService notificationService,
                               ModelMapper mapper, Validations validations,AuditTrailService auditTrailService,
-                              WhatsAppService whatsAppService) {
+                              WhatsAppService whatsAppService,UserRoleRepository userRoleRepository) {
         this.partnerRepository = partnerRepository;
         this.userRepository = userRepository;
         this.previousPasswordRepository = previousPasswordRepository;
@@ -80,6 +83,8 @@ public class PartnerUserService {
         this.validations = validations;
         this.auditTrailService = auditTrailService;
         this.whatsAppService = whatsAppService;
+        this.userRoleRepository = userRoleRepository;
+
     }
 
     public PartnerUserResponseDto createPartnerUser(PartnerUserRequestDto request,HttpServletRequest request1) {
@@ -101,9 +106,16 @@ public class PartnerUserService {
         user.setUserCategory(Constants.OTHER_USER);
         user.setClientId(partner.getPartnerId());
         user.setIsActive(false);
-        user.setLoginAttempts(0l);
+        user.setLoginAttempts(0);
         user = userRepository.save(user);
         log.debug("Create new partner user - {}"+ new Gson().toJson(user));
+
+        UserRole userRole = UserRole.builder()
+                .userId(user.getId())
+                .roleId(user.getRoleId())
+                .createdDate(LocalDateTime.now())
+                .build();
+        userRoleRepository.save(userRole);
 
         PreviousPasswords previousPasswords = PreviousPasswords.builder()
                 .userId(user.getId())
@@ -253,7 +265,7 @@ public class PartnerUserService {
          users.setMiddleName(user.getMiddleName());
          users.setUsername(user.getUsername());
          users.setRoleId(user.getRoleId());
-         users.setLoginAttempts(user.getLoginAttempts());
+         users.setLoginAttempts(Long.valueOf(user.getLoginAttempts()));
          users.setFailedLoginDate(user.getFailedLoginDate());
          users.setLastLogin(user.getLastLogin());
          users.setLockedDate(user.getLockedDate());
@@ -305,7 +317,7 @@ public class PartnerUserService {
             users.setMiddleName(user.getMiddleName());
             users.setUsername(user.getUsername());
             users.setRoleId(user.getRoleId());
-            users.setLoginAttempts(user.getLoginAttempts());
+            users.setLoginAttempts(Long.valueOf(user.getLoginAttempts()));
             users.setFailedLoginDate(user.getFailedLoginDate());
             users.setLastLogin(user.getLastLogin());
             users.setLockedDate(user.getLockedDate());

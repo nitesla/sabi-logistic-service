@@ -9,8 +9,10 @@ import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.PreviousPasswords;
 import com.sabi.framework.models.User;
+import com.sabi.framework.models.UserRole;
 import com.sabi.framework.repositories.PreviousPasswordRepository;
 import com.sabi.framework.repositories.UserRepository;
+import com.sabi.framework.repositories.UserRoleRepository;
 import com.sabi.framework.service.AuditTrailService;
 import com.sabi.framework.service.NotificationService;
 import com.sabi.framework.service.TokenService;
@@ -63,6 +65,7 @@ public class PartnerService {
     private LGARepository lgaRepository;
     private final AuditTrailService auditTrailService;
     private final StateRepository stateRepository;
+    private final UserRoleRepository userRoleRepository;
 
 
     public PartnerService(PartnerRepository repository,PartnerAssetTypeRepository partnerAssetTypeRepository,
@@ -71,7 +74,7 @@ public class PartnerService {
                           ModelMapper mapper, ObjectMapper objectMapper,
                           Validations validations,NotificationService notificationService,
                           PartnerUserRepository partnerUserRepository,LGARepository lgaRepository,AuditTrailService auditTrailService,
-                          StateRepository stateRepository) {
+                          StateRepository stateRepository,UserRoleRepository userRoleRepository) {
         this.repository = repository;
         this.partnerAssetTypeRepository = partnerAssetTypeRepository;
         this.partnerCategoriesRepository = partnerCategoriesRepository;
@@ -86,6 +89,7 @@ public class PartnerService {
         this.lgaRepository = lgaRepository;
         this.auditTrailService = auditTrailService;
         this.stateRepository = stateRepository;
+        this.userRoleRepository = userRoleRepository;
     }
 
 
@@ -121,11 +125,18 @@ public class PartnerService {
         user.setPassword(passwordEncoder.encode(password));
         user.setUserCategory(Constants.OTHER_USER);
         user.setUsername(request.getEmail());
-        user.setLoginAttempts(0l);
+        user.setLoginAttempts(0);
         user.setCreatedBy(0l);
         user.setIsActive(false);
         user = userRepository.save(user);
         log.debug("Create new agent user - {}"+ new Gson().toJson(user));
+
+        UserRole userRole = UserRole.builder()
+                .userId(user.getId())
+                .roleId(user.getRoleId())
+                .createdDate(LocalDateTime.now())
+                .build();
+        userRoleRepository.save(userRole);
 
         PreviousPasswords previousPasswords = PreviousPasswords.builder()
                 .userId(user.getId())
