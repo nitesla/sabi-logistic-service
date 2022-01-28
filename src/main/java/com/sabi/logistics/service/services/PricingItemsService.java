@@ -9,11 +9,15 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.PricingItemsRequest;
 import com.sabi.logistics.core.dto.response.PricingItemsResponse;
+import com.sabi.logistics.core.models.AssetTypeProperties;
+import com.sabi.logistics.core.models.PartnerAssetType;
 import com.sabi.logistics.core.models.PricingItems;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
+import com.sabi.logistics.service.repositories.AssetTypePropertiesRepository;
+import com.sabi.logistics.service.repositories.PartnerAssetTypeRepository;
 import com.sabi.logistics.service.repositories.PricingItemsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -23,6 +27,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -34,27 +39,73 @@ public class PricingItemsService {
     @Autowired
     private Validations validations;
 
+    @Autowired
+    private PartnerAssetTypeRepository partnerAssetTypeRepository;
+
+    @Autowired
+    private AssetTypePropertiesRepository assetTypePropertiesRepository;
+
 
     public PricingItemsService(PricingItemsRepository pricingItemsRepository, ModelMapper mapper) {
         this.pricingItemsRepository = pricingItemsRepository;
         this.mapper = mapper;
     }
 
-    public PricingItemsResponse createpricingItems(PricingItemsRequest request) {
-        validations.validatePricingItems(request);
+    public PricingItemsResponse createPricingItem(PricingItemsRequest request) {
+        validations.validatePricingItem(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PricingItems pricingItems = mapper.map(request, PricingItems.class);
 
-        PricingItems pricingItemsExists = pricingItemsRepository.findByAssetTypeId(request.getAssetTypeId());
+        PricingItems pricingItemsExists = pricingItemsRepository.findByPartnerAssetTypeId(request.getPartnerAssetTypeId());
 
         if (pricingItemsExists != null) {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "pricingItems already exist");
         }
+        PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(request.getPartnerAssetTypeId());
+        AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
+
         pricingItems.setCreatedBy(userCurrent.getId());
         pricingItems.setIsActive(true);
         pricingItems = pricingItemsRepository.save(pricingItems);
         log.debug("Create new tripRequestResponse - {}" + new Gson().toJson(pricingItems));
-        return mapper.map(pricingItems, PricingItemsResponse.class);
+        PricingItemsResponse pricingItemsResponse = mapper.map(pricingItems, PricingItemsResponse.class);
+
+        pricingItemsResponse.setAssetTypeId(assetTypeProperties.getId());
+        pricingItemsResponse.setAssetTypeName(assetTypeProperties.getName());
+
+        return pricingItemsResponse;
+    }
+
+    public List<PricingItemsResponse> createPricingItems(List<PricingItemsRequest> requests, Long pricingConfigurationId ) {
+        List<PricingItemsResponse> responseDtos = new ArrayList<>();
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        requests.forEach(request-> {
+
+            request.setPricingConfigurationId(pricingConfigurationId);
+            validations.validatePricingItem(request);
+            PricingItems pricingItems = mapper.map(request, PricingItems.class);
+
+            PricingItems pricingItemsExists = pricingItemsRepository.findByPartnerAssetTypeId(request.getPartnerAssetTypeId());
+
+            if (pricingItemsExists != null) {
+                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "pricingItems already exist");
+            }
+            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(request.getPartnerAssetTypeId());
+            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
+
+            pricingItems.setCreatedBy(userCurrent.getId());
+            pricingItems.setIsActive(true);
+            pricingItems = pricingItemsRepository.save(pricingItems);
+            log.debug("Create new tripRequestResponse - {}" + new Gson().toJson(pricingItems));
+            PricingItemsResponse pricingItemsResponse = mapper.map(pricingItems, PricingItemsResponse.class);
+
+            pricingItemsResponse.setAssetTypeId(assetTypeProperties.getId());
+            pricingItemsResponse.setAssetTypeName(assetTypeProperties.getName());
+
+            responseDtos.add(pricingItemsResponse);
+
+        });
+        return responseDtos;
     }
 
     /**
@@ -64,17 +115,26 @@ public class PricingItemsService {
      * <remarks>this method is responsible for updating already existing pricingItemss</remarks>
      */
 
-    public PricingItemsResponse updatepricingItems(PricingItemsRequest request) {
-        validations.validatePricingItems(request);
+    public PricingItemsResponse updatePricingItem(PricingItemsRequest request) {
+        validations.validatePricingItem(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PricingItems pricingItems = pricingItemsRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested pricingItems Id does not exist!"));
         mapper.map(request, pricingItems);
+
+        PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(request.getPartnerAssetTypeId());
+        AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
+
         pricingItems.setUpdatedBy(userCurrent.getId());
         pricingItemsRepository.save(pricingItems);
         log.debug("pricingItems record updated - {}" + new Gson().toJson(pricingItems));
-        return mapper.map(pricingItems, PricingItemsResponse.class);
+        PricingItemsResponse pricingItemsResponse = mapper.map(pricingItems, PricingItemsResponse.class);
+
+        pricingItemsResponse.setAssetTypeId(assetTypeProperties.getId());
+        pricingItemsResponse.setAssetTypeName(assetTypeProperties.getName());
+
+        return pricingItemsResponse;
     }
 
 
@@ -84,11 +144,32 @@ public class PricingItemsService {
      * </summary>
      * <remarks>this method is responsible for getting a single record</remarks>
      */
-    public PricingItemsResponse findpricingItems(Long id) {
+    public PricingItemsResponse findPricingItem(Long id) {
         PricingItems pricingItems = pricingItemsRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested pricingItems Id does not exist!"));
-        return mapper.map(pricingItems, PricingItemsResponse.class);
+        PricingItemsResponse pricingItemsResponse = mapper.map(pricingItems, PricingItemsResponse.class);
+        PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(pricingItems.getPartnerAssetTypeId());
+        AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
+        pricingItemsResponse.setAssetTypeId(assetTypeProperties.getId());
+        pricingItemsResponse.setAssetTypeName(assetTypeProperties.getName());
+
+        return pricingItemsResponse;
+    }
+
+    public PricingItemsResponse deletePricingItem(Long id){
+        PricingItems pricingItems = pricingItemsRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Requested pricingItems Id does not exist!"));
+        pricingItemsRepository.deleteById(pricingItems.getId());
+        log.debug("pricingItems Deleted - {}"+ new Gson().toJson(pricingItems));
+        PricingItemsResponse pricingItemsResponse = mapper.map(pricingItems, PricingItemsResponse.class);
+        PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(pricingItems.getPartnerAssetTypeId());
+        AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
+        pricingItemsResponse.setAssetTypeId(assetTypeProperties.getId());
+        pricingItemsResponse.setAssetTypeName(assetTypeProperties.getName());
+
+        return pricingItemsResponse;
     }
 
 
@@ -123,7 +204,7 @@ public class PricingItemsService {
      * </summary>
      * <remarks>this method is responsible for enabling and dis enabling a pricingItems</remarks>
      */
-    public void enableDisEnablepricingItems(EnableDisEnableDto request) {
+    public void enableDisablePricingItem(EnableDisEnableDto request) {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PricingItems pricingItems = pricingItemsRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,

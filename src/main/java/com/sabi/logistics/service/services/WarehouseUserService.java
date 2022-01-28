@@ -81,7 +81,7 @@ public class WarehouseUserService {
         return mapper.map(warehouseUser, WareHouseUserResponseDto.class);
     }
 
-public WareHouseUserResponseDto deleteWareHouseUser(Long id){
+    public WareHouseUserResponseDto deleteWareHouseUser(Long id){
         WarehouseUser wareHouseUser = wareHouseUserRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested WareHouseUser Id does not exist!"));

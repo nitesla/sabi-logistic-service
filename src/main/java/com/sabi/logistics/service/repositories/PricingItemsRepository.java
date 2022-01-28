@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public interface PricingItemsRepository extends JpaRepository<PricingItems, Long>, JpaSpecificationExecutor<PricingItems> {
-    PricingItems findByAssetTypeId(Long assetTypeId);
+    PricingItems findByPartnerAssetTypeId(Long partnerAssetTypeId);
 
     List<PricingItems> findByIsActive(Boolean isActive);
 }

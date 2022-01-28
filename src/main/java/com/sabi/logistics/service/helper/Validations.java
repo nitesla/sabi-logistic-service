@@ -568,6 +568,8 @@ public class Validations {
 
         if (request.getStatus() == null || request.getStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
+        if (!("pending".equalsIgnoreCase(request.getStatus())  || "DriverArrived".equalsIgnoreCase(request.getStatus()) || "cancelled".equalsIgnoreCase(request.getStatus()) || "InTransit".equalsIgnoreCase(request.getStatus()) || "returned".equalsIgnoreCase(request.getStatus()) || "completed".equalsIgnoreCase(request.getStatus())))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
 
 
         orderItemRepository.findById(request.getOrderItemId()).orElseThrow(() ->
@@ -911,10 +913,15 @@ public class Validations {
                 " Enter a valid partner id!"));
     }
 
-    public void validatePricingItems(PricingItemsRequest request) {
-        partnerAssetTypeRepository.findById(request.getAssetTypeId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+    public void validatePricingConfiguration(PricingConfigMasterRequest request) {
+        partnerRepository.findById(request.getPartnerId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                " Enter a valid partner id!"));
+    }
+
+    public void validatePricingItem(PricingItemsRequest request) {
+        partnerAssetTypeRepository.findById(request.getPartnerAssetTypeId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                 " Enter a valid asset type id!"));
-        pricingConfigurationRepository.findById(request.getPricingConfiguartionId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+        pricingConfigurationRepository.findById(request.getPricingConfigurationId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                 " Enter a valid pricing configuration id!"));
 
     }

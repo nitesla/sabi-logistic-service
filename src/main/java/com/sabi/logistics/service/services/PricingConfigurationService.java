@@ -6,14 +6,18 @@ import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
+import com.sabi.logistics.core.dto.request.PricingConfigMasterRequest;
 import com.sabi.logistics.core.dto.request.PricingConfigurationRequest;
 import com.sabi.logistics.core.dto.response.PricingConfigurationResponse;
+import com.sabi.logistics.core.dto.response.PricingItemsResponse;
 import com.sabi.logistics.core.models.PricingConfiguration;
+import com.sabi.logistics.core.models.State;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.PricingConfigurationRepository;
+import com.sabi.logistics.service.repositories.StateRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -31,6 +36,12 @@ public class PricingConfigurationService {
     private final ModelMapper mapper;
     @Autowired
     private Validations validations;
+
+    @Autowired
+    private PricingItemsService pricingItemsService;
+
+    @Autowired
+    private StateRepository stateRepository;
 
 
     public PricingConfigurationService(PricingConfigurationRepository PricingConfigurationRepository, ModelMapper mapper) {
@@ -54,13 +65,42 @@ public class PricingConfigurationService {
         return  mapper.map(pricingConfiguration, PricingConfigurationResponse.class);
     }
 
+    public PricingConfigurationResponse createMasterPricingConfiguration(PricingConfigMasterRequest request) {
+        validations.validatePricingConfiguration(request);
+        List<PricingItemsResponse> pricingItemsResponses = new ArrayList<>();
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        PricingConfiguration pricingConfiguration = mapper.map(request,PricingConfiguration.class);
+
+        State state = stateRepository.findStateById(request.getStateId());
+        State departureState = stateRepository.findStateById(request.getDepartureStateId());
+
+        pricingConfiguration.setCreatedBy(userCurrent.getId());
+        pricingConfiguration.setIsActive(true);
+        pricingConfiguration = pricingConfigurationRepository.save(pricingConfiguration);
+        log.debug("Create new tripRequestResponse - {}"+ new Gson().toJson(pricingConfiguration));
+        PricingConfigurationResponse pricingConfigurationResponse =  mapper.map(pricingConfiguration, PricingConfigurationResponse.class);
+
+        pricingConfigurationResponse.setStateName(state.getName());
+        pricingConfigurationResponse.setDepartureStateName(departureState.getName());
+
+        if(request.getPricingItems() != null) {
+            pricingItemsResponses = pricingItemsService.createPricingItems(request.getPricingItems(), pricingConfigurationResponse.getId());
+            List<PricingItemsResponse> finalPricingItemsResponse = pricingItemsResponses;
+            pricingItemsResponses.forEach(response -> {
+                pricingConfigurationResponse.setPricingItems(finalPricingItemsResponse);
+            });
+        }
+
+        return pricingConfigurationResponse;
+    }
+
     /** <summary>
      * pricingConfiguration update
      * </summary>
      * <remarks>this method is responsible for updating already existing pricingConfigurations</remarks>
      */
 
-    public PricingConfigurationResponse updatepricingConfiguration(PricingConfigurationRequest request) {
+    public PricingConfigurationResponse updatePricingConfiguration(PricingConfigurationRequest request) {
         validations.validatePricingConfiguration(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PricingConfiguration pricingConfiguration = pricingConfigurationRepository.findById(request.getId())
@@ -70,7 +110,14 @@ public class PricingConfigurationService {
         pricingConfiguration.setUpdatedBy(userCurrent.getId());
         pricingConfigurationRepository.save(pricingConfiguration);
         log.debug("pricingConfiguration record updated - {}"+ new Gson().toJson(pricingConfiguration));
-        return mapper.map(pricingConfiguration, PricingConfigurationResponse.class);
+        PricingConfigurationResponse pricingConfigurationResponse = mapper.map(pricingConfiguration, PricingConfigurationResponse.class);
+
+        State state = stateRepository.findStateById(request.getStateId());
+        State departureState = stateRepository.findStateById(request.getDepartureStateId());
+        pricingConfigurationResponse.setStateName(state.getName());
+        pricingConfigurationResponse.setDepartureStateName(departureState.getName());
+
+        return pricingConfigurationResponse;
     }
 
 
@@ -79,11 +126,18 @@ public class PricingConfigurationService {
      * </summary>
      * <remarks>this method is responsible for getting a single record</remarks>
      */
-    public PricingConfigurationResponse findpricingConfiguration(Long id){
+    public PricingConfigurationResponse findPricingConfiguration(Long id){
         PricingConfiguration pricingConfiguration = pricingConfigurationRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested pricingConfiguration Id does not exist!"));
-        return mapper.map(pricingConfiguration, PricingConfigurationResponse.class);
+        PricingConfigurationResponse pricingConfigurationResponse = mapper.map(pricingConfiguration, PricingConfigurationResponse.class);
+
+        State state = stateRepository.findStateById(pricingConfiguration.getStateId());
+        State departureState = stateRepository.findStateById(pricingConfiguration.getDepartureStateId());
+        pricingConfigurationResponse.setStateName(state.getName());
+        pricingConfigurationResponse.setDepartureStateName(departureState.getName());
+
+        return pricingConfigurationResponse;
     }
 
 
@@ -135,7 +189,7 @@ public class PricingConfigurationService {
      * </summary>
      * <remarks>this method is responsible for enabling and dis enabling a pricingConfiguration</remarks>
      */
-    public void enableDisEnablePricingConfiguration (EnableDisEnableDto request){
+    public void enableDisablePricingConfiguration (EnableDisEnableDto request){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PricingConfiguration pricingConfiguration = pricingConfigurationRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,

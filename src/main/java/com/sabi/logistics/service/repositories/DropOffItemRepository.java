@@ -40,7 +40,7 @@ public interface DropOffItemRepository extends JpaRepository<DropOffItem, Long>,
 
     DropOffItem findDropOffItemByDropOffId(Long dropOffId);
 
-    DropOffItem findFirstByOrderItemId(Long orderItemId);
+    DropOffItem findByOrderItemIdAndStatus(Long orderItemId, String status);
 
 
     @Query("SELECT d from DropOffItem d inner join DropOff od on d.dropOffId = od.id  where ((:tripRequestId IS NULL) OR (:tripRequestId IS NOT NULL AND od.tripRequestId = :tripRequestId)) and ((:thirdPartyProductId IS NULL) OR(:thirdPartyProductId IS NOT NULL AND d.thirdPartyProductId = :thirdPartyProductId))")

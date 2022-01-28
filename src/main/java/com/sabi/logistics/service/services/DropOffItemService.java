@@ -13,9 +13,7 @@ import com.sabi.framework.utils.AuditTrailFlag;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.DropOffItemRequestDto;
-import com.sabi.logistics.core.dto.request.DropOffItemStatusDto;
 import com.sabi.logistics.core.dto.request.TripItemRequestDto;
-import com.sabi.logistics.core.dto.response.DropOffItemDetailDto;
 import com.sabi.logistics.core.dto.response.DropOffItemResponseDto;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.Validations;
@@ -83,6 +81,12 @@ public class DropOffItemService {
         if(dropOffItemExists !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " DropOff Item already exist");
         }
+        if (!(request.getStatus().equalsIgnoreCase("completed") || request.getStatus().equalsIgnoreCase("cancelled"))) {
+            DropOffItem dropOffItemm = dropOffItemRepository.findByOrderItemIdAndStatus(request.getOrderItemId(), request.getStatus());
+            if (dropOffItemm != null) {
+                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " DropOff Item already exist");
+            }
+        }
         OrderItem orderItem = orderItemRepository.getOne(request.getOrderItemId());
         Order order = orderRepository.getOne(orderItem.getOrderId());
         DropOff dropOff = dropOffRepository.getOne(request.getDropOffId());
@@ -140,6 +144,18 @@ public class DropOffItemService {
         requests.forEach(request-> {
             request.setDropOffId(dropOffId);
             validations.validateDropOffItem(request);
+            DropOffItem dropOffItemExists = dropOffItemRepository.findByOrderItemIdAndDropOffId(request.getOrderItemId(), request.getDropOffId());
+            if(dropOffItemExists !=null){
+                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " DropOff Item already exist");
+            }
+
+            if (!(request.getStatus().equalsIgnoreCase("completed") || request.getStatus().equalsIgnoreCase("cancelled"))) {
+                DropOffItem dropOffItemm = dropOffItemRepository.findByOrderItemIdAndStatus(request.getOrderItemId(), request.getStatus());
+                if (dropOffItemm != null) {
+                    throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " DropOff Item already exist");
+                }
+            }
+
             DropOffItem dropOffItem = mapper.map(request, DropOffItem.class);
             OrderItem orderItem = orderItemRepository.getOne(request.getOrderItemId());
             Order order = orderRepository.getOne(orderItem.getOrderId());
@@ -259,7 +275,7 @@ public class DropOffItemService {
         return dropOffItemResponseDto;
     }
 
-    public List<DropOffItemResponseDto> updateDropOffItemStatus(List<DropOffItemStatusDto> requests) {
+    public List<DropOffItemResponseDto> updateDropOffItemStatus(List<DropOffItemRequestDto> requests) {
 
         List<DropOffItemResponseDto> responseDtos = new ArrayList<>();
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
@@ -303,12 +319,12 @@ public class DropOffItemService {
         return dropOffItemResponseDto;
     }
 
-    public DropOffItemDetailDto findDropOffItemDetails(Long orderItemId){
-        DropOffItem dropOffItem  = dropOffItemRepository.findFirstByOrderItemId(orderItemId);
+    public DropOffItemResponseDto findDropOffItemDetails(Long orderItemId, String status){
+        DropOffItem dropOffItem  = dropOffItemRepository.findByOrderItemIdAndStatus(orderItemId, status.toLowerCase());
         if(dropOffItem == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
-        DropOffItemDetailDto dropOffItemDetailDto = mapper.map(dropOffItem, DropOffItemDetailDto.class);
+        DropOffItemResponseDto dropOffItemDetailDto = mapper.map(dropOffItem, DropOffItemResponseDto.class);
         OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
 
         Order order = orderRepository.getOne(orderItem.getOrderId());
