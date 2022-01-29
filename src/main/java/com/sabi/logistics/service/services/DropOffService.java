@@ -2,6 +2,7 @@ package com.sabi.logistics.service.services;
 
 import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
+import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
@@ -71,7 +72,7 @@ public class DropOffService {
         }
         Order order = orderRepository.getOne(request.getOrderId());
         DropOff dropOff = mapper.map(request,DropOff.class);
-        dropOff.setDeliveryCode(validations.generateReferenceNumber(5));
+        dropOff.setDeliveryCode(validations.generateReferenceNumber(6));
         dropOff.setCreatedBy(userCurrent.getId());
         dropOff.setIsActive(true);
         dropOff.setDeliveryAddress(order.getDeliveryAddress());
@@ -93,7 +94,7 @@ public class DropOffService {
 
             Order order = orderRepository.getOne(request.getOrderId());
             DropOff dropOff = mapper.map(request, DropOff.class);
-            dropOff.setDeliveryCode(validations.generateReferenceNumber(5));
+            dropOff.setDeliveryCode(validations.generateReferenceNumber(6));
             dropOff.setCreatedBy(userCurrent.getId());
             dropOff.setIsActive(true);
             dropOff.setDeliveryAddress(order.getDeliveryAddress());
@@ -139,6 +140,16 @@ public class DropOffService {
         DropOff dropOff = dropOffRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested DropOff Id does not exist!"));
+
+        if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
+        if (!("pending".equalsIgnoreCase(request.getDeliveryStatus())  || "PartiallyCompleted".equalsIgnoreCase(request.getDeliveryStatus())
+                || "cancelled".equalsIgnoreCase(request.getDeliveryStatus()) || "InTransit".equalsIgnoreCase(request.getDeliveryStatus())
+                || "failed".equalsIgnoreCase(request.getDeliveryStatus()) || "returned".equalsIgnoreCase(request.getDeliveryStatus())
+                || "completed".equalsIgnoreCase(request.getDeliveryStatus())))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct delivery Status for dropOff");
+
+
         log.info("request {}"+ request.getDeliveryCode());
         log.info("Computer {}" + dropOff.getDeliveryCode());
 
@@ -146,11 +157,11 @@ public class DropOffService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Delivery Code");
         }
 
-        if (request.getDeliveryStatus().equalsIgnoreCase("Completed") && dropOff.getPaymentStatus().equalsIgnoreCase("Pay on Delivery") && (request.getTotalAmount() != dropOff.getTotalAmount())) {
+        if (request.getDeliveryStatus().equalsIgnoreCase("completed") && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery") && (request.getTotalAmount() != dropOff.getTotalAmount())) {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Amount");
         }
 
-        if (request.getDeliveryStatus().equalsIgnoreCase("Partially Completed") && dropOff.getPaymentStatus().equalsIgnoreCase("Pay on Delivery") && request.getTotalAmount().equals(0)) {
+        if (request.getDeliveryStatus().equalsIgnoreCase("PartiallyCompleted") && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery") && request.getTotalAmount().equals(0)) {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Amount");
         }
 
@@ -166,7 +177,7 @@ public class DropOffService {
         DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
 
         if(request.getDropOffItem() != null) {
-            List<DropOffItemResponseDto> dropOffItems = dropOffItemService.updateDropOffItemStatus(request.getDropOffItem());
+            List<DropOffItemResponseDto> dropOffItems = dropOffItemService.updateDropOffItemStatus(request.getDropOffItem(), dropOffResponseDto.getId());
         }
 
 //        List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());

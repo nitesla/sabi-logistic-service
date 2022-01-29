@@ -571,8 +571,8 @@ public class Validations {
 
         if (request.getStatus() == null || request.getStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
-        if (!("pending".equalsIgnoreCase(request.getStatus())  || "DriverArrived".equalsIgnoreCase(request.getStatus()) || "cancelled".equalsIgnoreCase(request.getStatus()) || "InTransit".equalsIgnoreCase(request.getStatus()) || "returned".equalsIgnoreCase(request.getStatus()) || "completed".equalsIgnoreCase(request.getStatus())))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status");
+        if (!("pending".equalsIgnoreCase(request.getStatus())  || "DriverArrived".equalsIgnoreCase(request.getStatus()) || "cancelled".equalsIgnoreCase(request.getStatus()) || "InTransit".equalsIgnoreCase(request.getStatus()) || "failed".equalsIgnoreCase(request.getStatus()) || "returned".equalsIgnoreCase(request.getStatus()) || "completed".equalsIgnoreCase(request.getStatus())))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status for dropOffItem");
 
 
         orderItemRepository.findById(request.getOrderItemId()).orElseThrow(() ->

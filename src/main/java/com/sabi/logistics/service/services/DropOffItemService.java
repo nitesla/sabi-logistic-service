@@ -92,6 +92,7 @@ public class DropOffItemService {
         DropOff dropOff = dropOffRepository.getOne(request.getDropOffId());
         dropOffItem.setCreatedBy(userCurrent.getId());
         dropOffItem.setIsActive(true);
+        dropOffItem.setFinalDropOff(false);
         dropOffItem = dropOffItemRepository.save(dropOffItem);
         log.debug("Create new trip item - {}"+ new Gson().toJson(dropOffItem));
         DropOffItemResponseDto dropOffItemResponseDto = mapper.map(dropOffItem, DropOffItemResponseDto.class);
@@ -162,6 +163,7 @@ public class DropOffItemService {
             DropOff dropOff = dropOffRepository.getOne(request.getDropOffId());
             dropOffItem.setCreatedBy(userCurrent.getId());
             dropOffItem.setIsActive(true);
+            dropOffItem.setFinalDropOff(false);
             dropOffItem = dropOffItemRepository.save(dropOffItem);
             log.debug("Create new trip item - {}" + new Gson().toJson(dropOffItem));
             DropOffItem dropOffItemResponseDto = mapper.map(dropOffItem, DropOffItem.class);
@@ -275,7 +277,7 @@ public class DropOffItemService {
         return dropOffItemResponseDto;
     }
 
-    public List<DropOffItemResponseDto> updateDropOffItemStatus(List<DropOffItemRequestDto> requests) {
+    public List<DropOffItemResponseDto> updateDropOffItemStatus(List<DropOffItemRequestDto> requests, Long dropOffId) {
 
         List<DropOffItemResponseDto> responseDtos = new ArrayList<>();
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
@@ -283,18 +285,47 @@ public class DropOffItemService {
             DropOffItem dropOffItem = dropOffItemRepository.findById(request.getId())
                     .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                             "Requested dropOffItem Id does not exist!"));
+            request.setDropOffId(dropOffId);
+            validations.validateDropOffItem(request);
             OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
 
             if(request.getQtyGoodsDelivered() != null && request.getQtyGoodsDelivered() > orderItem.getQty()){
                 throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Quantity of Items Delivered can't be greater than Total Quantity");
             }
+
+            DropOff dropOff = dropOffRepository.getOne(dropOffItem.getDropOffId());
+            TripRequest tripRequest = tripRequestRepository.getOne(dropOff.getTripRequestId());
+
+
             mapper.map(request, dropOffItem);
             dropOffItem.setUpdatedBy(userCurrent.getId());
             dropOffItemRepository.save(dropOffItem);
             log.debug("record updated - {}"+ new Gson().toJson(dropOffItem));
             DropOffItemResponseDto dropOffItemResponseDto = mapper.map(dropOffItem, DropOffItemResponseDto.class);
+
+            if(dropOffItem.getFinalDropOff() == true) {
+                tripRequest.setStatus("completed");
+            }
+
             responseDtos.add(dropOffItemResponseDto);
+
+            List<DropOffItem> dropItems = dropOffItemRepository.findByDropOffId(dropOffId);
+
+//                if(dropItems.stream().map(DropOffItem::getStatus).allMatch(response -> dropOffItem.getStatus().equals("completed"))){
+
+            if(dropItems.stream().allMatch(response -> response.getStatus().equalsIgnoreCase("completed"))){
+                tripRequest.setDeliveryStatus("completed");
+            } else if (dropItems.stream().allMatch(response -> response.getStatus().equalsIgnoreCase("failed"))){
+                tripRequest.setDeliveryStatus("failed");
+            } else {
+                tripRequest.setDeliveryStatus("PartiallyCompleted");
+            }
+
+            tripRequestRepository.save(tripRequest);
+
         });
+
+
 
         return responseDtos;
     }
