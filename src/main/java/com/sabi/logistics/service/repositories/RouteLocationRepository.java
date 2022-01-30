@@ -12,7 +12,7 @@ public interface RouteLocationRepository extends JpaRepository<RouteLocation, Lo
 
     RouteLocation findByName(String name);
 
-    RouteLocation findRouteLocationByStateId(Long StateId);
+    List<RouteLocation> findByStateId(Long StateId);
 
     List<RouteLocation> findByIsActive(Boolean isActive);
 }
