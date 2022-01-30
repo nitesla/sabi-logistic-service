@@ -132,6 +132,16 @@ public class RouteLocationService {
         return mapper.map(routeLocation, RouteLocationResponse.class);
     }
 
+    public RouteLocationResponse findrouteLocationByStateId(Long StateId) {
+        RouteLocation routeLocation = routeLocationRepository.findRouteLocationByStateId(StateId);
+        if (routeLocation == null){
+                throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Requested routeLocation Id does not exist!");
+        }
+
+        return mapper.map(routeLocation, RouteLocationResponse.class);
+    }
+
 
     /**
      * <summary>
