@@ -180,16 +180,6 @@ public class DropOffService {
             List<DropOffItemResponseDto> dropOffItems = dropOffItemService.updateDropOffItemStatus(request.getDropOffItem(), dropOffResponseDto.getId());
         }
 
-//        List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
-//        for (DropOffItem dropOffItem : dropOffItems) {
-//            if (dropOffItem != null) {
-//                dropOffItemRequestDto.setStatus(dropOff.getDeliveryStatus());
-//                dropOffItemRequestDto.setDropOffId(dropOff.getId());
-//                dropOffItemRequestDto.setId(dropOffItem.getId());
-//                dropOffItemService.updateDropOffItemStatus(dropOffItemRequestDto);
-//            }
-//        }
-
         order = orderRepository.findOrderById(dropOff.getOrderId());
         if (order != null) {
             orderRequestDto.setDeliveryStatus(dropOff.getDeliveryStatus());
