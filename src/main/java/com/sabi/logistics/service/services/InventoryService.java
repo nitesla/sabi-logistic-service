@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 
+@SuppressWarnings("All")
 @Slf4j
 @Service
 public class InventoryService {
@@ -80,7 +81,6 @@ public class InventoryService {
         if (request.getOrderItemId() != null) {
             request.getOrderItemId().forEach(id -> {
                 OrderItem orderItem = orderItemRepository.findOrderItemById(id);
-
                 orderItem.setInventoryId(inventoryResponseDto.getId());
                 orderItemRepository.save(orderItem);
 

@@ -26,9 +26,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+@SuppressWarnings("All")
 @Slf4j
 @Service
 public class PricingConfigurationService {
@@ -71,17 +73,31 @@ public class PricingConfigurationService {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PricingConfiguration pricingConfiguration = mapper.map(request,PricingConfiguration.class);
 
-        State state = stateRepository.findStateById(request.getStateId());
-        State departureState = stateRepository.findStateById(request.getDepartureStateId());
-
+        if (request.getDestinationLocations() != null) {
+            Set<String> set = new HashSet<>(Arrays.asList(request.getDestinationLocations().toArray(new String[0])));
+            String destinationLocations = String.join(", ", set);
+            pricingConfiguration.setDestinationLocations(destinationLocations);
+        }
         pricingConfiguration.setCreatedBy(userCurrent.getId());
         pricingConfiguration.setIsActive(true);
         pricingConfiguration = pricingConfigurationRepository.save(pricingConfiguration);
         log.debug("Create new tripRequestResponse - {}"+ new Gson().toJson(pricingConfiguration));
         PricingConfigurationResponse pricingConfigurationResponse =  mapper.map(pricingConfiguration, PricingConfigurationResponse.class);
 
-        pricingConfigurationResponse.setStateName(state.getName());
-        pricingConfigurationResponse.setDepartureStateName(departureState.getName());
+        if (pricingConfigurationResponse.getStateId() != null) {
+            State state = stateRepository.findStateById(pricingConfigurationResponse.getStateId());
+            pricingConfigurationResponse.setStateName(state.getName());
+        }
+        if (pricingConfigurationResponse.getDepartureStateId() != null) {
+            State departureState = stateRepository.findStateById(pricingConfigurationResponse.getDepartureStateId());
+            pricingConfigurationResponse.setDepartureStateName(departureState.getName());
+        }
+
+        if(pricingConfiguration.getDestinationLocations() != null) {
+            String str = pricingConfiguration.getDestinationLocations();
+            Set<String> set = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+            pricingConfigurationResponse.setDestinationLocations(set);
+        }
 
         if(request.getPricingItems() != null) {
             pricingItemsResponses = pricingItemsService.createPricingItems(request.getPricingItems(), pricingConfigurationResponse.getId());
@@ -107,15 +123,33 @@ public class PricingConfigurationService {
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested pricingConfiguration Id does not exist!"));
         mapper.map(request, pricingConfiguration);
+
+        if (request.getDestinationLocations() != null){
+            Set<String> set = new HashSet<>(Arrays.asList(request.getDestinationLocations().toArray(new String[0])));
+            String destinationLocations = String.join(", ", set);
+            pricingConfiguration.setDestinationLocations(destinationLocations);
+        }
+
+
         pricingConfiguration.setUpdatedBy(userCurrent.getId());
         pricingConfigurationRepository.save(pricingConfiguration);
         log.debug("pricingConfiguration record updated - {}"+ new Gson().toJson(pricingConfiguration));
         PricingConfigurationResponse pricingConfigurationResponse = mapper.map(pricingConfiguration, PricingConfigurationResponse.class);
 
-        State state = stateRepository.findStateById(request.getStateId());
-        State departureState = stateRepository.findStateById(request.getDepartureStateId());
-        pricingConfigurationResponse.setStateName(state.getName());
-        pricingConfigurationResponse.setDepartureStateName(departureState.getName());
+        if (pricingConfigurationResponse.getStateId() != null) {
+            State state = stateRepository.findStateById(pricingConfigurationResponse.getStateId());
+            pricingConfigurationResponse.setStateName(state.getName());
+        }
+        if (pricingConfigurationResponse.getDepartureStateId() != null) {
+            State departureState = stateRepository.findStateById(pricingConfigurationResponse.getDepartureStateId());
+            pricingConfigurationResponse.setDepartureStateName(departureState.getName());
+        }
+
+        if(pricingConfiguration.getDestinationLocations() != null) {
+            String str = pricingConfiguration.getDestinationLocations();
+            Set<String> set = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+            pricingConfigurationResponse.setDestinationLocations(set);
+        }
 
         return pricingConfigurationResponse;
     }
@@ -147,7 +181,7 @@ public class PricingConfigurationService {
      * <remarks>this method is responsible for getting all records in pagination</remarks>
      */
     public Page<PricingConfiguration> findAll(Long partnerId, String routeType, Long stateId,
-                                              String locationPreference, BigDecimal pricePerParameter,
+                                              String locationPreference, String startingLocation, BigDecimal pricePerParameter,
                                               BigDecimal pricePerWeight, BigDecimal pricePerDistance, BigDecimal pricePerTime,
                                               Boolean hasPreferentialPricing, PageRequest pageRequest){
         GenericSpecification<PricingConfiguration> genericSpecification = new GenericSpecification<>();
@@ -174,7 +208,10 @@ public class PricingConfigurationService {
             genericSpecification.add(new SearchCriteria("pricePerDistance", pricePerDistance, SearchOperation.EQUAL));
         }
         if (pricePerTime != null) {
-            genericSpecification.add(new SearchCriteria("pricePerDistance", pricePerTime, SearchOperation.EQUAL));
+            genericSpecification.add(new SearchCriteria("pricePerTime", pricePerTime, SearchOperation.EQUAL));
+        }
+        if (startingLocation != null) {
+            genericSpecification.add(new SearchCriteria("startingLocation", startingLocation, SearchOperation.MATCH));
         }
         if (hasPreferentialPricing != null) {
             genericSpecification.add(new SearchCriteria("hasPreferentialPricing", hasPreferentialPricing, SearchOperation.EQUAL));
@@ -201,9 +238,31 @@ public class PricingConfigurationService {
     }
 
 
-    public List<PricingConfiguration> getAll(Boolean isActive){
+    public List<PricingConfigurationResponse> getAll(Boolean isActive){
+        List<PricingConfigurationResponse> responseDtos = new ArrayList<>();
+
         List<PricingConfiguration> pricingConfigurations = pricingConfigurationRepository.findByIsActive(isActive);
-        return pricingConfigurations;
+
+        pricingConfigurations.forEach(config -> {
+            PricingConfigurationResponse pricingConfigurationResponse = mapper.map(config, PricingConfigurationResponse.class);
+
+            if (pricingConfigurationResponse.getStateId() != null) {
+                State state = stateRepository.findStateById(pricingConfigurationResponse.getStateId());
+                pricingConfigurationResponse.setStateName(state.getName());
+            }
+            if (pricingConfigurationResponse.getDepartureStateId() != null) {
+                State departureState = stateRepository.findStateById(pricingConfigurationResponse.getDepartureStateId());
+                pricingConfigurationResponse.setDepartureStateName(departureState.getName());
+            }
+
+            if(config.getDestinationLocations() != null) {
+                String str = config.getDestinationLocations();
+                Set<String> set = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+                pricingConfigurationResponse.setDestinationLocations(set);
+            }
+            responseDtos.add(pricingConfigurationResponse);
+        });
+        return responseDtos;
 
     }
 }

@@ -73,12 +73,6 @@ public class OrderItemService {
         requests.forEach(request->{
             validations.validateOrderItem(request);
             OrderItem orderItem = mapper.map(request,OrderItem.class);
-            if(orderItem.getInventoryId() != null) {
-                inventoryRepository.findById(request.getInventoryId()).orElseThrow(() ->
-                        new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                                " Inventory Id does not Exist!")
-                );
-            }
             orderItem.setCreatedBy(userCurrent.getId());
             orderItem.setIsActive(true);
             orderItem = orderItemRepository.save(orderItem);
