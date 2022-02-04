@@ -53,6 +53,7 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
             " AND ((:driverAssistantId IS NULL) OR (:driverAssistantId IS NOT NULL AND t.driverAssistantId = :driverAssistantId))" +
             " AND ((:wareHouseId IS NULL) OR (:wareHouseId IS NOT NULL AND t.wareHouseId = :wareHouseId))" +
             " AND ((:wareHouseAddress IS NULL) OR (:wareHouseAddress IS NOT NULL AND t.wareHouseAddress like %:wareHouseAddress%))" +
+            " AND ((:deliveryStatus IS NULL) OR (:deliveryStatus like '%all%' AND t.deliveryStatus NOT like '%pending%' AND t.deliveryStatus NOT like '%cancelled%') OR (:deliveryStatus IS NOT NULL AND t.deliveryStatus like %:deliveryStatus%))" +
             " AND ((:partnerAssetId IS NULL) OR (:partnerAssetId IS NOT NULL AND t.partnerAssetId = :partnerAssetId)) order by t.id desc")
     Page<TripRequest> findTripRequest(@Param("partnerId") Long partnerId,
                           @Param("status") String status,
@@ -63,6 +64,7 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
                           @Param("wareHouseAddress") String wareHouseAddress,
                           @Param("partnerAssetId") Long partnerAssetId,
                           @Param("unassigned") Boolean unassigned,
+                          @Param("deliveryStatus") String deliveryStatus,
                           Pageable pageable);
 
 
