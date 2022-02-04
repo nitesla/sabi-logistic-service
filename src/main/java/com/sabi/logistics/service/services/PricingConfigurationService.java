@@ -84,8 +84,8 @@ public class PricingConfigurationService {
         log.debug("Create new tripRequestResponse - {}"+ new Gson().toJson(pricingConfiguration));
         PricingConfigurationResponse pricingConfigurationResponse =  mapper.map(pricingConfiguration, PricingConfigurationResponse.class);
 
-        if (pricingConfigurationResponse.getStateId() != null) {
-            State state = stateRepository.findStateById(pricingConfigurationResponse.getStateId());
+        if (pricingConfigurationResponse.getArrivalStateId() != null) {
+            State state = stateRepository.findStateById(pricingConfigurationResponse.getArrivalStateId());
             pricingConfigurationResponse.setStateName(state.getName());
         }
         if (pricingConfigurationResponse.getDepartureStateId() != null) {
@@ -136,8 +136,8 @@ public class PricingConfigurationService {
         log.debug("pricingConfiguration record updated - {}"+ new Gson().toJson(pricingConfiguration));
         PricingConfigurationResponse pricingConfigurationResponse = mapper.map(pricingConfiguration, PricingConfigurationResponse.class);
 
-        if (pricingConfigurationResponse.getStateId() != null) {
-            State state = stateRepository.findStateById(pricingConfigurationResponse.getStateId());
+        if (pricingConfigurationResponse.getArrivalStateId() != null) {
+            State state = stateRepository.findStateById(pricingConfigurationResponse.getArrivalStateId());
             pricingConfigurationResponse.setStateName(state.getName());
         }
         if (pricingConfigurationResponse.getDepartureStateId() != null) {
@@ -166,7 +166,7 @@ public class PricingConfigurationService {
                         "Requested pricingConfiguration Id does not exist!"));
         PricingConfigurationResponse pricingConfigurationResponse = mapper.map(pricingConfiguration, PricingConfigurationResponse.class);
 
-        State state = stateRepository.findStateById(pricingConfiguration.getStateId());
+        State state = stateRepository.findStateById(pricingConfiguration.getArrivalStateId());
         State departureState = stateRepository.findStateById(pricingConfiguration.getDepartureStateId());
         pricingConfigurationResponse.setStateName(state.getName());
         pricingConfigurationResponse.setDepartureStateName(departureState.getName());
@@ -180,7 +180,7 @@ public class PricingConfigurationService {
      * </summary>
      * <remarks>this method is responsible for getting all records in pagination</remarks>
      */
-    public Page<PricingConfiguration> findAll(Long partnerId, String routeType, Long stateId,
+    public Page<PricingConfiguration> findAll(Long partnerId, String routeType, Long arrivalStateId,
                                               String locationPreference, String startingLocation, BigDecimal pricePerParameter,
                                               BigDecimal pricePerWeight, BigDecimal pricePerDistance, BigDecimal pricePerTime,
                                               Boolean hasPreferentialPricing, PageRequest pageRequest){
@@ -192,8 +192,8 @@ public class PricingConfigurationService {
         if (routeType != null && !routeType.isEmpty()) {
             genericSpecification.add(new SearchCriteria("routeType", routeType, SearchOperation.MATCH));
         }
-        if (stateId != null) {
-            genericSpecification.add(new SearchCriteria("stateId", stateId, SearchOperation.EQUAL));
+        if (arrivalStateId != null) {
+            genericSpecification.add(new SearchCriteria("arrivalStateId", arrivalStateId, SearchOperation.EQUAL));
         }
         if (locationPreference != null && !locationPreference.isEmpty()) {
             genericSpecification.add(new SearchCriteria("locationPreference", locationPreference, SearchOperation.MATCH));
@@ -246,8 +246,8 @@ public class PricingConfigurationService {
         pricingConfigurations.forEach(config -> {
             PricingConfigurationResponse pricingConfigurationResponse = mapper.map(config, PricingConfigurationResponse.class);
 
-            if (pricingConfigurationResponse.getStateId() != null) {
-                State state = stateRepository.findStateById(pricingConfigurationResponse.getStateId());
+            if (pricingConfigurationResponse.getArrivalStateId() != null) {
+                State state = stateRepository.findStateById(pricingConfigurationResponse.getArrivalStateId());
                 pricingConfigurationResponse.setStateName(state.getName());
             }
             if (pricingConfigurationResponse.getDepartureStateId() != null) {
