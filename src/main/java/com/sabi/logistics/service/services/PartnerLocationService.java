@@ -1,5 +1,6 @@
 package com.sabi.logistics.service.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
@@ -18,7 +19,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
@@ -86,7 +86,7 @@ public class PartnerLocationService {
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
         savedPartnerCategories.getContent().forEach(partnerLocation ->
-                partnerLocation.setStateName(stateRepository.findStateById(stateId).getName()));
+                partnerLocation.setStateName(stateRepository.findStateById(partnerLocation.getStateId()).getName()));
         return savedPartnerCategories;
     }
 
@@ -102,8 +102,8 @@ public class PartnerLocationService {
     }
 
 
-    public List<PartnerLocation> getAll(Boolean isActive){
-        List<PartnerLocation> partnerCategories = repository.findByIsActive(isActive);
+    public List<PartnerLocation> getAll(Long partnerId, Boolean isActive){
+        List<PartnerLocation> partnerCategories = repository.findByPartnerIdAndIsActive(partnerId, isActive);
         partnerCategories.forEach(partnerLocation -> partnerLocation.setStateName(stateRepository
                 .findStateById(partnerLocation.getStateId()).getName()));
         return partnerCategories;
