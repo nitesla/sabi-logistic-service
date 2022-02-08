@@ -559,7 +559,7 @@ public class TripRequestService {
             dropOff.setCustomerPhone(order.getCustomerPhone());
 
 
-            if (dropOff.getPaymentStatus() != null && dropOff.getPaymentStatus().equalsIgnoreCase("Pay On Delivery")) {
+            if (dropOff.getPaymentStatus() != null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")) {
                 List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
                 dropOff.setTotalAmount(getTotalAmount(dropOffItems));
             }

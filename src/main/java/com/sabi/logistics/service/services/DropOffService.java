@@ -11,10 +11,7 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.*;
 import com.sabi.logistics.core.dto.response.DropOffItemResponseDto;
 import com.sabi.logistics.core.dto.response.DropOffResponseDto;
-import com.sabi.logistics.core.models.DropOff;
-import com.sabi.logistics.core.models.DropOffItem;
-import com.sabi.logistics.core.models.Order;
-import com.sabi.logistics.core.models.OrderItem;
+import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
@@ -75,6 +72,8 @@ public class DropOffService {
         dropOff.setDeliveryCode(validations.generateReferenceNumber(6));
         dropOff.setCreatedBy(userCurrent.getId());
         dropOff.setIsActive(true);
+        dropOff.setFinalDropOff(false);
+        dropOff.setReturnStatus("none");
         dropOff.setDeliveryAddress(order.getDeliveryAddress());
         dropOff.setPaymentStatus(order.getPaymentStatus());
         dropOff = dropOffRepository.save(dropOff);
@@ -97,6 +96,8 @@ public class DropOffService {
             dropOff.setDeliveryCode(validations.generateReferenceNumber(6));
             dropOff.setCreatedBy(userCurrent.getId());
             dropOff.setIsActive(true);
+            dropOff.setFinalDropOff(false);
+            dropOff.setReturnStatus("none");
             dropOff.setDeliveryAddress(order.getDeliveryAddress());
             dropOff.setPaymentStatus(order.getPaymentStatus());
             dropOff = dropOffRepository.save(dropOff);
@@ -124,6 +125,24 @@ public class DropOffService {
                         "Requested DropOff Id does not exist!"));
         Order order = orderRepository.getOne(request.getOrderId());
         mapper.map(request, dropOff);
+        if (dropOff.getDeliveryStatus().equalsIgnoreCase("completed")){
+            dropOff.setReturnStatus("none");
+        } else if (dropOff.getDeliveryStatus().equalsIgnoreCase("PartiallyCompleted") || dropOff.getDeliveryStatus().equalsIgnoreCase("failed")){
+            dropOff.setReturnStatus("pending");
+        } else if (dropOff.getDeliveryStatus().equalsIgnoreCase("returned")) {
+            dropOff.setReturnStatus("returned");
+        }else {
+            dropOff.setReturnStatus("none");
+        }
+
+        if (dropOff.getPaymentStatus().equalsIgnoreCase("paid")) {
+            dropOff.setPaidStatus("paid");
+        }
+        if (dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")) {
+            dropOff.setPaidStatus("pending");
+        }
+
+
         dropOff.setUpdatedBy(userCurrent.getId());
         dropOff.setDeliveryAddress(order.getDeliveryAddress());
         dropOff.setPaymentStatus(order.getPaymentStatus());
@@ -175,10 +194,48 @@ public class DropOffService {
         OrderItemRequestDto orderItemRequestDto = new OrderItemRequestDto();
 
         mapper.map(request, dropOff);
+        if (dropOff.getDeliveryStatus().equalsIgnoreCase("completed")){
+            dropOff.setReturnStatus("none");
+        } else if (dropOff.getDeliveryStatus().equalsIgnoreCase("PartiallyCompleted") || dropOff.getDeliveryStatus().equalsIgnoreCase("failed")){
+            dropOff.setReturnStatus("pending");
+        } else if (dropOff.getDeliveryStatus().equalsIgnoreCase("returned")) {
+            dropOff.setReturnStatus("returned");
+        }else {
+            dropOff.setReturnStatus("none");
+        }
+
+        if (dropOff.getPaymentStatus().equalsIgnoreCase("paid")) {
+            dropOff.setPaidStatus("paid");
+        }
+        if (dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")) {
+            dropOff.setPaidStatus("pending");
+        }
+
         dropOff.setUpdatedBy(userCurrent.getId());
         dropOffRepository.save(dropOff);
 
         DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
+
+
+        TripRequest tripRequest = tripRequestRepository.getOne(dropOff.getTripRequestId());
+
+        if(dropOff.getFinalDropOff() == true) {
+            tripRequest.setStatus("completed");
+        }
+
+        List<DropOff> dropItems = dropOffRepository.findByTripRequestId(dropOff.getTripRequestId());
+
+//                if(dropItems.stream().map(DropOffItem::getStatus).allMatch(response -> dropOffItem.getStatus().equals("completed"))){
+
+        if(dropItems.stream().allMatch(response -> response.getDeliveryStatus().equalsIgnoreCase("completed"))){
+            tripRequest.setDeliveryStatus("completed");
+        } else if (dropItems.stream().allMatch(response -> response.getDeliveryStatus().equalsIgnoreCase("failed"))){
+            tripRequest.setDeliveryStatus("failed");
+        } else {
+            tripRequest.setDeliveryStatus("PartiallyCompleted");
+        }
+
+
 
         if(request.getDropOffItem() != null) {
             List<DropOffItemResponseDto> dropOffItems = dropOffItemService.updateDropOffItemStatus(request.getDropOffItem(), dropOffResponseDto.getId());
@@ -246,6 +303,61 @@ public class DropOffService {
         List<DropOff> tripItems = dropOffRepository.findByIsActiveAndTripRequestId(isActive, tripRequestId);
 
         return tripItems;
+
+    }
+
+    public DropOffResponseDto updatePaidStatus(String paidStatus, Long dropOffId ){
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        DropOff dropOff = dropOffRepository.findById(dropOffId)
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Requested DropOff Id does not exist!"));
+
+        dropOff.setPaidStatus(paidStatus);
+
+        dropOff.setUpdatedBy(userCurrent.getId());
+        dropOffRepository.save(dropOff);
+        log.debug("record updated - {}"+ new Gson().toJson(dropOff));
+        return mapper.map(dropOff, DropOffResponseDto.class);
+
+    }
+
+    public DropOffResponseDto updateReturnStatus(String returnStatus, Long dropOffId ){
+        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        DropOff dropOff = dropOffRepository.findById(dropOffId)
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Requested DropOff Id does not exist!"));
+
+        dropOff.setReturnStatus(returnStatus);
+
+        dropOff.setUpdatedBy(userCurrent.getId());
+        dropOffRepository.save(dropOff);
+        log.debug("record updated - {}"+ new Gson().toJson(dropOff));
+        return mapper.map(dropOff, DropOffResponseDto.class);
+
+    }
+
+    public List<DropOff> getAllDropOffs(String paidStatus, Long tripRequestId){
+        List<DropOff> dropOffs = dropOffRepository.findByTripRequestIdAndPaidStatus(tripRequestId, paidStatus);
+
+        for (DropOff dropOff : dropOffs) {
+
+            Order order = orderRepository.getOne(dropOff.getOrderId());
+            dropOff.setCustomerName(order.getCustomerName());
+            dropOff.setDeliveryAddress(order.getDeliveryAddress());
+            dropOff.setCustomerPhone(order.getCustomerPhone());
+
+
+            if (dropOff.getPaymentStatus() != null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")) {
+                List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
+                dropOff.setTotalAmount(getTotalAmount(dropOffItems));
+            }
+
+            dropOff.setDropOffItem(getAllDropOffItems(dropOff.getId()));
+        }
+
+
+
+        return dropOffs;
 
     }
 
