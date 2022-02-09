@@ -55,7 +55,7 @@ public class PartnerUserService {
     private PasswordEncoder passwordEncoder;
     private PartnerRepository partnerRepository;
     private UserRepository userRepository;
-    private PreviousPasswordRepository previousPasswordRepository;
+    private final PreviousPasswordRepository previousPasswordRepository;
     private final PartnerUserRepository partnerUserRepository;
     private DriverRepository driverRepository;
     private RoleRepository roleRepository;
