@@ -14,7 +14,7 @@ public interface PartnerAssetTypeRepository extends JpaRepository<PartnerAssetTy
 
     List<PartnerAssetType> findByIsActive(Boolean isActive);
     PartnerAssetType findByAssetTypeId(Long assetTypeId);
-
+    List<PartnerAssetType> findByAssetTypeIdAndPartnerId(Long assetTypeId, Long partnerId);
     PartnerAssetType findPartnerAssetTypeById(Long Id);
 
 //    PartnerAssetType findByPartnerName(String partnerName);
