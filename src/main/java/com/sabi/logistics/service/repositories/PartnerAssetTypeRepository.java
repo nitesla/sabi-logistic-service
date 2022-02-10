@@ -13,7 +13,7 @@ import java.util.List;
 public interface PartnerAssetTypeRepository extends JpaRepository<PartnerAssetType, Long> {
 
     List<PartnerAssetType> findByIsActive(Boolean isActive);
-    PartnerAssetType findByAssetTypeId(Long name);
+    PartnerAssetType findByAssetTypeId(Long assetTypeId);
 
     PartnerAssetType findPartnerAssetTypeById(Long Id);
 

@@ -48,8 +48,10 @@ public class PartnerAssetTypeService {
         PartnerAssetType partnerAssetType = mapper.map(request,PartnerAssetType.class);
         PartnerAssetType partnerAssetTypeExists
                 = partnerAssetTypeRepository.findByAssetTypeId(request.getId());
-        if(partnerAssetTypeExists !=null){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " PartnerAssetType already exist");
+        log.info("Request DTO =={}",request);
+        log.info("partnerAssetTypeExists =={}",partnerAssetTypeExists);
+        if(partnerAssetTypeExists !=null && partnerAssetTypeExists.getPartnerId() == request.getPartnerId()){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "This Partner already has this asset type");
         }
         AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(request.getAssetTypeId());
         Partner partner  = partnerRepository.getOne(request.getPartnerId());
