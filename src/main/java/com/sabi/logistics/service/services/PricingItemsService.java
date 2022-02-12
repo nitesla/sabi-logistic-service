@@ -76,7 +76,7 @@ public class PricingItemsService {
         return pricingItemsResponse;
     }
 
-    public List<PricingItemsResponse> createPricingItems(List<PricingItemsRequest> requests, Long pricingConfigurationId ) {
+    public List<PricingItemsResponse> createPricingItems(List<PricingItemsRequest> requests, Long pricingConfigurationId) {
         List<PricingItemsResponse> responseDtos = new ArrayList<>();
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         requests.forEach(request-> {
@@ -85,11 +85,6 @@ public class PricingItemsService {
             validations.validatePricingItem(request);
             PricingItems pricingItems = mapper.map(request, PricingItems.class);
 
-            PricingItems pricingItemsExists = pricingItemsRepository.findByPartnerAssetTypeId(request.getPartnerAssetTypeId());
-
-            if (pricingItemsExists != null) {
-                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "pricingItems already exist");
-            }
             PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(request.getPartnerAssetTypeId());
             AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
 
