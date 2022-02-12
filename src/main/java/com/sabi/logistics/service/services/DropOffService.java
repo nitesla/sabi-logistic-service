@@ -235,7 +235,7 @@ public class DropOffService {
             tripRequest.setDeliveryStatus("PartiallyCompleted");
         }
 
-
+        tripRequestRepository.save(tripRequest);
 
         if(request.getDropOffItem() != null) {
             List<DropOffItemResponseDto> dropOffItems = dropOffItemService.updateDropOffItemStatus(request.getDropOffItem(), dropOffResponseDto.getId());
