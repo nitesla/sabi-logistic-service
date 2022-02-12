@@ -46,10 +46,10 @@ public class PartnerAssetTypeService {
         validations.validatePartnerAssetType(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PartnerAssetType partnerAssetType = mapper.map(request,PartnerAssetType.class);
-        PartnerAssetType partnerAssetTypeExists
-                = partnerAssetTypeRepository.findByAssetTypeId(request.getId());
-        if(partnerAssetTypeExists !=null){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " PartnerAssetType already exist");
+        List<PartnerAssetType> partnerAssetTypeExists
+                = partnerAssetTypeRepository.findByAssetTypeIdAndPartnerId(request.getAssetTypeId(),request.getPartnerId());
+        if(partnerAssetTypeExists !=null && partnerAssetTypeExists.size()>0){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "This Partner already has this asset type");
         }
         AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.getOne(request.getAssetTypeId());
         Partner partner  = partnerRepository.getOne(request.getPartnerId());

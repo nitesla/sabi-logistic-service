@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -92,12 +93,18 @@ public class DropOffItemService {
         DropOff dropOff = dropOffRepository.getOne(request.getDropOffId());
         dropOffItem.setCreatedBy(userCurrent.getId());
         dropOffItem.setIsActive(true);
+        dropOffItem.setFinalDropOff(false);
+        dropOffItem.setQty(orderItem.getQty());
+        dropOffItem.setUnitPrice(orderItem.getUnitPrice());
+        dropOffItem.setTotalAmount((dropOffItem.getUnitPrice().multiply(new BigDecimal(orderItem.getQty()))));
+        if(request.getAmountCollected()!=null){
+            dropOffItem.setOutstandingAmount(dropOffItem.getTotalAmount().subtract(request.getAmountCollected()));
+        }
         dropOffItem = dropOffItemRepository.save(dropOffItem);
         log.debug("Create new trip item - {}"+ new Gson().toJson(dropOffItem));
         DropOffItemResponseDto dropOffItemResponseDto = mapper.map(dropOffItem, DropOffItemResponseDto.class);
         dropOffItemResponseDto.setOrderItemName(orderItem.getProductName());
         dropOffItemResponseDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
-        dropOffItemResponseDto.setQty(orderItem.getQty());
         dropOffItemResponseDto.setCustomerName(order.getCustomerName());
         dropOffItemResponseDto.setCustomerPhone(order.getCustomerPhone());
         dropOffItemResponseDto.setOrderId(orderItem.getOrderId());
@@ -162,12 +169,18 @@ public class DropOffItemService {
             DropOff dropOff = dropOffRepository.getOne(request.getDropOffId());
             dropOffItem.setCreatedBy(userCurrent.getId());
             dropOffItem.setIsActive(true);
+            dropOffItem.setFinalDropOff(false);
+            dropOffItem.setQty(orderItem.getQty());
+            dropOffItem.setUnitPrice(orderItem.getUnitPrice());
+            dropOffItem.setTotalAmount(dropOffItem.getUnitPrice().multiply(new BigDecimal(orderItem.getQty())));
+            if(request.getAmountCollected()!=null){
+                dropOffItem.setOutstandingAmount(dropOffItem.getTotalAmount().subtract(request.getAmountCollected()));
+            }
             dropOffItem = dropOffItemRepository.save(dropOffItem);
             log.debug("Create new trip item - {}" + new Gson().toJson(dropOffItem));
             DropOffItem dropOffItemResponseDto = mapper.map(dropOffItem, DropOffItem.class);
             dropOffItemResponseDto.setOrderItemName(orderItem.getProductName());
             dropOffItemResponseDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
-            dropOffItemResponseDto.setQty(orderItem.getQty());
             dropOffItemResponseDto.setCustomerName(order.getCustomerName());
             dropOffItemResponseDto.setCustomerPhone(order.getCustomerPhone());
             dropOffItemResponseDto.setOrderId(orderItem.getOrderId());
@@ -225,6 +238,21 @@ public class DropOffItemService {
         if(request.getQtyGoodsDelivered() != null && request.getQtyGoodsDelivered() > orderItem.getQty()){
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Quantity of Items Delivered can't be greater than Total Quantity");
         }
+        //Calculate Outstanding Amount based on Amount Collected and Total Amount
+        if(request.getAmountCollected()!= null){
+            if(request.getAmountCollected().doubleValue() > dropOffItem.getTotalAmount().doubleValue()){
+                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"Amount Collected can't be greater than total amount");
+            }
+            if (dropOffItem.getOutstandingAmount()!=null){
+                dropOffItem.setOutstandingAmount(dropOffItem.getOutstandingAmount().subtract(request.getAmountCollected()));
+
+            }
+            else {
+                dropOffItem.setOutstandingAmount(dropOffItem.getTotalAmount().subtract(request.getAmountCollected()));
+            }
+
+        }
+
         dropOffItemRepository.save(dropOffItem);
         log.debug("record updated - {}"+ new Gson().toJson(dropOffItem));
         DropOffItemResponseDto dropOffItemResponseDto = mapper.map(dropOffItem, DropOffItemResponseDto.class);
