@@ -336,10 +336,19 @@ public class DropOffService {
 
     }
 
-    public List<DropOff> getAllDropOffs(String paidStatus, Long tripRequestId){
-        List<DropOff> dropOffs = dropOffRepository.findByTripRequestIdAndPaidStatus(tripRequestId, paidStatus);
-
-        for (DropOff dropOff : dropOffs) {
+    public List<DropOff> getAllDropOffs(String paidStatus, String returnedStatus,Long tripRequestId){
+        List<DropOff> dropOffList = null;
+        // Returns based on whether whether paidStatus is passed, returnedStatus is passed or both of them are passed to the method.
+        if (paidStatus!=null && returnedStatus == null){
+            dropOffList = dropOffRepository.findByTripRequestIdAndPaidStatus(tripRequestId,paidStatus);
+        }
+        else if (returnedStatus != null && paidStatus == null){
+            dropOffList = dropOffRepository.findByTripRequestIdAndReturnStatus(tripRequestId,returnedStatus);
+        }
+        else {
+            dropOffList = dropOffRepository.findByTripRequestIdAndPaidStatusAndReturnStatus(tripRequestId,paidStatus,returnedStatus);
+        }
+        for (DropOff dropOff : dropOffList) {
 
             Order order = orderRepository.getOne(dropOff.getOrderId());
             dropOff.setCustomerName(order.getCustomerName());
@@ -357,7 +366,7 @@ public class DropOffService {
 
 
 
-        return dropOffs;
+        return dropOffList;
 
     }
 
