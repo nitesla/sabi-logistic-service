@@ -395,8 +395,10 @@ public class Validations {
     public void validatePartnerAsset(PartnerAssetRequestDto request) {
         partnerAssetTypeRepository.findById(request.getPartnerAssetTypeId()).orElseThrow(()-> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                 " Enter a valid Partner Asset Type!"));
-        if (request.getDriverUserId().equals(request.getDriverAssistantUserId())){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " driverUser Id and driverAssistantUser Id can not be same!");
+        if (request.getDriverUserId() != null && request.getDriverAssistantUserId() != null) {
+            if (request.getDriverUserId().equals(request.getDriverAssistantUserId())) {
+                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " driverUser Id and driverAssistantUser Id can not be same!");
+            }
         }
         brandRepository.findById(request.getBrandId()).orElseThrow(()-> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                 " Enter a valid Brand!"));
