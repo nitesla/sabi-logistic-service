@@ -11,6 +11,9 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.*;
 import com.sabi.logistics.core.dto.response.DropOffItemResponseDto;
 import com.sabi.logistics.core.dto.response.DropOffResponseDto;
+import com.sabi.logistics.core.enums.PaidStatus;
+import com.sabi.logistics.core.enums.PaymentStatus;
+import com.sabi.logistics.core.enums.ReturnStatus;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.*;
@@ -73,7 +76,7 @@ public class DropOffService {
         dropOff.setCreatedBy(userCurrent.getId());
         dropOff.setIsActive(true);
         dropOff.setFinalDropOff(false);
-        dropOff.setReturnStatus("none");
+        dropOff.setReturnStatus(ReturnStatus.none);
         dropOff.setDeliveryAddress(order.getDeliveryAddress());
         dropOff.setPaymentStatus(order.getPaymentStatus());
         dropOff = dropOffRepository.save(dropOff);
@@ -97,7 +100,7 @@ public class DropOffService {
             dropOff.setCreatedBy(userCurrent.getId());
             dropOff.setIsActive(true);
             dropOff.setFinalDropOff(false);
-            dropOff.setReturnStatus("none");
+            dropOff.setReturnStatus(ReturnStatus.none);
             dropOff.setDeliveryAddress(order.getDeliveryAddress());
             dropOff.setPaymentStatus(order.getPaymentStatus());
             dropOff = dropOffRepository.save(dropOff);
@@ -126,20 +129,20 @@ public class DropOffService {
         Order order = orderRepository.getOne(request.getOrderId());
         mapper.map(request, dropOff);
         if (dropOff.getDeliveryStatus().equalsIgnoreCase("completed")){
-            dropOff.setReturnStatus("none");
+            dropOff.setReturnStatus(ReturnStatus.none);
         } else if (dropOff.getDeliveryStatus().equalsIgnoreCase("PartiallyCompleted") || dropOff.getDeliveryStatus().equalsIgnoreCase("failed")){
-            dropOff.setReturnStatus("pending");
+            dropOff.setReturnStatus(ReturnStatus.pending);
         } else if (dropOff.getDeliveryStatus().equalsIgnoreCase("returned")) {
-            dropOff.setReturnStatus("returned");
+            dropOff.setReturnStatus(ReturnStatus.returned);
         }else {
-            dropOff.setReturnStatus("none");
+            dropOff.setReturnStatus(ReturnStatus.none);
         }
 
-        if (dropOff.getPaymentStatus().equalsIgnoreCase("paid")) {
-            dropOff.setPaidStatus("paid");
+        if (dropOff.getPaymentStatus() == PaymentStatus.paid) {
+            dropOff.setPaidStatus(PaidStatus.paid);
         }
-        if (dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")) {
-            dropOff.setPaidStatus("pending");
+        if (dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery) {
+            dropOff.setPaidStatus(PaidStatus.pending);
         }
 
 
@@ -180,11 +183,11 @@ public class DropOffService {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Delivery Code");
         }
 
-        if (request.getDeliveryStatus().equalsIgnoreCase("completed") && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery") && (request.getTotalAmount() != dropOff.getTotalAmount())) {
+        if (request.getDeliveryStatus().equalsIgnoreCase("completed") && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (request.getTotalAmount() != dropOff.getTotalAmount())) {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Amount");
         }
 
-        if (request.getDeliveryStatus().equalsIgnoreCase("PartiallyCompleted") && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery") && request.getTotalAmount().equals(0)) {
+        if (request.getDeliveryStatus().equalsIgnoreCase("PartiallyCompleted") && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && request.getTotalAmount().equals(0)) {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Amount");
         }
 
@@ -195,20 +198,20 @@ public class DropOffService {
 
         mapper.map(request, dropOff);
         if (dropOff.getDeliveryStatus().equalsIgnoreCase("completed")){
-            dropOff.setReturnStatus("none");
+            dropOff.setReturnStatus(ReturnStatus.none);
         } else if (dropOff.getDeliveryStatus().equalsIgnoreCase("PartiallyCompleted") || dropOff.getDeliveryStatus().equalsIgnoreCase("failed")){
-            dropOff.setReturnStatus("pending");
+            dropOff.setReturnStatus(ReturnStatus.pending);
         } else if (dropOff.getDeliveryStatus().equalsIgnoreCase("returned")) {
-            dropOff.setReturnStatus("returned");
+            dropOff.setReturnStatus(ReturnStatus.returned);
         }else {
-            dropOff.setReturnStatus("none");
+            dropOff.setReturnStatus(ReturnStatus.none);
         }
 
-        if (dropOff.getPaymentStatus().equalsIgnoreCase("paid")) {
-            dropOff.setPaidStatus("paid");
+        if (dropOff.getPaymentStatus() == PaymentStatus.paid) {
+            dropOff.setPaidStatus(PaidStatus.paid);
         }
-        if (dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")) {
-            dropOff.setPaidStatus("pending");
+        if (dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery) {
+            dropOff.setPaidStatus(PaidStatus.pending);
         }
 
         dropOff.setUpdatedBy(userCurrent.getId());
@@ -306,7 +309,7 @@ public class DropOffService {
 
     }
 
-    public DropOffResponseDto updatePaidStatus(String paidStatus, Long dropOffId ){
+    public DropOffResponseDto updatePaidStatus(PaidStatus paidStatus, Long dropOffId ){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         DropOff dropOff = dropOffRepository.findById(dropOffId)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
@@ -321,7 +324,7 @@ public class DropOffService {
 
     }
 
-    public DropOffResponseDto updateReturnStatus(String returnStatus, Long dropOffId ){
+    public DropOffResponseDto updateReturnStatus(ReturnStatus returnStatus, Long dropOffId ){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         DropOff dropOff = dropOffRepository.findById(dropOffId)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
@@ -347,7 +350,7 @@ public class DropOffService {
             dropOff.setCustomerPhone(order.getCustomerPhone());
 
 
-            if (dropOff.getPaymentStatus() != null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")) {
+            if (dropOff.getPaymentStatus() != null && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery) {
                 List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
                 dropOff.setTotalAmount(getTotalAmount(dropOffItems));
             }

@@ -16,6 +16,7 @@ import com.sabi.logistics.core.dto.response.DropOffResponseDto;
 import com.sabi.logistics.core.dto.response.TripMasterResponseDto;
 import com.sabi.logistics.core.dto.response.TripRequestStatusCountResponse;
 import com.sabi.logistics.core.dto.response.TripResponseDto;
+import com.sabi.logistics.core.enums.PaymentStatus;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
@@ -329,6 +330,7 @@ public class TripRequestService {
 
         if (request.getStatus().equalsIgnoreCase("Rejected")){
             request.setStatus("Pending");
+            request.setPartnerId(null);
             request.setWareHouseId(0l);
             mapper.map(request, tripRequest);
         }else {
@@ -559,7 +561,7 @@ public class TripRequestService {
             dropOff.setCustomerPhone(order.getCustomerPhone());
 
 
-            if (dropOff.getPaymentStatus() != null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")) {
+            if (dropOff.getPaymentStatus() != null && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery) {
                 List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
                 dropOff.setTotalAmount(getTotalAmount(dropOffItems));
             }

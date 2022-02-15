@@ -186,7 +186,7 @@ public class PricingConfigurationService {
                                               Boolean hasPreferentialPricing, PageRequest pageRequest){
         GenericSpecification<PricingConfiguration> genericSpecification = new GenericSpecification<>();
         if (partnerId != null) {
-            genericSpecification.add(new SearchCriteria("partnerId", pricePerParameter, SearchOperation.EQUAL));
+            genericSpecification.add(new SearchCriteria("partnerId", partnerId, SearchOperation.EQUAL));
         }
 
         if (routeType != null && !routeType.isEmpty()) {
