@@ -176,8 +176,8 @@ public class DropOffService {
         log.info("Computer {}" + dropOff.getDeliveryCode());
 
 
-        if (request.getDeliveryCode() == null || request.getDeliveryCode().isEmpty()) {
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
+        if (request.getDeliveryCode() == null && (!request.getDeliveryStatus().equalsIgnoreCase("failed"))) {
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Code cannot be empty");
         }
         if (!request.getDeliveryCode().equalsIgnoreCase(dropOff.getDeliveryCode())){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Delivery Code");
