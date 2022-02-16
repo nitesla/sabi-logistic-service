@@ -24,6 +24,8 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
 
     List<TripRequest> findByCreatedDate(LocalDateTime date);
 
+    List<TripRequest> findByDriverId(Long driverId);
+
     Integer countByPartnerIdAndPartnerAssetId(Long partnerId, Long partnerAssetId);
 
 //    List<TripRequest> findByPartnerIdAndIsActive(Long partnerId, Boolean isActive);
