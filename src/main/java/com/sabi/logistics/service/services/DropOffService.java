@@ -40,6 +40,9 @@ public class DropOffService {
     private OrderItemRepository orderItemRepository;
 
     @Autowired
+    private DriverRepository driverRepository;
+
+    @Autowired
     private OrderRepository orderRepository;
 
     @Autowired
@@ -321,25 +324,60 @@ public class DropOffService {
 
     }
 
-    public DropOffResponseDto updateReturnStatus(String returnStatus, Long dropOffId ){
+    public DropOffResponseDto updateReturnStatus(DropOffUpdateRequestDto dropOffUpdateRequestDto){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-        DropOff dropOff = dropOffRepository.findById(dropOffId)
+        DropOff dropOff = dropOffRepository.findById(dropOffUpdateRequestDto.getDropOffId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested DropOff Id does not exist!"));
+        Long totalQtyReturned = 0L;
+        List<DropOffItem> dropOffItemList = new ArrayList<>();
 
-        dropOff.setReturnStatus(returnStatus);
+        for (DropOffItemUpdateRequestDto itemDto:dropOffUpdateRequestDto.getDropOffItems()){
+            DropOffItem dropOffItem = dropOffItemRepository.findById(itemDto.getDropOffItemId()).
+                    orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"Requested DropoffItem id does not exist!"));
+            if( dropOff.getQty()!=null && (itemDto.getQty() > dropOff.getQty())){
+                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"Quantity of items returned can't exceed total quantity of dropoff");
+            }
+            totalQtyReturned+=itemDto.getQty();
+            dropOffItem.setQtyGoodsReturned(itemDto.getQty());
+            dropOffItem.setQtyGoodsDelivered((dropOffItem.getQty()-dropOffItem.getQtyGoodsReturned()));
+            dropOffItemList.add(dropOffItem);
 
+        }
+        if(dropOff.getQty()==null){
+            log.info("DropOff Quantity is found to be null during dropOff update::{}",dropOff);
+            throw new IllegalArgumentException("OOps, Contact the adminstrator, DropOff Quantity is null");
+
+        }
+        if (totalQtyReturned > dropOff.getQty()){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"Total number of returned quantity can't exceed total number of DropOffs");
+        }
+        List<DropOffItem> dropOffItemUpdateResult = dropOffItemRepository.saveAll(dropOffItemList);
+        dropOff.setQtyReturned(totalQtyReturned.intValue());
+        dropOff.setReturnStatus(dropOffUpdateRequestDto.getReturnedStatus());
+        dropOff.setQtyDelivered(Math.toIntExact((Long.valueOf(dropOff.getQty() - dropOff.getQtyReturned()))));
         dropOff.setUpdatedBy(userCurrent.getId());
+
         dropOffRepository.save(dropOff);
+        dropOff.setDropOffItem(dropOffItemUpdateResult);
         log.debug("record updated - {}"+ new Gson().toJson(dropOff));
         return mapper.map(dropOff, DropOffResponseDto.class);
 
     }
 
-    public List<DropOff> getAllDropOffs(String paidStatus, Long tripRequestId){
-        List<DropOff> dropOffs = dropOffRepository.findByTripRequestIdAndPaidStatus(tripRequestId, paidStatus);
-
-        for (DropOff dropOff : dropOffs) {
+    public List<DropOff> getAllDropOffs(String paidStatus, String returnedStatus,Long tripRequestId){
+        List<DropOff> dropOffList = null;
+        // Returns based on whether whether paidStatus is passed, returnedStatus is passed or both of them are passed to the method.
+        if (paidStatus!=null && returnedStatus == null){
+            dropOffList = dropOffRepository.findByTripRequestIdAndPaidStatus(tripRequestId,paidStatus);
+        }
+        else if (returnedStatus != null && paidStatus == null){
+            dropOffList = dropOffRepository.findByTripRequestIdAndReturnStatus(tripRequestId,returnedStatus);
+        }
+        else {
+            dropOffList = dropOffRepository.findByTripRequestIdAndPaidStatusAndReturnStatus(tripRequestId,paidStatus,returnedStatus);
+        }
+        for (DropOff dropOff : dropOffList) {
 
             Order order = orderRepository.getOne(dropOff.getOrderId());
             dropOff.setCustomerName(order.getCustomerName());
@@ -357,8 +395,25 @@ public class DropOffService {
 
 
 
-        return dropOffs;
+        return dropOffList;
 
+    }
+
+    public List<DropOff> getAlLDropOffsOfADriver(Long driverUserId, String returnedStatus){
+        Driver driver = driverRepository.findByUserId(driverUserId);
+        if (driver == null){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"Driver doesn't exist");
+        }
+        List<TripRequest> tripRequestList = tripRequestRepository.findByDriverId(driver.getId());
+        if(tripRequestList.size() == 0){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"This driver doesn't have any trips at the moment");
+        }
+        List<DropOff> dropOffList = new ArrayList<>();
+        for (TripRequest tripRequest: tripRequestList){
+            List<DropOff> tripsDropOffsList = dropOffRepository.findByTripRequestIdAndReturnStatus(tripRequest.getId(),returnedStatus);
+            dropOffList.addAll(tripsDropOffsList);
+        }
+        return dropOffList;
     }
 
     public List<DropOffItem> getAllDropOffItems(Long dropOffId){

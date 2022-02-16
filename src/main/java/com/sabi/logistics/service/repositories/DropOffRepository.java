@@ -32,6 +32,8 @@ public interface DropOffRepository extends JpaRepository<DropOff, Long>, JpaSpec
                               Pageable pageable);
 
     List<DropOff> findByTripRequestIdAndPaidStatus(Long tripRequestId, String paidStatus);
+    List<DropOff> findByTripRequestIdAndReturnStatus(Long tripRequestId, String retrunedStatus);
+    List<DropOff>findByTripRequestIdAndPaidStatusAndReturnStatus(Long tripRequestId, String paidStatus,String returnedStatus);
 
 
 }
