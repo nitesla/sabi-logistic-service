@@ -176,14 +176,16 @@ public class DropOffService {
         log.info("Computer {}" + dropOff.getDeliveryCode());
 
 
-        if (request.getDeliveryCode() == null && (!request.getDeliveryStatus().equalsIgnoreCase("failed"))) {
+        if (!request.getDeliveryStatus().equalsIgnoreCase("failed") && request.getDeliveryCode() == null) {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Code cannot be empty");
         }
-        if (!request.getDeliveryCode().equalsIgnoreCase(dropOff.getDeliveryCode())){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Delivery Code");
+        if (request.getDeliveryCode() != null) {
+            if (!request.getDeliveryCode().equalsIgnoreCase(dropOff.getDeliveryCode())){
+                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Delivery Code");
+            }
         }
 
-        if (request.getDeliveryStatus().equalsIgnoreCase("completed") && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery") && (request.getTotalAmount() != dropOff.getTotalAmount())) {
+        if (request.getDeliveryStatus().equalsIgnoreCase("completed") && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery") && (!(request.getTotalAmount().equals(dropOff.getTotalAmount())))) {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Amount");
         }
 
