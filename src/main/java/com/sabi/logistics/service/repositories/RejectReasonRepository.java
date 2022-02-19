@@ -14,8 +14,7 @@ public interface RejectReasonRepository extends JpaRepository<RejectReason, Long
 
     RejectReason findByName(String name);
 
-    @Query("SELECT d FROM RejectReason d WHERE ((:name IS NULL) OR (:name IS NOT NULL AND d.name = :name)) order by d.id desc "
-            )
+    @Query("SELECT d FROM RejectReason d WHERE ((:name IS NULL) OR (:name IS NOT NULL AND d.name = :name)) order by d.id desc ")
     Page<RejectReason> findRejectReason(@Param("name") String name, Pageable pageable);
 
 }

@@ -48,11 +48,11 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
     List<TripRequest> listTrips();
 
 
-    @Query("SELECT t FROM TripRequest t WHERE ((:partnerId IS NULL and :unassigned is null )OR (t.partnerId IS NULL and :unassigned = true ) OR (:partnerId IS NOT NULL AND t.partnerId = :partnerId))" +
+    @Query("SELECT t FROM TripRequest t WHERE ((:partnerId IS NULL and :unassignedPartner is null )OR (t.partnerId IS NULL and :unassignedPartner = true ) OR (:partnerId IS NOT NULL AND t.partnerId = :partnerId))" +
             " AND ((:status IS NULL) OR (:status IS NOT NULL AND t.status like %:status%))" +
             " AND ((:referenceNo IS NULL) OR (:referenceNo IS NOT NULL AND t.referenceNo like %:referenceNo%))" +
-            " AND ((:driverId IS NULL) OR (:driverId IS NOT NULL AND t.driverId = :driverId))" +
-            " AND ((:driverAssistantId IS NULL) OR (:driverAssistantId IS NOT NULL AND t.driverAssistantId = :driverAssistantId))" +
+            " AND ((:driverId IS NULL and :unassignedDriver is null )OR (t.driverId IS NULL and :unassignedDriver = true ) OR (:driverId IS NOT NULL AND t.driverId = :driverId))" +
+            " AND ((:driverAssistantId IS NULL and :unassignedDriver is null )OR (t.driverAssistantId IS NULL and :unassignedDriver = true ) OR (:driverAssistantId IS NOT NULL AND t.driverAssistantId = :driverAssistantId))" +
             " AND ((:wareHouseId IS NULL) OR (:wareHouseId IS NOT NULL AND t.wareHouseId = :wareHouseId))" +
             " AND ((:wareHouseAddress IS NULL) OR (:wareHouseAddress IS NOT NULL AND t.wareHouseAddress like %:wareHouseAddress%))" +
             " AND ((:deliveryStatus IS NULL) OR (:deliveryStatus like '%all%' AND t.deliveryStatus NOT like '%pending%' AND t.deliveryStatus NOT like '%cancelled%') OR (:deliveryStatus like '%past%' AND (t.deliveryStatus like 'completed%' OR t.deliveryStatus like '%cancelled%' OR t.deliveryStatus like '%failed%')) OR (:deliveryStatus IS NOT NULL AND t.deliveryStatus like %:deliveryStatus%))" +
@@ -65,8 +65,9 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
                           @Param("wareHouseId") Long wareHouseId,
                           @Param("wareHouseAddress") String wareHouseAddress,
                           @Param("partnerAssetId") Long partnerAssetId,
-                          @Param("unassigned") Boolean unassigned,
+                          @Param("unassignedPartner") Boolean unassignedPartner,
                           @Param("deliveryStatus") String deliveryStatus,
+                          @Param("unassignedDriver") Boolean unassignedDriver,
                           Pageable pageable);
 
 
