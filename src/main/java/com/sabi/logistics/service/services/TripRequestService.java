@@ -329,9 +329,8 @@ public class TripRequestService {
 
         if (request.getStatus().equalsIgnoreCase("rejected")){
             request.setStatus("pending");
-            Long partnerId = null;
-            request.setPartnerId(partnerId);
-            log.info("partnerId {}", request.getPartnerId());
+            tripRequest.setPartnerId(null);
+            log.info("partnerId {}", tripRequest.getPartnerId());
             mapper.map(request, tripRequest);
         }else {
             mapper.map(request, tripRequest);
