@@ -23,6 +23,9 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
 
     List<Order> findByIsActive(Boolean isActive);
 
+    @Query("SELECT MAX(o.id) FROM Order o ")
+    Long getLastOrder();
+
     @Query("SELECT o FROM Order o WHERE ((:referenceNo IS NULL) OR (:referenceNo IS NOT NULL AND o.referenceNo like %:referenceNo%))" +
             " AND ((:deliveryStatus IS NULL) OR (:deliveryStatus IS NOT NULL AND o.deliveryStatus like %:deliveryStatus%))" +
             " AND ((:customerName IS NULL) OR (:customerName IS NOT NULL AND o.customerName like %:customerName%))" +
