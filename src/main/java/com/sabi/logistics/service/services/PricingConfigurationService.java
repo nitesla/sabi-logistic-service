@@ -10,6 +10,7 @@ import com.sabi.logistics.core.dto.request.PricingConfigMasterRequest;
 import com.sabi.logistics.core.dto.request.PricingConfigurationRequest;
 import com.sabi.logistics.core.dto.response.PricingConfigurationResponse;
 import com.sabi.logistics.core.dto.response.PricingItemsResponse;
+import com.sabi.logistics.core.enums.DynamicType;
 import com.sabi.logistics.core.models.PricingConfiguration;
 import com.sabi.logistics.core.models.State;
 import com.sabi.logistics.service.helper.GenericSpecification;
@@ -78,6 +79,12 @@ public class PricingConfigurationService {
             String destinationLocations = String.join(", ", set);
             pricingConfiguration.setDestinationLocations(destinationLocations);
         }
+
+        if (request.getStartingLocations() != null) {
+            Set<String> set = new HashSet<>(Arrays.asList(request.getStartingLocations().toArray(new String[0])));
+            String startingLocations = String.join(", ", set);
+            pricingConfiguration.setStartingLocations(startingLocations);
+        }
         pricingConfiguration.setCreatedBy(userCurrent.getId());
         pricingConfiguration.setIsActive(true);
         pricingConfiguration = pricingConfigurationRepository.save(pricingConfiguration);
@@ -97,6 +104,12 @@ public class PricingConfigurationService {
             String str = pricingConfiguration.getDestinationLocations();
             Set<String> set = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
             pricingConfigurationResponse.setDestinationLocations(set);
+        }
+
+        if(pricingConfiguration.getStartingLocations() != null) {
+            String str = pricingConfiguration.getStartingLocations();
+            Set<String> set = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+            pricingConfigurationResponse.setStartingLocations(set);
         }
 
         if(request.getPricingItems() != null) {
@@ -130,6 +143,12 @@ public class PricingConfigurationService {
             pricingConfiguration.setDestinationLocations(destinationLocations);
         }
 
+        if (request.getStartingLocations() != null){
+            Set<String> set = new HashSet<>(Arrays.asList(request.getStartingLocations().toArray(new String[0])));
+            String startingLocations = String.join(", ", set);
+            pricingConfiguration.setStartingLocations(startingLocations);
+        }
+
 
         pricingConfiguration.setUpdatedBy(userCurrent.getId());
         pricingConfigurationRepository.save(pricingConfiguration);
@@ -149,6 +168,12 @@ public class PricingConfigurationService {
             String str = pricingConfiguration.getDestinationLocations();
             Set<String> set = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
             pricingConfigurationResponse.setDestinationLocations(set);
+        }
+
+        if(pricingConfiguration.getStartingLocations() != null) {
+            String str = pricingConfiguration.getStartingLocations();
+            Set<String> set = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+            pricingConfigurationResponse.setStartingLocations(set);
         }
 
         return pricingConfigurationResponse;
@@ -171,6 +196,18 @@ public class PricingConfigurationService {
         pricingConfigurationResponse.setStateName(state.getName());
         pricingConfigurationResponse.setDepartureStateName(departureState.getName());
 
+        if(pricingConfiguration.getDestinationLocations() != null) {
+            String str = pricingConfiguration.getDestinationLocations();
+            Set<String> set = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+            pricingConfigurationResponse.setDestinationLocations(set);
+        }
+
+        if(pricingConfiguration.getStartingLocations() != null) {
+            String str = pricingConfiguration.getStartingLocations();
+            Set<String> set = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+            pricingConfigurationResponse.setStartingLocations(set);
+        }
+
         return pricingConfigurationResponse;
     }
 
@@ -181,12 +218,12 @@ public class PricingConfigurationService {
      * <remarks>this method is responsible for getting all records in pagination</remarks>
      */
     public Page<PricingConfiguration> findAll(Long partnerId, String routeType, Long arrivalStateId,
-                                              String locationPreference, String startingLocation, BigDecimal pricePerParameter,
+                                              String locationPreference,  BigDecimal pricePerParameter,
                                               BigDecimal pricePerWeight, BigDecimal pricePerDistance, BigDecimal pricePerTime,
-                                              Boolean hasPreferentialPricing, PageRequest pageRequest){
+                                              Boolean hasPreferentialPricing, DynamicType dynamicType, String tripType, PageRequest pageRequest){
         GenericSpecification<PricingConfiguration> genericSpecification = new GenericSpecification<>();
         if (partnerId != null) {
-            genericSpecification.add(new SearchCriteria("partnerId", pricePerParameter, SearchOperation.EQUAL));
+            genericSpecification.add(new SearchCriteria("partnerId", partnerId, SearchOperation.EQUAL));
         }
 
         if (routeType != null && !routeType.isEmpty()) {
@@ -210,11 +247,14 @@ public class PricingConfigurationService {
         if (pricePerTime != null) {
             genericSpecification.add(new SearchCriteria("pricePerTime", pricePerTime, SearchOperation.EQUAL));
         }
-        if (startingLocation != null) {
-            genericSpecification.add(new SearchCriteria("startingLocation", startingLocation, SearchOperation.MATCH));
-        }
         if (hasPreferentialPricing != null) {
             genericSpecification.add(new SearchCriteria("hasPreferentialPricing", hasPreferentialPricing, SearchOperation.EQUAL));
+        }
+        if (dynamicType != null) {
+            genericSpecification.add(new SearchCriteria("dynamicType", dynamicType, SearchOperation.EQUAL));
+        }
+        if (tripType != null && !tripType.isEmpty()) {
+            genericSpecification.add(new SearchCriteria("tripType", tripType, SearchOperation.MATCH));
         }
         Page<PricingConfiguration> pricingConfigurations = pricingConfigurationRepository.findAll(genericSpecification, pageRequest);
         return pricingConfigurations;
@@ -259,6 +299,12 @@ public class PricingConfigurationService {
                 String str = config.getDestinationLocations();
                 Set<String> set = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
                 pricingConfigurationResponse.setDestinationLocations(set);
+            }
+
+            if(config.getStartingLocations() != null) {
+                String str = config.getStartingLocations();
+                Set<String> set = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+                pricingConfigurationResponse.setStartingLocations(set);
             }
             responseDtos.add(pricingConfigurationResponse);
         });

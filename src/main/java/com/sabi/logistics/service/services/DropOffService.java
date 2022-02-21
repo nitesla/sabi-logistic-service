@@ -176,14 +176,16 @@ public class DropOffService {
         log.info("Computer {}" + dropOff.getDeliveryCode());
 
 
-        if (request.getDeliveryCode() == null || request.getDeliveryCode().isEmpty()) {
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
+        if (!request.getDeliveryStatus().equalsIgnoreCase("failed") && request.getDeliveryCode() == null) {
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Code cannot be empty");
         }
-        if (!request.getDeliveryCode().equalsIgnoreCase(dropOff.getDeliveryCode())){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Delivery Code");
+        if (request.getDeliveryCode() != null) {
+            if (!request.getDeliveryCode().equalsIgnoreCase(dropOff.getDeliveryCode())){
+                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Delivery Code");
+            }
         }
 
-        if (request.getDeliveryStatus().equalsIgnoreCase("completed") && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery") && (request.getTotalAmount() != dropOff.getTotalAmount())) {
+        if (request.getDeliveryStatus().equalsIgnoreCase("completed") && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery") && (!(request.getTotalAmount().equals(dropOff.getTotalAmount())))) {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Amount");
         }
 
@@ -309,13 +311,13 @@ public class DropOffService {
 
     }
 
-    public DropOffResponseDto updatePaidStatus(String paidStatus, Long dropOffId ){
+    public DropOffResponseDto updatePaidStatus(DropOffUpdatePaidDto request ){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-        DropOff dropOff = dropOffRepository.findById(dropOffId)
+        DropOff dropOff = dropOffRepository.findById(request.getDropOffId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested DropOff Id does not exist!"));
 
-        dropOff.setPaidStatus(paidStatus);
+        dropOff.setPaidStatus(request.getPaidStatus());
 
         dropOff.setUpdatedBy(userCurrent.getId());
         dropOffRepository.save(dropOff);

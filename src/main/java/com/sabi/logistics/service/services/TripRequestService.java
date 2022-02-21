@@ -283,7 +283,7 @@ public class TripRequestService {
 
         if(tripRequest.getStatus() != request.getStatus())
         {
-            if (request.getStatus().equalsIgnoreCase("Pending") || tripRequest.getStatus().equalsIgnoreCase("Pending")) {
+            if (request.getStatus().equalsIgnoreCase("pending") || tripRequest.getStatus().equalsIgnoreCase("pending")) {
                 tripRequestResponse = tripRequestResponseRepository.findTripRequestResponseByTripRequestId(tripRequest.getId());
                 if (tripRequestResponse == null) {
                     tripRequestResponseReqDto.setTripRequestId(tripRequest.getId());
@@ -294,7 +294,7 @@ public class TripRequestService {
                     tripRequestResponseService.createTripRequestResponse(tripRequestResponseReqDto);
                 }
             }
-            if(request.getStatus().equalsIgnoreCase("Rejected")){
+            if(request.getStatus().equalsIgnoreCase("rejected")){
                 tripRequestResponse = tripRequestResponseRepository.findTripRequestResponseByTripRequestId(tripRequest.getId());
                 if (tripRequestResponse != null) {
                     tripRequestResponseReqDto.setTripRequestId(tripRequest.getId());
@@ -313,7 +313,7 @@ public class TripRequestService {
                     tripRequestResponseService.createTripRequestResponse(tripRequestResponseReqDto);
                 }
             }
-            if(request.getStatus().equalsIgnoreCase("Accepted")) {
+            if(request.getStatus().equalsIgnoreCase("accepted")) {
                 tripRequestResponse = tripRequestResponseRepository.findTripRequestResponseByTripRequestId(tripRequest.getId());
                 if (tripRequestResponse != null) {
                     tripRequestResponseReqDto.setTripRequestId(tripRequest.getId());
@@ -327,9 +327,11 @@ public class TripRequestService {
             }
         }
 
-        if (request.getStatus().equalsIgnoreCase("Rejected")){
-            request.setStatus("Pending");
-            request.setWareHouseId(0l);
+        if (request.getStatus().equalsIgnoreCase("rejected")){
+            request.setStatus("pending");
+            Long partnerId = null;
+            request.setPartnerId(partnerId);
+            log.info("partnerId {}", request.getPartnerId());
             mapper.map(request, tripRequest);
         }else {
             mapper.map(request, tripRequest);
@@ -424,7 +426,7 @@ public class TripRequestService {
 
 
     public Page<TripRequest> findAll(Long partnerId, String status, String referenceNo, Long driverUserId, Long driverAssistantUserId,
-                                     Long wareHouseId, String wareHouseAddress, Long partnerAssetId, Boolean unassigned, String deliveryStatus, PageRequest pageRequest ){
+                                     Long wareHouseId, String wareHouseAddress, Long partnerAssetId, Boolean unassignedPartner, String deliveryStatus, Boolean unassignedDriver, PageRequest pageRequest ){
 
         Long driverId = null;
         Long driverAssistantId = null;
@@ -442,7 +444,7 @@ public class TripRequestService {
         }
 
         Page<TripRequest> tripRequests = tripRequestRepository.findTripRequest(partnerId, status, referenceNo, driverId, driverAssistantId,
-                                                                                wareHouseId, wareHouseAddress, partnerAssetId, unassigned, deliveryStatus, pageRequest);
+                                                                                wareHouseId, wareHouseAddress, partnerAssetId, unassignedPartner, deliveryStatus, unassignedDriver, pageRequest);
         if(tripRequests == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

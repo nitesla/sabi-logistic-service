@@ -287,6 +287,20 @@ public class Validations {
         }
     }
 
+    public void validateWarehousePicture(WarehousePictureDto warehousePictureDto) {
+
+        Warehouse warehouse = warehouseRepository.findById(warehousePictureDto.getWarehouseId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " Enter a valid warehouse id!"));
+        if (warehousePictureDto.getImage() == null || warehousePictureDto.getImage().isEmpty()){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,
+                    " Image can not be empty!");
+        }
+        if (!("Front".equalsIgnoreCase(warehousePictureDto.getPictureType()) || "Side".equalsIgnoreCase(warehousePictureDto.getPictureType()) || "Haulage".equalsIgnoreCase(warehousePictureDto.getPictureType()))) {
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter a correct picture type");
+        }
+    }
+
 
 
     public void validatePartner(PartnerSignUpDto partner){
