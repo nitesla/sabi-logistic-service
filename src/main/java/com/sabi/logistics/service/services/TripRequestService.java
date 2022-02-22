@@ -25,11 +25,13 @@ import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -38,6 +40,9 @@ import java.util.Objects;
 @Service
 @Slf4j
 public class TripRequestService {
+
+    @Value("${trip.request.expired.time}")
+    private String tripRequestExpireTimeInMiliseconds;
     private final TripRequestRepository tripRequestRepository;
     private final ModelMapper mapper;
     @Autowired
@@ -163,7 +168,22 @@ public class TripRequestService {
             if (partner == null) {
                 throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Partner Id");
             }
+            log.info("setting expired Time");
+            tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(Long.parseLong(tripRequestExpireTimeInMiliseconds)/(60*1000)));
             tripResponseDto.setPartnerName(partner.getName());
+            tripRequest=tripRequestRepository.save(tripRequest);
+            tripResponseDto.setExpiredTime(tripRequest.getExpiredTime());
+            // Create Default TripRequestResponse for the trip
+            TripRequestResponse tripRequestResponse = new TripRequestResponse();
+            TripRequestResponseReqDto tripRequestResponseReqDto = new TripRequestResponseReqDto();
+            tripRequestResponseReqDto.setTripRequestId(tripRequest.getId());
+            tripRequestResponseReqDto.setPartnerId(tripRequest.getPartnerId());
+            tripRequestResponseReqDto.setResponseDate(tripRequest.getUpdatedDate().now());
+            tripRequestResponseReqDto.setStatus(request.getStatus());
+            if(request.getRejectReason()!=null){
+                tripRequestResponseReqDto.setRejectReason(request.getRejectReason());
+            }
+            tripRequestResponseService.createTripRequestResponse(tripRequestResponseReqDto);
         }
 
         if (request.getPartnerAssetId() != null ) {
@@ -241,7 +261,22 @@ public class TripRequestService {
             if (partner == null) {
                 throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Partner Id");
             }
+            log.info("setting expired Time");
+            tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(Long.parseLong(tripRequestExpireTimeInMiliseconds)/(60*1000)));
+            tripRequest=tripRequestRepository.save(tripRequest);
+            tripResponseDto.setExpiredTime(tripRequest.getExpiredTime());
             tripResponseDto.setPartnerName(partner.getName());
+            // Create Default TripRequestResponse for the trip
+            TripRequestResponse tripRequestResponse = new TripRequestResponse();
+            TripRequestResponseReqDto tripRequestResponseReqDto = new TripRequestResponseReqDto();
+            tripRequestResponseReqDto.setTripRequestId(tripRequest.getId());
+            tripRequestResponseReqDto.setPartnerId(tripRequest.getPartnerId());
+            tripRequestResponseReqDto.setResponseDate(tripRequest.getUpdatedDate().now());
+            tripRequestResponseReqDto.setStatus(request.getStatus());
+            if(request.getRejectReason()!=null){
+                tripRequestResponseReqDto.setRejectReason(request.getRejectReason());
+            }
+            tripRequestResponseService.createTripRequestResponse(tripRequestResponseReqDto);
         }
 
         if (request.getPartnerAssetId() != null) {
@@ -378,6 +413,36 @@ public class TripRequestService {
         return tripResponseDto;
     }
 
+    public void expireUnAcceptedTrips() {
+        List<TripRequest> acceptedTripsList = tripRequestRepository.findByExpiredTimeNotNull();
+        for (TripRequest tripRequest: acceptedTripsList){
+            if (tripRequest.getExpiredTime()!=null){
+                TripRequestResponse tripRequestResponse = tripRequestResponseRepository.findByTripRequestIdAndPartnerId(tripRequest.getId(),tripRequest.getPartnerId());
+                tripRequestResponse.setStatus("expired");
+                tripRequestResponseRepository.save(tripRequestResponse);
+                tripRequest.setStatus("pending");
+                tripRequest.setExpiredTime(null);
+                //If this expired trip is coming from sabi-main fields and not yet assigned to a driver
+                if(tripRequest.getDriverId()==null || tripRequest.getDriverAssistantId() ==null){
+                    tripRequest.setPartnerId(null);
+                    tripRequest.setPartnerAssetId(null);
+                    log.info("partnerId {}", tripRequest.getPartnerId());
+                }
+                if (tripRequest.getDriverId()!=null){
+                    tripRequest.setDriverId(null);
+                }
+                if(tripRequest.getDriverAssistantId()!=null){
+                    tripRequest.setDriverAssistantId(null);
+                }
+                if (tripRequest.getDriverAssistantUserId()!=null){
+                    tripRequest.setDriverAssistantUserId(null);
+                }
+                tripRequestRepository.save(tripRequest);
+            }
+        }
+    }
+
+
     public TripResponseDto findTripRequest(Long id){
         TripRequest tripRequest  = tripRequestRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
@@ -420,6 +485,7 @@ public class TripRequestService {
             tripResponseDto.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
             tripResponseDto.setDriverAssistantPhone(user2.getPhone());
         }
+        tripResponseDto.setCurrentSystemTime(LocalDateTime.now()); // Needed for frontEnd calculation of trip's expiredTime
         return tripResponseDto;
     }
 

@@ -26,6 +26,9 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
 
     List<TripRequest> findByDriverId(Long driverId);
 
+    @Query("SELECT trip FROM TripRequest trip WHERE trip.expiredTime IS NOT NULL")
+    List<TripRequest> findByExpiredTimeNotNull();
+
     Integer countByPartnerIdAndPartnerAssetId(Long partnerId, Long partnerAssetId);
 
 //    List<TripRequest> findByPartnerIdAndIsActive(Long partnerId, Boolean isActive);
