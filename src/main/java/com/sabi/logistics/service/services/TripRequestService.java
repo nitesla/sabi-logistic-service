@@ -378,6 +378,8 @@ public class TripRequestService {
             tripRequest.setDriverId(driver.getId());
             tripRequest.setDriverUserId(driver.getUserId());
             tripRequest.setDriverName(user.getLastName() + " " + user.getFirstName());
+            tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(Long.parseLong(tripRequestExpireTimeInMiliseconds)/(60*1000)));
+
         }
         if (request.getDriverAssistantUserId() != null) {
 
@@ -387,6 +389,7 @@ public class TripRequestService {
             tripRequest.setDriverAssistantId(driver2.getId());
             tripRequest.setDriverAssistantUserId(driver2.getUserId());
             tripRequest.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
+            tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(Long.parseLong(tripRequestExpireTimeInMiliseconds)/(60*1000)));
 
         }
         tripRequest.setUpdatedBy(userCurrent.getId());
