@@ -91,8 +91,8 @@ public class WarehousePictureService {
 
 
 
-    public Page<WarehousePicture> findAll(Long warehouseId,String pictureType, PageRequest pageRequest ){
-        Page<WarehousePicture> assetPicture = repository.findWarehousePicture(warehouseId,pictureType,pageRequest);
+    public Page<WarehousePicture> findAll(Long warehouseId, PageRequest pageRequest ){
+        Page<WarehousePicture> assetPicture = repository.findWarehousePicture(warehouseId,pageRequest);
         if(assetPicture == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

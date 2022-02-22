@@ -138,11 +138,13 @@ public class DropOffService {
             dropOff.setReturnStatus("none");
         }
 
-        if (dropOff.getPaymentStatus().equalsIgnoreCase("paid")) {
-            dropOff.setPaidStatus("paid");
-        }
-        if (dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")) {
-            dropOff.setPaidStatus("pending");
+        if (dropOff.getPaymentStatus() != null) {
+            if (dropOff.getPaymentStatus().equalsIgnoreCase("paid")) {
+                dropOff.setPaidStatus("paid");
+            }
+            if (dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")) {
+                dropOff.setPaidStatus("pending");
+            }
         }
 
 
@@ -209,11 +211,13 @@ public class DropOffService {
             dropOff.setReturnStatus("none");
         }
 
-        if (dropOff.getPaymentStatus().equalsIgnoreCase("paid")) {
-            dropOff.setPaidStatus("paid");
-        }
-        if (dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")) {
-            dropOff.setPaidStatus("pending");
+        if (dropOff.getPaymentStatus() != null) {
+            if (dropOff.getPaymentStatus().equalsIgnoreCase("paid")) {
+                dropOff.setPaidStatus("paid");
+            }
+            if (dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")) {
+                dropOff.setPaidStatus("pending");
+            }
         }
 
         dropOff.setUpdatedBy(userCurrent.getId());

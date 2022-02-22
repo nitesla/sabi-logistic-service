@@ -17,10 +17,8 @@ public interface WarehousePictureRepository extends JpaRepository<WarehousePictu
     List<WarehousePicture> findByIsActive(Boolean isActive);
 
 
-    @Query("SELECT c FROM WarehousePicture c WHERE ((:warehouseId IS NULL) OR (:warehouseId IS NOT NULL AND c.warehouseId = :warehouseId))" +
-            " AND ((:pictureType IS NULL) OR (:pictureType IS NOT NULL AND c.pictureType like %:pictureType%))")
+    @Query("SELECT c FROM WarehousePicture c WHERE ((:warehouseId IS NULL) OR (:warehouseId IS NOT NULL AND c.warehouseId = :warehouseId))")
     Page<WarehousePicture> findWarehousePicture(@Param("warehouseId") Long warehouseId,
-                                @Param("pictureType") String pictureType,
                                 Pageable pageable);
 
 }

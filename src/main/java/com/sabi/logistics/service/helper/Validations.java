@@ -296,9 +296,6 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST,
                     " Image can not be empty!");
         }
-        if (!("Front".equalsIgnoreCase(warehousePictureDto.getPictureType()) || "Side".equalsIgnoreCase(warehousePictureDto.getPictureType()) || "Haulage".equalsIgnoreCase(warehousePictureDto.getPictureType()))) {
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter a correct picture type");
-        }
     }
 
 
