@@ -230,18 +230,16 @@ public class DropOffService {
 
         if(dropOff.getFinalDropOff() == true) {
             tripRequest.setStatus("completed");
-        }
 
-        List<DropOff> dropItems = dropOffRepository.findByTripRequestId(dropOff.getTripRequestId());
-
+            List<DropOff> dropItems = dropOffRepository.findByTripRequestId(dropOff.getTripRequestId());
 //                if(dropItems.stream().map(DropOffItem::getStatus).allMatch(response -> dropOffItem.getStatus().equals("completed"))){
-
-        if(dropItems.stream().allMatch(response -> response.getDeliveryStatus().equalsIgnoreCase("completed"))){
-            tripRequest.setDeliveryStatus("completed");
-        } else if (dropItems.stream().allMatch(response -> response.getDeliveryStatus().equalsIgnoreCase("failed"))){
-            tripRequest.setDeliveryStatus("failed");
-        } else {
-            tripRequest.setDeliveryStatus("PartiallyCompleted");
+            if (dropItems.stream().allMatch(response -> response.getDeliveryStatus().equalsIgnoreCase("completed"))) {
+                tripRequest.setDeliveryStatus("completed");
+            } else if (dropItems.stream().allMatch(response -> response.getDeliveryStatus().equalsIgnoreCase("failed"))) {
+                tripRequest.setDeliveryStatus("failed");
+            } else if (dropItems.stream().anyMatch(response -> response.getDeliveryStatus().equalsIgnoreCase("completed")) && dropItems.stream().anyMatch(response -> response.getDeliveryStatus().equalsIgnoreCase("failed"))) {
+                tripRequest.setDeliveryStatus("PartiallyCompleted");
+            }
         }
 
         tripRequestRepository.save(tripRequest);
