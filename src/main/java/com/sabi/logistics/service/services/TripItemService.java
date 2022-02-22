@@ -82,7 +82,7 @@ public class TripItemService {
         return mapper.map(tripItem,TripItemResponseDto.class);
     }
 
-    public Page<TripItem> findAll(Long thirdPartyProductId, Long tripRequestId, String productName, PageRequest pageRequest ){
+    public Page<TripItem> findAll(String thirdPartyProductId, Long tripRequestId, String productName, PageRequest pageRequest ){
 
         Page<TripItem> tripItems = repository.findByTripItem(thirdPartyProductId, tripRequestId, productName, pageRequest);
         if(tripItems == null){
