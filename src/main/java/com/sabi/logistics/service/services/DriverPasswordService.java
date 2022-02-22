@@ -9,7 +9,6 @@ import com.sabi.framework.helpers.CoreValidations;
 import com.sabi.framework.models.User;
 import com.sabi.framework.notification.requestDto.NotificationRequestDto;
 import com.sabi.framework.notification.requestDto.RecipientRequest;
-import com.sabi.framework.notification.requestDto.SmsRequest;
 import com.sabi.framework.notification.requestDto.WhatsAppRequest;
 import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.service.NotificationService;
@@ -86,10 +85,6 @@ public class DriverPasswordService {
             throw new BadRequestException(CustomResponseCode.FAILED, "User account has been disabled");
         }
 
-        Driver driver = driverRepository.findByUserId(userPhone.getId());
-        if(driver == null){
-            throw new BadRequestException(CustomResponseCode.FAILED, "User is not a driver");
-        }
         if(userPhone.getPhone().equals(appleDefaultPhone)){
             GeneratePasswordResponse generatePasswordResponse = GeneratePasswordResponse.builder()
                     .username(userPhone.getUsername())
@@ -97,6 +92,11 @@ public class DriverPasswordService {
                     .build();
             return generatePasswordResponse;
         }
+        Driver driver = driverRepository.findByUserId(userPhone.getId());
+        if(driver == null){
+            throw new BadRequestException(CustomResponseCode.FAILED, "User is not a driver");
+        }
+
 
         String generatePassword= Utility.passwordGeneration();
         userPhone.setPassword(passwordEncoder.encode(generatePassword));
@@ -113,11 +113,11 @@ public class DriverPasswordService {
         notificationRequestDto.setRecipient(recipient);
         notificationService.emailNotificationRequest(notificationRequestDto);
 
-        SmsRequest smsRequest = SmsRequest.builder()
-                .message("One time password " + " " + generatePassword)
-                .phoneNumber(emailRecipient.getPhone())
-                .build();
-        notificationService.smsNotificationRequest(smsRequest);
+//        SmsRequest smsRequest = SmsRequest.builder()
+//                .message("One time password " + " " + generatePassword)
+//                .phoneNumber(emailRecipient.getPhone())
+//                .build();
+//        notificationService.smsNotificationRequest(smsRequest);
 
         WhatsAppRequest whatsAppRequest = WhatsAppRequest.builder()
                 .message("One time password " + " " + generatePassword)
