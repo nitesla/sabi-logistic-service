@@ -13,7 +13,7 @@ import java.util.List;
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long>, JpaSpecificationExecutor<OrderItem> {
 
 
-    OrderItem findByThirdPartyProductId(Long thirdPartyProductId);
+    OrderItem findByThirdPartyProductId(String thirdPartyProductId);
 
     List<OrderItem> findByIsActive(Boolean isActive);
 
