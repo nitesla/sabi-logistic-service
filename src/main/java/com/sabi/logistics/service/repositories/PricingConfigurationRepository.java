@@ -10,5 +10,5 @@ import java.util.List;
 @Repository
 public interface PricingConfigurationRepository extends JpaRepository<PricingConfiguration, Long>, JpaSpecificationExecutor<PricingConfiguration> {
 
-    List<PricingConfiguration> findByIsActive(Boolean isActive);
+    List<PricingConfiguration> findByPartnerIdAndIsActive(Long partnerId, Boolean isActive);
 }
