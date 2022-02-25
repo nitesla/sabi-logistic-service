@@ -11,14 +11,12 @@ import com.sabi.logistics.core.dto.request.PricingConfigurationRequest;
 import com.sabi.logistics.core.dto.response.PricingConfigurationResponse;
 import com.sabi.logistics.core.dto.response.PricingItemsResponse;
 import com.sabi.logistics.core.enums.DynamicType;
-import com.sabi.logistics.core.models.PricingConfiguration;
-import com.sabi.logistics.core.models.State;
+import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
 import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
-import com.sabi.logistics.service.repositories.PricingConfigurationRepository;
-import com.sabi.logistics.service.repositories.StateRepository;
+import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +44,18 @@ public class PricingConfigurationService {
     @Autowired
     private StateRepository stateRepository;
 
+    @Autowired
+    private PricingItemsRepository pricingItemsRepository;
+
+    @Autowired
+    private PartnerAssetTypeRepository partnerAssetTypeRepository;
+
+    @Autowired
+    private AssetTypePropertiesRepository assetTypePropertiesRepository;
+
+    @Autowired
+    private RouteLocationRepository routeLocationRepository;
+
 
     public PricingConfigurationService(PricingConfigurationRepository PricingConfigurationRepository, ModelMapper mapper) {
         this.pricingConfigurationRepository = PricingConfigurationRepository;
@@ -55,12 +65,6 @@ public class PricingConfigurationService {
         validations.validatePricingConfiguration(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PricingConfiguration pricingConfiguration = mapper.map(request,PricingConfiguration.class);
-//todo:
-//        PricingConfiguration pricingConfigurationExists = pricingConfigurationRepository.
-
-//        if(pricingConfigurationExists != null){
-//            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "pricingConfiguration already exist");
-//        }
         pricingConfiguration.setCreatedBy(userCurrent.getId());
         pricingConfiguration.setIsActive(true);
         pricingConfiguration = pricingConfigurationRepository.save(pricingConfiguration);
@@ -92,8 +96,8 @@ public class PricingConfigurationService {
         PricingConfigurationResponse pricingConfigurationResponse =  mapper.map(pricingConfiguration, PricingConfigurationResponse.class);
 
         if (pricingConfigurationResponse.getArrivalStateId() != null) {
-            State state = stateRepository.findStateById(pricingConfigurationResponse.getArrivalStateId());
-            pricingConfigurationResponse.setStateName(state.getName());
+            State arrivalState = stateRepository.findStateById(pricingConfigurationResponse.getArrivalStateId());
+            pricingConfigurationResponse.setArrivalStateName(arrivalState.getName());
         }
         if (pricingConfigurationResponse.getDepartureStateId() != null) {
             State departureState = stateRepository.findStateById(pricingConfigurationResponse.getDepartureStateId());
@@ -156,8 +160,8 @@ public class PricingConfigurationService {
         PricingConfigurationResponse pricingConfigurationResponse = mapper.map(pricingConfiguration, PricingConfigurationResponse.class);
 
         if (pricingConfigurationResponse.getArrivalStateId() != null) {
-            State state = stateRepository.findStateById(pricingConfigurationResponse.getArrivalStateId());
-            pricingConfigurationResponse.setStateName(state.getName());
+            State arrivalState = stateRepository.findStateById(pricingConfigurationResponse.getArrivalStateId());
+            pricingConfigurationResponse.setArrivalStateName(arrivalState.getName());
         }
         if (pricingConfigurationResponse.getDepartureStateId() != null) {
             State departureState = stateRepository.findStateById(pricingConfigurationResponse.getDepartureStateId());
@@ -176,6 +180,8 @@ public class PricingConfigurationService {
             pricingConfigurationResponse.setStartingLocations(set);
         }
 
+        pricingConfigurationResponse.setPricingItems(getAllPricingItems(pricingConfigurationResponse.getId()));
+
         return pricingConfigurationResponse;
     }
 
@@ -191,22 +197,39 @@ public class PricingConfigurationService {
                         "Requested pricingConfiguration Id does not exist!"));
         PricingConfigurationResponse pricingConfigurationResponse = mapper.map(pricingConfiguration, PricingConfigurationResponse.class);
 
-        State state = stateRepository.findStateById(pricingConfiguration.getArrivalStateId());
+        State arrivalState = stateRepository.findStateById(pricingConfiguration.getArrivalStateId());
         State departureState = stateRepository.findStateById(pricingConfiguration.getDepartureStateId());
-        pricingConfigurationResponse.setStateName(state.getName());
+        pricingConfigurationResponse.setArrivalStateName(arrivalState.getName());
         pricingConfigurationResponse.setDepartureStateName(departureState.getName());
 
         if(pricingConfiguration.getDestinationLocations() != null) {
             String str = pricingConfiguration.getDestinationLocations();
-            Set<String> set = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
-            pricingConfigurationResponse.setDestinationLocations(set);
+            Set<String> sets = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+            pricingConfigurationResponse.setDestinationLocations(sets);
+            Set<String> destinationLocationNames = new HashSet<>();
+            sets.forEach(set -> {
+                RouteLocation location = routeLocationRepository.findRouteLocationById(Long.parseLong(set.replace("[", "").replace("]","")));
+                String name = location.getName();
+                destinationLocationNames.add(name);
+            });
+            pricingConfigurationResponse.setDestinationLocationNames(destinationLocationNames);
         }
 
         if(pricingConfiguration.getStartingLocations() != null) {
             String str = pricingConfiguration.getStartingLocations();
-            Set<String> set = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
-            pricingConfigurationResponse.setStartingLocations(set);
+            Set<String> sets = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+            pricingConfigurationResponse.setStartingLocations(sets);
+            Set<String> startingLocationNames = new HashSet<>();
+            sets.forEach(set -> {
+
+                RouteLocation location = routeLocationRepository.findRouteLocationById(Long.parseLong(set.replace("[", "").replace("]","")));
+                String name = location.getName();
+                startingLocationNames.add(name);
+            });
+            pricingConfigurationResponse.setStartingLocationNames(startingLocationNames);
         }
+
+        pricingConfigurationResponse.setPricingItems(getAllPricingItems(pricingConfigurationResponse.getId()));
 
         return pricingConfigurationResponse;
     }
@@ -257,6 +280,46 @@ public class PricingConfigurationService {
             genericSpecification.add(new SearchCriteria("tripType", tripType, SearchOperation.MATCH));
         }
         Page<PricingConfiguration> pricingConfigurations = pricingConfigurationRepository.findAll(genericSpecification, pageRequest);
+        if(pricingConfigurations == null){
+            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
+        }
+        pricingConfigurations.getContent().forEach(config -> {
+
+            if (config.getArrivalStateId() != null) {
+                State arrivalState = stateRepository.findStateById(config.getArrivalStateId());
+                config.setArrivalStateName(arrivalState.getName());
+            }
+            if (config.getDepartureStateId() != null) {
+                State departureState = stateRepository.findStateById(config.getDepartureStateId());
+                config.setDepartureStateName(departureState.getName());
+            }
+
+            if(config.getDestinationLocations() != null) {
+                String str = config.getDestinationLocations();
+                Set<String> sets = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+                Set<String> destinationLocationNames = new HashSet<>();
+                sets.forEach(set -> {
+                        RouteLocation location = routeLocationRepository.findRouteLocationById(Long.parseLong(set.replace("[", "").replace("]","")));
+                        String name = location.getName();
+                        destinationLocationNames.add(name);
+                });
+                config.setDestinationLocationNames(destinationLocationNames);
+            }
+
+            if(config.getStartingLocations() != null) {
+                String str = config.getStartingLocations();
+                Set<String> sets = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+                Set<String> startingLocationNames = new HashSet<>();
+                sets.forEach(set -> {
+
+                    RouteLocation location = routeLocationRepository.findRouteLocationById(Long.parseLong(set.replace("[", "").replace("]","")));
+                    String name = location.getName();
+                    startingLocationNames.add(name);
+                });
+                config.setStartingLocationNames(startingLocationNames);
+            }
+
+        });
         return pricingConfigurations;
     }
 
@@ -278,17 +341,17 @@ public class PricingConfigurationService {
     }
 
 
-    public List<PricingConfigurationResponse> getAll(Boolean isActive){
+    public List<PricingConfigurationResponse> getAll(Long partnerId, Boolean isActive){
         List<PricingConfigurationResponse> responseDtos = new ArrayList<>();
 
-        List<PricingConfiguration> pricingConfigurations = pricingConfigurationRepository.findByIsActive(isActive);
+        List<PricingConfiguration> pricingConfigurations = pricingConfigurationRepository.findByPartnerIdAndIsActive(partnerId, isActive);
 
         pricingConfigurations.forEach(config -> {
             PricingConfigurationResponse pricingConfigurationResponse = mapper.map(config, PricingConfigurationResponse.class);
 
             if (pricingConfigurationResponse.getArrivalStateId() != null) {
-                State state = stateRepository.findStateById(pricingConfigurationResponse.getArrivalStateId());
-                pricingConfigurationResponse.setStateName(state.getName());
+                State arrivalState = stateRepository.findStateById(pricingConfigurationResponse.getArrivalStateId());
+                pricingConfigurationResponse.setArrivalStateName(arrivalState.getName());
             }
             if (pricingConfigurationResponse.getDepartureStateId() != null) {
                 State departureState = stateRepository.findStateById(pricingConfigurationResponse.getDepartureStateId());
@@ -297,17 +360,55 @@ public class PricingConfigurationService {
 
             if(config.getDestinationLocations() != null) {
                 String str = config.getDestinationLocations();
-                Set<String> set = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
-                pricingConfigurationResponse.setDestinationLocations(set);
+                Set<String> sets = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+                pricingConfigurationResponse.setDestinationLocations(sets);
+
+                Set<String> destinationLocationNames = new HashSet<>();
+                sets.forEach(set -> {
+                    RouteLocation location = routeLocationRepository.findRouteLocationById(Long.parseLong(set.replace("[", "").replace("]","")));
+                    String name = location.getName();
+                    destinationLocationNames.add(name);
+                });
+                pricingConfigurationResponse.setDestinationLocationNames(destinationLocationNames);
             }
 
             if(config.getStartingLocations() != null) {
                 String str = config.getStartingLocations();
-                Set<String> set = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
-                pricingConfigurationResponse.setStartingLocations(set);
+                Set<String> sets = Stream.of(str.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+                pricingConfigurationResponse.setStartingLocations(sets);
+
+                Set<String> startingLocationNames = new HashSet<>();
+                sets.forEach(set -> {
+
+                    RouteLocation location = routeLocationRepository.findRouteLocationById(Long.parseLong(set.replace("[", "").replace("]","")));
+                    String name = location.getName();
+                    startingLocationNames.add(name);
+                });
+                pricingConfigurationResponse.setStartingLocationNames(startingLocationNames);
             }
+
+            pricingConfigurationResponse.setPricingItems(getAllPricingItems(config.getId()));
+
             responseDtos.add(pricingConfigurationResponse);
         });
+        return responseDtos;
+
+    }
+
+    public List<PricingItemsResponse> getAllPricingItems(Long pricingConfigurationId){
+        List<PricingItemsResponse> responseDtos = new ArrayList<>();
+        List<PricingItems> pricingItems = pricingItemsRepository.findByPricingConfigurationId(pricingConfigurationId);
+
+        for (PricingItems pricingItem : pricingItems) {
+            PricingItemsResponse PricingItemsResponse = mapper.map(pricingItem, PricingItemsResponse.class);
+
+            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.getOne(pricingItem.getPartnerAssetTypeId());
+            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
+            PricingItemsResponse.setAssetTypeId(assetTypeProperties.getId());
+            PricingItemsResponse.setAssetTypeName(assetTypeProperties.getName());
+            responseDtos.add(PricingItemsResponse);
+        }
+
         return responseDtos;
 
     }

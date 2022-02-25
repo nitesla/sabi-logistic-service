@@ -12,4 +12,6 @@ public interface PricingItemsRepository extends JpaRepository<PricingItems, Long
     PricingItems findByPartnerAssetTypeId(Long partnerAssetTypeId);
 
     List<PricingItems> findByIsActive(Boolean isActive);
+
+    List<PricingItems> findByPricingConfigurationId(Long pricingConfigurationId);
 }
