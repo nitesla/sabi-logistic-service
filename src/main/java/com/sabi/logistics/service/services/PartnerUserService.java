@@ -1,6 +1,7 @@
 package com.sabi.logistics.service.services;
 
 import com.google.gson.Gson;
+import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.PreviousPasswords;
@@ -217,9 +218,18 @@ public class PartnerUserService {
 
     }
 
-
-
-
+    public PartnerUserResponseDto uploadPartnerUserPicture(PartnerUserRequestDto partnerUserRequestDto){
+        if (partnerUserRequestDto.getImage()==null || partnerUserRequestDto.getImage().isEmpty()){
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"Image can not be empty!");
+        }
+        PartnerUser partnerUser = partnerUserRepository.findById(partnerUserRequestDto.getId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"Requested partnerUser id does not exist."));
+        User currentUser = TokenService.getCurrentUserFromSecurityContext();
+        partnerUser.setImage(partnerUserRequestDto.getImage());
+        partnerUser.setUpdatedBy(currentUser.getId());
+        partnerUser = partnerUserRepository.save(partnerUser);
+        return mapper.map(partnerUser, PartnerUserResponseDto.class);
+    }
 
     public Page<User> findByClientId(String firstName, String phone, String email, String username,
                                                    Long roleId,Boolean isActive, String lastName, PageRequest pageRequest ){
