@@ -417,10 +417,14 @@ public class TripRequestService {
     }
 
     public void expireUnAcceptedTrips() {
-        List<TripRequest> acceptedTripsList = tripRequestRepository.findByExpiredTimeNotNull();
-        for (TripRequest tripRequest: acceptedTripsList){
+        List<TripRequest> expiredTripsList = tripRequestRepository.findByExpiredTimeNotNull();
+        log.info("Current size of expire trips=={}",expiredTripsList.size());
+        for (TripRequest tripRequest: expiredTripsList){
             if (tripRequest.getExpiredTime()!=null){
                 TripRequestResponse tripRequestResponse = tripRequestResponseRepository.findByTripRequestIdAndPartnerId(tripRequest.getId(),tripRequest.getPartnerId());
+                if (tripRequestResponse==null){
+                    log.info("This trip with id "+tripRequest.getId()+" doesn't have any response yet on the TripRequestResponse table. Hence the expiration scheduler will be throwing error");
+                }
                 tripRequestResponse.setStatus("expired");
                 tripRequestResponseRepository.save(tripRequestResponse);
                 tripRequest.setStatus("pending");
