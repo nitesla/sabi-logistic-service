@@ -6,12 +6,17 @@ import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
+import com.sabi.framework.notification.requestDto.SmsRequest;
+import com.sabi.framework.notification.requestDto.WhatsAppRequest;
+import com.sabi.framework.service.NotificationService;
 import com.sabi.framework.service.TokenService;
+import com.sabi.framework.service.WhatsAppService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.*;
 import com.sabi.logistics.core.dto.response.DropOffItemResponseDto;
 import com.sabi.logistics.core.dto.response.DropOffResponseDto;
 import com.sabi.logistics.core.models.*;
+import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
@@ -57,10 +62,16 @@ public class DropOffService {
     @Autowired
     private OrderService orderService;
 
+    private final NotificationService notificationService;
 
-    public DropOffService(DropOffRepository dropOffRepository, ModelMapper mapper) {
+    private final WhatsAppService whatsAppService;
+
+
+    public DropOffService(DropOffRepository dropOffRepository, ModelMapper mapper, NotificationService notificationService, WhatsAppService whatsAppService) {
         this.dropOffRepository = dropOffRepository;
         this.mapper = mapper;
+        this.notificationService = notificationService;
+        this.whatsAppService = whatsAppService;
     }
 
     public DropOffResponseDto createDropOff(DropOffRequestDto request) {
@@ -83,6 +94,16 @@ public class DropOffService {
         log.debug("Create new trip item - {}"+ new Gson().toJson(dropOff));
         DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
         dropOffResponseDto.setDeliveryAddress(order.getDeliveryAddress());
+
+        //send notifications of the deliveryCode
+        SmsRequest smsRequest = SmsRequest.builder().build();
+        WhatsAppRequest whatsAppRequest = WhatsAppRequest.builder().build();
+        smsRequest.setPhoneNumber(dropOff.getPhoneNo());
+        smsRequest.setMessage("This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode());
+        whatsAppRequest.setMessage("This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode());
+        whatsAppRequest.setPhoneNumber(dropOff.getPhoneNo());
+        notificationService.smsNotificationRequest(smsRequest);
+        whatsAppService.whatsAppNotification(whatsAppRequest);
         return dropOffResponseDto;
     }
 
@@ -116,6 +137,15 @@ public class DropOffService {
             }
 
             responseDtos.add(dropOffResponseDto);
+            //send notifications of the deliveryCode
+            SmsRequest smsRequest = SmsRequest.builder().build();
+            WhatsAppRequest whatsAppRequest = WhatsAppRequest.builder().build();
+            smsRequest.setPhoneNumber(dropOff.getPhoneNo());
+            smsRequest.setMessage("This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode());
+            whatsAppRequest.setMessage("This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode());
+            whatsAppRequest.setPhoneNumber(dropOff.getPhoneNo());
+            notificationService.smsNotificationRequest(smsRequest);
+            whatsAppService.whatsAppNotification(whatsAppRequest);
         });
         return responseDtos;
     }
@@ -415,6 +445,9 @@ public class DropOffService {
         List<DropOff> dropOffList = new ArrayList<>();
         for (TripRequest tripRequest: tripRequestList){
             List<DropOff> tripsDropOffsList = dropOffRepository.findByTripRequestIdAndReturnStatus(tripRequest.getId(),returnedStatus);
+            tripsDropOffsList.stream().forEach((dropOff)->dropOff.setDropOffItem(getAllDropOffItems(dropOff.getId())));
+            tripsDropOffsList.stream().filter((dropOffResponseDto)->dropOffResponseDto.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")).forEach((dropOff)->dropOff.setAmountCollected(getTotalAmount(dropOff.getDropOffItem())));
+            //tripsDropOffsList.stream().filter((dropOff) ->dropOff.getDeliveryStatus().equalsIgnoreCase("failed")).forEach((dropOff)->dropOff.setOrder(orderService.findOrder(dropOff.getOrderId())));
             dropOffList.addAll(tripsDropOffsList);
         }
         return dropOffList;
