@@ -276,6 +276,7 @@ public class DropOffService {
 
         if(request.getDropOffItem() != null) {
             List<DropOffItemResponseDto> dropOffItems = dropOffItemService.updateDropOffItemStatus(request.getDropOffItem(), dropOffResponseDto.getId());
+            dropOff.setDropOffItem(dropOffItemRepository.findByDropOffId(dropOff.getId()));
         }
 
         order = orderRepository.findOrderById(dropOff.getOrderId());
@@ -304,6 +305,7 @@ public class DropOffService {
         if (dropOff.getPaymentStatus() != null && dropOffResponseDto.getPaymentStatus().equalsIgnoreCase("Pay On Delivery")) {
             List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(id);
             dropOffResponseDto.setTotalAmount(getTotalAmount(dropOffItems));
+            dropOffResponseDto.setAmountCollected(getTotalAmountCollected(dropOffItems));
         }
         return dropOffResponseDto;
     }
@@ -315,11 +317,19 @@ public class DropOffService {
         if(dropOffs == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
-
+        dropOffs.getContent().stream().forEach((dropOff)->dropOff.setDropOffItem(getAllDropOffItems(dropOff.getId())));
+        dropOffs.getContent().stream().filter((dropOff)->dropOff.getPaymentStatus()!=null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")).forEach((dropOff)->dropOff.setTotalAmount(getTotalAmount(dropOff.getDropOffItem())));
+        dropOffs.getContent().stream().filter((dropOff)->dropOff.getPaymentStatus()!=null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")).forEach((dropOff)->dropOff.setAmountCollected(getTotalAmountCollected(dropOff.getDropOffItem())));
 
 
         return dropOffs;
 
+    }
+    private List<DropOff> setAndCaluateDroppOffsParameters(List<DropOff> dropOffs){
+        dropOffs.stream().forEach((dropOff)->dropOff.setDropOffItem(getAllDropOffItems(dropOff.getId())));
+        dropOffs.stream().filter((dropOff)->dropOff.getPaymentStatus()!=null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")).forEach((dropOff)->dropOff.setTotalAmount(getTotalAmount(dropOff.getDropOffItem())));
+        dropOffs.stream().filter((dropOff)->dropOff.getPaymentStatus()!=null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")).forEach((dropOff)->dropOff.setAmountCollected(getTotalAmountCollected(dropOff.getDropOffItem())));
+        return dropOffs;
     }
 
 
@@ -337,9 +347,8 @@ public class DropOffService {
 
 
     public List<DropOff> getAll(Boolean isActive, Long tripRequestId){
-        List<DropOff> tripItems = dropOffRepository.findByIsActiveAndTripRequestId(isActive, tripRequestId);
-
-        return tripItems;
+        List<DropOff> tripsDropOffsList = dropOffRepository.findByIsActiveAndTripRequestId(isActive, tripRequestId);
+        return this.setAndCaluateDroppOffsParameters(tripsDropOffsList);
 
     }
 
@@ -422,6 +431,7 @@ public class DropOffService {
             if (dropOff.getPaymentStatus() != null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")) {
                 List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
                 dropOff.setTotalAmount(getTotalAmount(dropOffItems));
+                dropOff.setAmountCollected(getTotalAmountCollected(dropOffItems));
             }
 
             dropOff.setDropOffItem(getAllDropOffItems(dropOff.getId()));
@@ -445,10 +455,8 @@ public class DropOffService {
         List<DropOff> dropOffList = new ArrayList<>();
         for (TripRequest tripRequest: tripRequestList){
             List<DropOff> tripsDropOffsList = dropOffRepository.findByTripRequestIdAndReturnStatus(tripRequest.getId(),returnedStatus);
-            tripsDropOffsList.stream().forEach((dropOff)->dropOff.setDropOffItem(getAllDropOffItems(dropOff.getId())));
-            tripsDropOffsList.stream().filter((dropOffResponseDto)->dropOffResponseDto.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")).forEach((dropOff)->dropOff.setAmountCollected(getTotalAmount(dropOff.getDropOffItem())));
             //tripsDropOffsList.stream().filter((dropOff) ->dropOff.getDeliveryStatus().equalsIgnoreCase("failed")).forEach((dropOff)->dropOff.setOrder(orderService.findOrder(dropOff.getOrderId())));
-            dropOffList.addAll(tripsDropOffsList);
+            dropOffList.addAll(setAndCaluateDroppOffsParameters(tripsDropOffsList));
         }
         return dropOffList;
     }
@@ -470,6 +478,9 @@ public class DropOffService {
     }
 
     private BigDecimal getTotalAmount(List<DropOffItem> dropOffItems) {
-        return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getAmountCollected).reduce(BigDecimal.ZERO, BigDecimal::add));
+        return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getTotalAmount).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add));
+    }
+    private BigDecimal getTotalAmountCollected(List<DropOffItem> dropOffItems) {
+        return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getAmountCollected).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 }
