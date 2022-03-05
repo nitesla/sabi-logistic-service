@@ -21,6 +21,7 @@ import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.RouteLocationRepository;
 import com.sabi.logistics.service.repositories.StateRepository;
+import com.sabi.logistics.service.repositories.TollPricesRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,8 @@ public class RouteLocationService {
     private StateRepository stateRepository;
     @Autowired
     private TollPriceService tollPriceService;
+    @Autowired
+    private TollPricesRepository tollPricesRepository;
 
 
     public RouteLocationService(RouteLocationRepository routeLocationRepository, ModelMapper mapper) {
@@ -144,8 +147,19 @@ public class RouteLocationService {
 
     public List<RouteLocation> findrouteLocationByStateId(Long StateId) {
         List<RouteLocation> routeLocations = routeLocationRepository.findByStateId(StateId);
+
+        for (RouteLocation routeLocation : routeLocations){
+
+            routeLocation.setTollPrices(getTollPrices(routeLocation.getId()));
+
+        }
+
         return routeLocations;
 
+    }
+
+    public List<TollPrices> getTollPrices(Long routeLocationId){
+        return tollPricesRepository.findByRouteLocationId(routeLocationId);
     }
 
 

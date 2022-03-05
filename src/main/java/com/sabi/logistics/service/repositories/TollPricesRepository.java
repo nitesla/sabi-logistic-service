@@ -22,4 +22,6 @@ public interface TollPricesRepository extends JpaRepository<TollPrices, Long> {
                            @Param("assestTypeId") Long assestTypeId,
                            Pageable pageable);
     List<State> findByIsActive(Boolean isActive);
+
+    List<TollPrices> findByRouteLocationId(Long routeLocationId);
 }
