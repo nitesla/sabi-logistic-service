@@ -6,12 +6,17 @@ import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
+import com.sabi.framework.notification.requestDto.SmsRequest;
+import com.sabi.framework.notification.requestDto.WhatsAppRequest;
+import com.sabi.framework.service.NotificationService;
 import com.sabi.framework.service.TokenService;
+import com.sabi.framework.service.WhatsAppService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.*;
 import com.sabi.logistics.core.dto.response.DropOffItemResponseDto;
 import com.sabi.logistics.core.dto.response.DropOffResponseDto;
 import com.sabi.logistics.core.models.*;
+import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -57,10 +63,16 @@ public class DropOffService {
     @Autowired
     private OrderService orderService;
 
+    private final NotificationService notificationService;
 
-    public DropOffService(DropOffRepository dropOffRepository, ModelMapper mapper) {
+    private final WhatsAppService whatsAppService;
+
+
+    public DropOffService(DropOffRepository dropOffRepository, ModelMapper mapper, NotificationService notificationService, WhatsAppService whatsAppService) {
         this.dropOffRepository = dropOffRepository;
         this.mapper = mapper;
+        this.notificationService = notificationService;
+        this.whatsAppService = whatsAppService;
     }
 
     public DropOffResponseDto createDropOff(DropOffRequestDto request) {
@@ -83,6 +95,16 @@ public class DropOffService {
         log.debug("Create new trip item - {}"+ new Gson().toJson(dropOff));
         DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
         dropOffResponseDto.setDeliveryAddress(order.getDeliveryAddress());
+
+        //send notifications of the deliveryCode
+        SmsRequest smsRequest = SmsRequest.builder().build();
+        WhatsAppRequest whatsAppRequest = WhatsAppRequest.builder().build();
+        smsRequest.setPhoneNumber(dropOff.getPhoneNo());
+        smsRequest.setMessage("This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode());
+        whatsAppRequest.setMessage("This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode());
+        whatsAppRequest.setPhoneNumber(dropOff.getPhoneNo());
+        notificationService.smsNotificationRequest(smsRequest);
+        whatsAppService.whatsAppNotification(whatsAppRequest);
         return dropOffResponseDto;
     }
 
@@ -116,6 +138,15 @@ public class DropOffService {
             }
 
             responseDtos.add(dropOffResponseDto);
+            //send notifications of the deliveryCode
+            SmsRequest smsRequest = SmsRequest.builder().build();
+            WhatsAppRequest whatsAppRequest = WhatsAppRequest.builder().build();
+            smsRequest.setPhoneNumber(dropOff.getPhoneNo());
+            smsRequest.setMessage("This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode());
+            whatsAppRequest.setMessage("This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode());
+            whatsAppRequest.setPhoneNumber(dropOff.getPhoneNo());
+            notificationService.smsNotificationRequest(smsRequest);
+            whatsAppService.whatsAppNotification(whatsAppRequest);
         });
         return responseDtos;
     }
@@ -246,6 +277,7 @@ public class DropOffService {
 
         if(request.getDropOffItem() != null) {
             List<DropOffItemResponseDto> dropOffItems = dropOffItemService.updateDropOffItemStatus(request.getDropOffItem(), dropOffResponseDto.getId());
+            dropOff.setDropOffItem(dropOffItemRepository.findByDropOffId(dropOff.getId()));
         }
 
         order = orderRepository.findOrderById(dropOff.getOrderId());
@@ -274,6 +306,7 @@ public class DropOffService {
         if (dropOff.getPaymentStatus() != null && dropOffResponseDto.getPaymentStatus().equalsIgnoreCase("Pay On Delivery")) {
             List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(id);
             dropOffResponseDto.setTotalAmount(getTotalAmount(dropOffItems));
+            dropOffResponseDto.setAmountCollected(getTotalAmountCollected(dropOffItems));
         }
         return dropOffResponseDto;
     }
@@ -285,11 +318,19 @@ public class DropOffService {
         if(dropOffs == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
-
+        dropOffs.getContent().stream().forEach((dropOff)->dropOff.setDropOffItem(getAllDropOffItems(dropOff.getId())));
+        dropOffs.getContent().stream().filter((dropOff)->dropOff.getPaymentStatus()!=null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")).forEach((dropOff)->dropOff.setTotalAmount(getTotalAmount(dropOff.getDropOffItem())));
+        dropOffs.getContent().stream().filter((dropOff)->dropOff.getPaymentStatus()!=null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")).forEach((dropOff)->dropOff.setAmountCollected(getTotalAmountCollected(dropOff.getDropOffItem())));
 
 
         return dropOffs;
 
+    }
+    private List<DropOff> setAndCaluateDroppOffsParameters(List<DropOff> dropOffs){
+        dropOffs.stream().forEach((dropOff)->dropOff.setDropOffItem(getAllDropOffItems(dropOff.getId())));
+        dropOffs.stream().filter((dropOff)->dropOff.getPaymentStatus()!=null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")).forEach((dropOff)->dropOff.setTotalAmount(getTotalAmount(dropOff.getDropOffItem())));
+        dropOffs.stream().filter((dropOff)->dropOff.getPaymentStatus()!=null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")).forEach((dropOff)->dropOff.setAmountCollected(getTotalAmountCollected(dropOff.getDropOffItem())));
+        return dropOffs;
     }
 
 
@@ -307,9 +348,8 @@ public class DropOffService {
 
 
     public List<DropOff> getAll(Boolean isActive, Long tripRequestId){
-        List<DropOff> tripItems = dropOffRepository.findByIsActiveAndTripRequestId(isActive, tripRequestId);
-
-        return tripItems;
+        List<DropOff> tripsDropOffsList = dropOffRepository.findByIsActiveAndTripRequestId(isActive, tripRequestId);
+        return this.setAndCaluateDroppOffsParameters(tripsDropOffsList);
 
     }
 
@@ -392,6 +432,7 @@ public class DropOffService {
             if (dropOff.getPaymentStatus() != null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")) {
                 List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
                 dropOff.setTotalAmount(getTotalAmount(dropOffItems));
+                dropOff.setAmountCollected(getTotalAmountCollected(dropOffItems));
             }
 
             dropOff.setDropOffItem(getAllDropOffItems(dropOff.getId()));
@@ -412,12 +453,13 @@ public class DropOffService {
         if(tripRequestList.size() == 0){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"This driver doesn't have any trips at the moment");
         }
-        List<DropOff> dropOffList = new ArrayList<>();
-        for (TripRequest tripRequest: tripRequestList){
-            List<DropOff> tripsDropOffsList = dropOffRepository.findByTripRequestIdAndReturnStatus(tripRequest.getId(),returnedStatus);
-            dropOffList.addAll(tripsDropOffsList);
+        if(!Arrays.asList("none","returned","pending").stream().anyMatch(s -> s.equalsIgnoreCase(returnedStatus))){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"The given returnedStatus does not exist");
         }
-        return dropOffList;
+        List<DropOff> dropOffList = dropOffRepository.getAllDropOffsOfADriver(driverUserId,returnedStatus);
+        log.info("The Size of Retrived Droppoffs =={}",dropOffList.size());
+
+        return setAndCaluateDroppOffsParameters(dropOffList);
     }
 
     public List<DropOffItem> getAllDropOffItems(Long dropOffId){
@@ -437,6 +479,9 @@ public class DropOffService {
     }
 
     private BigDecimal getTotalAmount(List<DropOffItem> dropOffItems) {
-        return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getAmountCollected).reduce(BigDecimal.ZERO, BigDecimal::add));
+        return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getTotalAmount).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add));
+    }
+    private BigDecimal getTotalAmountCollected(List<DropOffItem> dropOffItems) {
+        return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getAmountCollected).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 }

@@ -38,6 +38,7 @@ public class Validations {
     private final PartnerAssetTypeRepository partnerAssetTypeRepository;
     private final DriverRepository driverRepository;
     private final BrandRepository brandRepository;
+    private final PartnerUserRepository partnerUserRepository;
 
     @Autowired
     private WarehouseRepository warehouseRepository;
@@ -81,11 +82,12 @@ public class Validations {
 
 
 
+
     public Validations(RoleRepository roleRepository,CountryRepository countryRepository,StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository,
                        PartnerRepository partnerRepository, CategoryRepository categoryRepository,
                        AssetTypePropertiesRepository assetTypePropertiesRepository, PartnerAssetRepository partnerAssetRepository,
                        PartnerAssetTypeRepository partnerAssetTypeRepository, DriverRepository driverRepository,
-                       BrandRepository brandRepository) {
+                       BrandRepository brandRepository, PartnerUserRepository partnerUserRepository) {
         this.roleRepository = roleRepository;
         this.countryRepository = countryRepository;
         this.stateRepository = stateRepository;
@@ -98,6 +100,7 @@ public class Validations {
         this.partnerAssetTypeRepository = partnerAssetTypeRepository;
         this.driverRepository = driverRepository;
         this.brandRepository = brandRepository;
+        this.partnerUserRepository = partnerUserRepository;
     }
 
     public void validateState(StateDto stateDto) {
@@ -286,7 +289,6 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter a correct picture type");
         }
     }
-
     public void validateWarehousePicture(WarehousePictureDto warehousePictureDto) {
 
         Warehouse warehouse = warehouseRepository.findById(warehousePictureDto.getWarehouseId())
@@ -297,8 +299,6 @@ public class Validations {
                     " Image can not be empty!");
         }
     }
-
-
 
     public void validatePartner(PartnerSignUpDto partner){
         if (partner.getFirstName() == null || partner.getFirstName().isEmpty())

@@ -318,7 +318,20 @@ public class DropOffItemService {
             if(request.getQtyGoodsDelivered() != null && request.getQtyGoodsDelivered() > orderItem.getQty()){
                 throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Quantity of Items Delivered can't be greater than Total Quantity");
             }
+            //Calculate Outstanding Amount based on Amount Collected and Total Amount
+            if(request.getAmountCollected()!= null){
+                if(request.getAmountCollected().doubleValue() > dropOffItem.getTotalAmount().doubleValue()){
+                    throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"Amount Collected can't be greater than total amount");
+                }
+                if (dropOffItem.getOutstandingAmount()!=null){
+                    dropOffItem.setOutstandingAmount(dropOffItem.getOutstandingAmount().subtract(request.getAmountCollected()));
 
+                }
+                else {
+                    dropOffItem.setOutstandingAmount(dropOffItem.getTotalAmount().subtract(request.getAmountCollected()));
+                }
+
+            }
             mapper.map(request, dropOffItem);
             dropOffItem.setUpdatedBy(userCurrent.getId());
             dropOffItemRepository.save(dropOffItem);

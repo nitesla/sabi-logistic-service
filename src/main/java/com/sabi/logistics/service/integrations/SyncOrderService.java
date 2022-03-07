@@ -51,11 +51,13 @@ public class SyncOrderService {
                         order.setTotalAmount(sabiOrder.getTotalPrice());
                         order.setTotalQuantity(sabiOrder.getNoOfItems());
                         order.setThirdPartyOrderId(sabiOrder.getId());
+                        order.setIsActive(true);
                         order = (Order)orderRepository.save(order);
                         log.info("Synced Order successfully saved!",order);
                         SingleOrderResponse singleOrderResponse = externalWebService.orderDetail(sabiOrder.getId());
                         if (singleOrderResponse!=null && singleOrderResponse.isStatus() && singleOrderResponse.getData()!=null){
                             List<OrderItem> orderItemList = singleOrderResponse.getData().getOrderItems();
+                            BigDecimal totalOrderAmount = new BigDecimal(0);
                             if(orderItemList.size() > 0){
                                 for (OrderItem orderItem: orderItemList){
                                     com.sabi.logistics.core.models.OrderItem logisticsOrderItem = new com.sabi.logistics.core.models.OrderItem();
@@ -64,19 +66,24 @@ public class SyncOrderService {
                                     logisticsOrderItem.setQty(orderItem.getQuantity());
                                     logisticsOrderItem.setProductName(orderItem.getProductName());
                                     logisticsOrderItem.setDeliveryStatus("pending");
-                                    logisticsOrderItem.setTotalPrice(new BigDecimal(orderItem.getQuantity()).multiply(new BigDecimal(orderItem.getUnitPrice())));
+                                    BigDecimal totalOrderItemsAmount = new BigDecimal(orderItem.getQuantity()).multiply(new BigDecimal(orderItem.getUnitPrice()));
+                                    logisticsOrderItem.setTotalPrice(totalOrderItemsAmount);
+                                    totalOrderAmount.add(totalOrderItemsAmount);
                                     logisticsOrderItem.setDeliveryAddress(singleOrderResponse.getData().getOrderDelivery().getAddress());
                                     logisticsOrderItem.setCustomerPhone(singleOrderResponse.getData().getCustomerDetails().getPhoneNumber());
                                     logisticsOrderItem.setCustomerName(singleOrderResponse.getData().getCustomerDetails().getName());
                                     logisticsOrderItem.setOrderId(order.getId());
                                     logisticsOrderItem.setCreatedDate(LocalDateTime.parse(singleOrderResponse.getData().getOrderDate().toString()));
                                     logisticsOrderItem.setThirdPartyOrderId(orderItem.getOrderItemId());
+                                    logisticsOrderItem.setIsActive(true);
                                     //We still need to set weight,height and length properties
                                     orderItemRepository.save(logisticsOrderItem);
                                     log.info("Synced OrderItems successfully saved!{}",logisticsOrderItem);
 
                                 }
                             }
+                            order.setTotalAmount(totalOrderAmount.doubleValue());
+                            order=(Order) orderRepository.save(order);
                         }
 
                     }

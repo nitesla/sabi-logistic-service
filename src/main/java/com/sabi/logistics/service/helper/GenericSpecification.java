@@ -1,6 +1,7 @@
 package com.sabi.logistics.service.helper;
 
 
+import org.modelmapper.ModelMapper;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -9,6 +10,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GenericSpecification<T> implements Specification<T> {
 
@@ -22,6 +24,13 @@ public class GenericSpecification<T> implements Specification<T> {
 
     public void add(SearchCriteria criteria) {
         list.add(criteria);
+    }
+
+    public <S,T> List mapList(ModelMapper modelMapper,List<S> source, Class<T> targetClass){
+        return  source
+                .stream()
+                .map(s -> modelMapper.map(s, targetClass))
+                .collect(Collectors.toList());
     }
 
     @Override
