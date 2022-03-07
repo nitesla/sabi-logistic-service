@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -452,13 +453,13 @@ public class DropOffService {
         if(tripRequestList.size() == 0){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"This driver doesn't have any trips at the moment");
         }
-        List<DropOff> dropOffList = new ArrayList<>();
-        for (TripRequest tripRequest: tripRequestList){
-            List<DropOff> tripsDropOffsList = dropOffRepository.findByTripRequestIdAndReturnStatus(tripRequest.getId(),returnedStatus);
-            //tripsDropOffsList.stream().filter((dropOff) ->dropOff.getDeliveryStatus().equalsIgnoreCase("failed")).forEach((dropOff)->dropOff.setOrder(orderService.findOrder(dropOff.getOrderId())));
-            dropOffList.addAll(setAndCaluateDroppOffsParameters(tripsDropOffsList));
+        if(!Arrays.asList("none","returned","pending").stream().anyMatch(s -> s.equalsIgnoreCase(returnedStatus))){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"The given returnedStatus does not exist");
         }
-        return dropOffList;
+        List<DropOff> dropOffList = dropOffRepository.getAllDropOffsOfADriver(driverUserId,returnedStatus);
+        log.info("The Size of Retrived Droppoffs =={}",dropOffList.size());
+
+        return setAndCaluateDroppOffsParameters(dropOffList);
     }
 
     public List<DropOffItem> getAllDropOffItems(Long dropOffId){

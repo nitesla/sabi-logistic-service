@@ -35,9 +35,9 @@ public interface DropOffRepository extends JpaRepository<DropOff, Long>, JpaSpec
     List<DropOff> findByTripRequestIdAndReturnStatus(Long tripRequestId, String retrunedStatus);
     List<DropOff>findByTripRequestIdAndPaidStatusAndReturnStatus(Long tripRequestId, String paidStatus,String returnedStatus);
 
-    /**
-    @Query("SELECT do FROM DropOff do LEFT JOIN TripRequest tr ON do.tripRequestId  LEFT JOIN  Driver dr ON tr.driverId WHERE (do.returnStatus = :returnedStatus AND  dr.userId = :driverUserId)")
+
+    @Query("SELECT do FROM DropOff do INNER JOIN TripRequest tr ON do.tripRequestId = tr.id INNER JOIN  Driver dr ON dr.id= tr.driverId WHERE (do.returnStatus = :returnedStatus AND  dr.userId = :driverUserId)")
     public List<DropOff> getAllDropOffsOfADriver(Long driverUserId, String returnedStatus);
-    */
+
 
 }
