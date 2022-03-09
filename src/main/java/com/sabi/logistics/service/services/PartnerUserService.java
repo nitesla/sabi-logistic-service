@@ -271,6 +271,7 @@ public class PartnerUserService {
          users.setFirstName(user.getFirstName());
          users.setLastName(user.getLastName());
          users.setPhone(user.getPhone());
+         users.setPhoto(user.getPhoto());
          users.setMiddleName(user.getMiddleName());
          users.setUsername(user.getUsername());
          users.setRoleId(user.getRoleId());
@@ -323,6 +324,7 @@ public class PartnerUserService {
             users.setFirstName(user.getFirstName());
             users.setLastName(user.getLastName());
             users.setPhone(user.getPhone());
+            users.setPhoto(user.getPhoto());
             users.setMiddleName(user.getMiddleName());
             users.setUsername(user.getUsername());
             users.setRoleId(user.getRoleId());
