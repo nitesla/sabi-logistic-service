@@ -16,7 +16,6 @@ import com.sabi.logistics.core.dto.request.*;
 import com.sabi.logistics.core.dto.response.DropOffItemResponseDto;
 import com.sabi.logistics.core.dto.response.DropOffResponseDto;
 import com.sabi.logistics.core.models.*;
-import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
@@ -269,6 +268,8 @@ public class DropOffService {
             } else if (dropItems.stream().allMatch(response -> response.getDeliveryStatus().equalsIgnoreCase("failed"))) {
                 tripRequest.setDeliveryStatus("failed");
             } else if (dropItems.stream().anyMatch(response -> response.getDeliveryStatus().equalsIgnoreCase("completed")) && dropItems.stream().anyMatch(response -> response.getDeliveryStatus().equalsIgnoreCase("failed"))) {
+                tripRequest.setDeliveryStatus("PartiallyCompleted");
+            } else if (dropItems.stream().anyMatch(response -> response.getDeliveryStatus().equalsIgnoreCase("PartiallyCompleted"))) {
                 tripRequest.setDeliveryStatus("PartiallyCompleted");
             }
         }
