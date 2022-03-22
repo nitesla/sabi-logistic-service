@@ -519,6 +519,14 @@ public class Validations {
 
         if (request.getQty() == null )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Qty cannot be empty");
+
+        if (request.getUnitPrice() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Unit Price cannot be empty");
+
+        if (request.getTotalPrice() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Total Price cannot be empty");
+
+
         if (!Utility.isNumeric(request.getQty().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Qty");
 

@@ -2,6 +2,7 @@ package com.sabi.logistics.service.services;
 
 import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
+import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
@@ -27,6 +28,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +58,10 @@ public class OrderItemService {
     public OrderItemResponseDto createOrderItem(OrderItemRequestDto request) {
         validations.validateOrderItem(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        BigDecimal nitesla = request.getUnitPrice().multiply(new BigDecimal(request.getQty()));
+        if (!request.getTotalPrice().equals(nitesla)) {
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "totalPrice MUST be equal to (unitPrice * qty)");
+        }
         OrderItem orderItem = mapper.map(request,OrderItem.class);
         Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseId());
         orderItem.setCreatedBy(userCurrent.getId());
@@ -72,6 +78,10 @@ public class OrderItemService {
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         requests.forEach(request->{
             validations.validateOrderItem(request);
+            BigDecimal nitesla = request.getUnitPrice().multiply(new BigDecimal(request.getQty()));
+            if (!request.getTotalPrice().equals(nitesla)) {
+                throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "totalPrice MUST be equal to (unitPrice * qty)");
+            }
             OrderItem orderItem = mapper.map(request,OrderItem.class);
             orderItem.setCreatedBy(userCurrent.getId());
             orderItem.setIsActive(true);
@@ -85,6 +95,10 @@ public class OrderItemService {
     public OrderItemResponseDto updateOrderItem(OrderItemRequestDto request) {
         validations.validateOrderItem(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+        BigDecimal nitesla = request.getUnitPrice().multiply(new BigDecimal(request.getQty()));
+        if (!request.getTotalPrice().equals(nitesla)) {
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "totalPrice MUST be equal to (unitPrice * qty)");
+        }
         OrderItem orderItem = orderItemRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested order item Id does not exist!"));
