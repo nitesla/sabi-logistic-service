@@ -62,7 +62,7 @@ public class PricingConfigurationService {
         this.mapper = mapper;
     }
     public PricingConfigurationResponse createPricingConfiguration(PricingConfigurationRequest request) {
-        validations.validatePricingConfiguration(request);
+//        validations.validatePricingConfiguration(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PricingConfiguration pricingConfiguration = mapper.map(request,PricingConfiguration.class);
         pricingConfiguration.setCreatedBy(userCurrent.getId());
@@ -73,7 +73,7 @@ public class PricingConfigurationService {
     }
 
     public PricingConfigurationResponse createMasterPricingConfiguration(PricingConfigMasterRequest request) {
-        validations.validatePricingConfiguration(request);
+//        validations.validatePricingConfiguration(request);
         List<PricingItemsResponse> pricingItemsResponses = new ArrayList<>();
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PricingConfiguration pricingConfiguration = mapper.map(request,PricingConfiguration.class);
@@ -134,7 +134,7 @@ public class PricingConfigurationService {
      */
 
     public PricingConfigurationResponse updatePricingConfiguration(PricingConfigurationRequest request) {
-        validations.validatePricingConfiguration(request);
+//        validations.validatePricingConfiguration(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PricingConfiguration pricingConfiguration = pricingConfigurationRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
