@@ -11,15 +11,9 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.WarehouseRequestDto;
 import com.sabi.logistics.core.dto.response.WarehouseResponseDto;
-import com.sabi.logistics.core.models.LGA;
-import com.sabi.logistics.core.models.Partner;
-import com.sabi.logistics.core.models.State;
-import com.sabi.logistics.core.models.Warehouse;
+import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.Validations;
-import com.sabi.logistics.service.repositories.LGARepository;
-import com.sabi.logistics.service.repositories.PartnerRepository;
-import com.sabi.logistics.service.repositories.StateRepository;
-import com.sabi.logistics.service.repositories.WarehouseRepository;
+import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +22,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -46,10 +42,13 @@ public class WarehouseService {
     @Autowired
     private PartnerRepository partnerRepository;
 
-    public WarehouseService(WarehouseRepository WarehouseRepository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
+    private final WarehouseProductRepository warehouseProductRepository;
+
+    public WarehouseService(WarehouseRepository WarehouseRepository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations, WarehouseProductRepository warehouseProductRepository) {
         this.warehouseRepository = WarehouseRepository;
         this.mapper = mapper;
         this.validations = validations;
+        this.warehouseProductRepository = warehouseProductRepository;
     }
 
     public WarehouseResponseDto createWarehouse(WarehouseRequestDto request) {
@@ -94,6 +93,10 @@ public class WarehouseService {
         warehouse.setLgaName(lga.getName());
         State state = stateRepository.findStateById(lga.getStateId());
         warehouse.setStateName(state.getName());
+        List<WarehouseProduct> warehouseProductsList = warehouseProductRepository.findByWarehouseId(warehouse.getId());
+        if (warehouseProductsList != null) {
+            warehouse.setProductInfo(warehouseProductsList);
+        }
         WarehouseResponseDto warehouseResponseDto = mapper.map(warehouse, WarehouseResponseDto.class);
         warehouseResponseDto.setStockLeft(warehouseResponseDto.getTotalStock() - warehouseResponseDto.getStockSold());
         warehouseResponseDto.setLgaId(lga.getId());
@@ -101,8 +104,6 @@ public class WarehouseService {
         Partner partner = partnerRepository.findPartnerById(warehouse.getPartnerId());
         User user = userRepository.getOne(partner.getUserId());
         warehouseResponseDto.setWareHouseManager(user.getLastName() + " " + user.getFirstName());
-
-
         return warehouseResponseDto;
     }
 
@@ -117,6 +118,10 @@ public class WarehouseService {
         warehouse1.setLgaName(lga.getName());
         State state = stateRepository.getOne(lga.getStateId());
             warehouse1.setStateName(state.getName());
+            List<WarehouseProduct> warehouseProductsList = warehouseProductRepository.findByWarehouseId(warehouse1.getId());
+            if (warehouseProductsList != null) {
+                warehouse1.setProductInfo(warehouseProductsList);
+            }
         });
         return warehouse;
 
@@ -136,7 +141,11 @@ public class WarehouseService {
 
     public List<Warehouse> getAll(Boolean isActive,Long partnerId) {
         List<Warehouse> warehouses = warehouseRepository.findWarehouses(isActive,partnerId);
+        warehouses.stream().forEach(warehouse -> {
+            List<WarehouseProduct> warehouseProductsList = warehouseProductRepository.findByWarehouseId(warehouse.getId());
+            if (warehouseProductsList != null)
+                warehouse.setProductInfo(warehouseProductsList);
+        });
         return warehouses;
-
     }
 }
