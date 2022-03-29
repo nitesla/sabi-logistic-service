@@ -20,6 +20,7 @@ public interface AssetTypePropertiesRepository extends JpaRepository<AssetTypePr
 
     List<AssetTypeProperties> findByIsActive(Boolean isActive);
 
-    @Query("SELECT a FROM AssetTypeProperties a WHERE ((:name IS NULL) OR (:name IS NOT NULL AND a.name like %:name%)) order by a.id desc")
-    Page<AssetTypeProperties> findAssets(@Param("name") String name, Pageable pageable);
+    @Query("SELECT a FROM AssetTypeProperties a WHERE (((:name IS NULL) OR (:name IS NOT NULL AND a.name like %:name%)) AND " +
+            "((:isActive IS NULL) OR (:isActive IS NOT NULL AND a.isActive=:isActive)))  order by a.id desc")
+    Page<AssetTypeProperties> findAssets(@Param("name") String name, Boolean isActive, Pageable pageable);
 }

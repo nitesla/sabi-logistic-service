@@ -102,8 +102,8 @@ public class AssetTypePropertiesService {
 
 
 
-    public Page<AssetTypeProperties> findAll(String name, PageRequest pageRequest ){
-        Page<AssetTypeProperties> assetTypeProperties = repository.findAssets(name,pageRequest);
+    public Page<AssetTypeProperties> findAll(String name, Boolean isActive, PageRequest pageRequest ){
+        Page<AssetTypeProperties> assetTypeProperties = repository.findAssets(name, isActive,pageRequest);
         if(assetTypeProperties == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
