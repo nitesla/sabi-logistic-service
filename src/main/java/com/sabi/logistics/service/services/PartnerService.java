@@ -344,12 +344,12 @@ public class PartnerService {
         Partner partnerProperties  = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner properties Id does not exist!"));
-        LGA lga = lgaRepository.findLGAById(partnerProperties.getLgaId());
-
-        State state = stateRepository.getOne(lga.getStateId());
-
-        partnerProperties.setLga(lga.getName());
-        partnerProperties.setState(state.getName());
+//        LGA lga = lgaRepository.findLGAById(partnerProperties.getLgaId());
+//
+//        State state = stateRepository.getOne(lga.getStateId());
+//
+//        partnerProperties.setLga(lga.getName());
+//        partnerProperties.setState(state.getName());
 
         return mapper.map(partnerProperties,PartnerResponseDto.class);
     }
@@ -361,8 +361,8 @@ public class PartnerService {
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
         partnerProperties.getContent().forEach(partner ->{
-            LGA lga = lgaRepository.findLGAById(partner.getLgaId());
-            partner.setLga(lga.getName());
+//            LGA lga = lgaRepository.findLGAById(partner.getLgaId());
+//            partner.setLga(lga.getName());
         });
         return partnerProperties;
 
@@ -393,8 +393,8 @@ public class PartnerService {
         List<Partner> partnerProperties = repository.findByIsActive(isActive);
         for (Partner part : partnerProperties
                 ) {
-            LGA lga = lgaRepository.findLGAById(part.getLgaId());
-            part.setLga(lga.getName());
+//            LGA lga = lgaRepository.findLGAById(part.getLgaId());
+//            part.setLga(lga.getName());
 
         }
         return partnerProperties;
