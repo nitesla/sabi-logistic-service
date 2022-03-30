@@ -53,9 +53,6 @@ public class Validations {
     private OrderRepository orderRepository;
 
     @Autowired
-    private BankRepository bankRepository;
-
-    @Autowired
     private DriverAssetRepository driverAssetRepository;
 
     @Autowired
@@ -83,15 +80,12 @@ public class Validations {
 
 
 
-    public Validations(RoleRepository roleRepository,CountryRepository countryRepository,StateRepository stateRepository, LGARepository lgaRepository, UserRepository userRepository,
+    public Validations(RoleRepository roleRepository,UserRepository userRepository,
                        PartnerRepository partnerRepository, CategoryRepository categoryRepository,
                        AssetTypePropertiesRepository assetTypePropertiesRepository, PartnerAssetRepository partnerAssetRepository,
                        PartnerAssetTypeRepository partnerAssetTypeRepository, DriverRepository driverRepository,
                        BrandRepository brandRepository, PartnerUserRepository partnerUserRepository) {
         this.roleRepository = roleRepository;
-        this.countryRepository = countryRepository;
-        this.stateRepository = stateRepository;
-        this.lgaRepository = lgaRepository;
         this.userRepository = userRepository;
         this.partnerRepository = partnerRepository;
         this.categoryRepository = categoryRepository;
@@ -111,9 +105,9 @@ public class Validations {
         if (Character.isDigit(valCharName)){
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name can not start with a number");
         }
-        Country country = countryRepository.findById(stateDto.getCountryId())
-                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " Enter a valid Country id!"));
+
+        if(stateDto.getCountryId() ==null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "countryId cannot be empty");
     }
 
 
@@ -127,9 +121,6 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name can not start with a number");
         }
 
-        State state = stateRepository.findById(lgaDto.getStateId())
-                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " Enter a valid State id!"));
     }
 
     public void validatePartnerUserActivation (PartnerUserActivation request){
@@ -388,8 +379,8 @@ public class Validations {
 
 
     public void validateWarehouse(WarehouseRequestDto request) {
-        lgaRepository.findById(request.getLgaId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                " Enter a valid lga id!"));
+        if (request.getLgaId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Lga cannot be empty");
         //todo check for existing partner id
         partnerRepository.findById(request.getPartnerId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                 " Enter a valid partner id!"));
@@ -826,10 +817,6 @@ public class Validations {
         Partner partner = partnerRepository.findById(request.getPartnerId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " Enter a valid partnerId!"));
-
-        Bank bank = bankRepository.findById(request.getBankId())
-                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " Enter a valid bankId!"));
 
 
     }
