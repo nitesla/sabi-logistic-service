@@ -185,9 +185,10 @@ public class Validations {
 
         if (partnerPropertiesDto.getAddress() == null || partnerPropertiesDto.getAddress().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Address cannot be empty");
-        LGA lga = lgaRepository.findById(partnerPropertiesDto.getLgaId())
-                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " Enter a valid LGA id!"));
+
+        if (partnerPropertiesDto.getLgaId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Lga cannot be empty");
+
         if (partnerPropertiesDto.getPhone() == null || partnerPropertiesDto.getPhone().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Phone cannot be empty");
         if (partnerPropertiesDto.getEmail() == null || partnerPropertiesDto.getEmail().isEmpty())
@@ -202,9 +203,8 @@ public class Validations {
 
         if (partnerPropertiesDto.getAddress() == null || partnerPropertiesDto.getAddress().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Address cannot be empty");
-        LGA lga = lgaRepository.findById(partnerPropertiesDto.getLgaId())
-                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " Enter a valid LGA id!"));
+        if (partnerPropertiesDto.getLgaId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Lga cannot be empty");
         if (partnerPropertiesDto.getPhone() == null || partnerPropertiesDto.getPhone().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Phone cannot be empty");
         if (partnerPropertiesDto.getEmail() == null || partnerPropertiesDto.getEmail().isEmpty())
@@ -249,9 +249,10 @@ public class Validations {
         Partner partnerProperties = partnerRepository.findById(partnerLocationDto.getPartnerId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " Enter a valid partner id!"));
-        State state = stateRepository.findById(partnerLocationDto.getStateId())
-                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " Enter a valid state id!"));
+
+        if(partnerLocationDto.getStateId() ==null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "state cannot be empty");
+
         if(partnerLocationDto.getWareHouses() < 0)
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter a valid ware house figure!");
     }
@@ -944,13 +945,16 @@ public class Validations {
     }
 
     public void validaterouteLocation(RouteLocationRequest request) {
-        stateRepository.findById(request.getStateId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                " Enter a valid state id!"));
+        if(request.getStateId() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "state cannot be empty");
+
     }
 
     public void validaterouteLocationTollPrice(RouteLocationTollPriceRequest request) {
-        stateRepository.findById(request.getStateId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                " Enter a valid state id!"));
+
+        if(request.getStateId() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "state cannot be empty");
+
     }
 
 
