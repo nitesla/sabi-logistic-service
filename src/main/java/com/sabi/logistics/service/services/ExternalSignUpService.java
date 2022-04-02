@@ -16,7 +16,6 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.ExternalPartnerSignUp;
 import com.sabi.logistics.core.dto.response.ExternalDetailsResponse;
 import com.sabi.logistics.core.dto.response.ExternalPartnerSignUpResponse;
-import com.sabi.logistics.core.models.LGA;
 import com.sabi.logistics.core.models.Partner;
 import com.sabi.logistics.core.models.PartnerAssetType;
 import com.sabi.logistics.core.models.PartnerUser;
@@ -152,7 +151,7 @@ public class ExternalSignUpService {
         if(partner ==null)
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Supplier id does not exist");
 
-        LGA lga = lgaRepository.getOne(partner.getLgaId());
+//        LGA lga = lgaRepository.getOne(partner.getLgaId());
 
         User user = userRepository.getOne(partner.getUserId());
 
@@ -170,7 +169,7 @@ public class ExternalSignUpService {
                 .supplierId(partner.getSupplierId())
                 .webSite(partner.getWebSite())
                 .lgaId(partner.getLgaId())
-                .lgaName(lga.getName())
+                .lgaName(partner.getLgaName())
                 .lastName(user.getLastName())
                 .firstName(user.getFirstName())
                 .userEmail(user.getEmail())
