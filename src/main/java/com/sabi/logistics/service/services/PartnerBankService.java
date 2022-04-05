@@ -10,11 +10,9 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.PartnerBankDto;
 import com.sabi.logistics.core.dto.response.PartnerBankResponseDto;
-import com.sabi.logistics.core.models.Bank;
 import com.sabi.logistics.core.models.Partner;
 import com.sabi.logistics.core.models.PartnerBank;
 import com.sabi.logistics.service.helper.Validations;
-import com.sabi.logistics.service.repositories.BankRepository;
 import com.sabi.logistics.service.repositories.PartnerBankRepository;
 import com.sabi.logistics.service.repositories.PartnerRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -41,9 +39,6 @@ public class PartnerBankService {
     @Autowired
     PartnerRepository partnerRepository;
 
-    @Autowired
-    BankRepository bankRepository;
-
     public PartnerBankService(PartnerBankRepository partnerBankRepository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
         this.partnerBankRepository = partnerBankRepository;
         this.mapper = mapper;
@@ -69,14 +64,14 @@ public class PartnerBankService {
         }
 
         Partner partner = partnerRepository.findPartnerById(request.getPartnerId());
-        Bank bank = bankRepository.findBankById(request.getBankId());
+//        Bank bank = bankRepository.findBankById(request.getBankId());
         partnerBank.setCreatedBy(userCurrent.getId());
         partnerBank.setIsActive(true);
         partnerBank = partnerBankRepository.save(partnerBank);
         log.debug("Create new partner bank - {}"+ new Gson().toJson(partnerBank));
         PartnerBankResponseDto partnerBankResponseDto = mapper.map(partnerBank, PartnerBankResponseDto.class);
         partnerBankResponseDto.setPartnerName(partner.getName());
-        partnerBankResponseDto.setBankName(bank.getName());
+//        partnerBankResponseDto.setBankName(bank.getName());
         return partnerBankResponseDto;
     }
 
@@ -103,10 +98,10 @@ public class PartnerBankService {
             Partner partner = partnerRepository.findPartnerById(request.getPartnerId());
             partnerBankResponseDto.setPartnerName(partner.getName());
         }
-        if(request.getBankId() != null ) {
-            Bank bank = bankRepository.findBankById(request.getBankId());
-            partnerBankResponseDto.setBankName(bank.getName());
-        }
+//        if(request.getBankId() != null ) {
+//            Bank bank = bankRepository.findBankById(request.getBankId());
+//            partnerBankResponseDto.setBankName(bank.getName());
+//        }
         return partnerBankResponseDto;
     }
 
@@ -122,10 +117,10 @@ public class PartnerBankService {
             Partner partner = partnerRepository.findPartnerById(partnerBank.getPartnerId());
             partnerBankResponseDto.setPartnerName(partner.getName());
         }
-        if(partnerBank.getBankId() != null ) {
-            Bank bank = bankRepository.findBankById(partnerBank.getBankId());
-            partnerBankResponseDto.setBankName(bank.getName());
-        }
+//        if(partnerBank.getBankId() != null ) {
+//            Bank bank = bankRepository.findBankById(partnerBank.getBankId());
+//            partnerBankResponseDto.setBankName(bank.getName());
+//        }
         return partnerBankResponseDto;
     }
 
@@ -179,15 +174,15 @@ public class PartnerBankService {
     public List<PartnerBank> getAll(Long partnerId, Boolean  isActive){
         List<PartnerBank> partnerBanks = partnerBankRepository.findByPartnerIdAndIsActive(partnerId, isActive);
 
-        for (PartnerBank pbank : partnerBanks) {
-
-            Bank bank = bankRepository.findBankById(pbank.getBankId());
-            if (bank == null) {
-                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid bankId");
-            }
-            pbank.setBankName(bank.getName());
-
-        }
+//        for (PartnerBank pbank : partnerBanks) {
+//
+//            Bank bank = bankRepository.findBankById(pbank.getBankId());
+//            if (bank == null) {
+//                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid bankId");
+//            }
+//            pbank.setBankName(bank.getName());
+//
+//        }
         return partnerBanks;
 
     }

@@ -13,7 +13,6 @@ import com.sabi.logistics.core.dto.response.PartnerLocationResponseDto;
 import com.sabi.logistics.core.models.PartnerLocation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.PartnerLocationRepository;
-import com.sabi.logistics.service.repositories.StateRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -27,14 +26,12 @@ import java.util.List;
 public class PartnerLocationService {
 
     private PartnerLocationRepository repository;
-    private StateRepository stateRepository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
     private final Validations validations;
 
-    public PartnerLocationService(PartnerLocationRepository repository, StateRepository stateRepository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
+    public PartnerLocationService(PartnerLocationRepository repository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
         this.repository = repository;
-        this.stateRepository = stateRepository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
         this.validations = validations;
@@ -51,7 +48,7 @@ public class PartnerLocationService {
         partnerProperties.setCreatedBy(userCurrent.getId());
         partnerProperties.setIsActive(true);
         partnerProperties = repository.save(partnerProperties);
-        partnerProperties.setStateName(stateRepository.findStateById(request.getStateId()).getName());
+//        partnerProperties.setStateName(stateRepository.findStateById(request.getStateId()).getName());
         return mapper.map(partnerProperties, PartnerLocationResponseDto.class);
     }
 
@@ -66,7 +63,7 @@ public class PartnerLocationService {
         partnerProperties.setUpdatedBy(userCurrent.getId());
         repository.save(partnerProperties);
         log.debug("partner location record updated - {}"+ new Gson().toJson(partnerProperties));
-        partnerProperties.setStateName(stateRepository.findStateById(request.getStateId()).getName());
+//        partnerProperties.setStateName(stateRepository.findStateById(request.getStateId()).getName());
         return mapper.map(partnerProperties, PartnerLocationResponseDto.class);
     }
 
@@ -76,7 +73,7 @@ public class PartnerLocationService {
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                     "Requested partner location does not exist!");
         }
-        savedPartnerCategories.setStateName(stateRepository.findStateById(savedPartnerCategories.getStateId()).getName());
+//        savedPartnerCategories.setStateName(stateRepository.findStateById(savedPartnerCategories.getStateId()).getName());
         return mapper.map(savedPartnerCategories,PartnerLocationResponseDto.class);
     }
 
@@ -85,8 +82,8 @@ public class PartnerLocationService {
         if(savedPartnerCategories == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
-        savedPartnerCategories.getContent().forEach(partnerLocation ->
-                partnerLocation.setStateName(stateRepository.findStateById(partnerLocation.getStateId()).getName()));
+//        savedPartnerCategories.getContent().forEach(partnerLocation ->
+//                partnerLocation.setStateName(stateRepository.findStateById(partnerLocation.getStateId()).getName()));
         return savedPartnerCategories;
     }
 
@@ -103,10 +100,10 @@ public class PartnerLocationService {
 
 
     public List<PartnerLocation> getAll(Long partnerId, Boolean isActive){
-        List<PartnerLocation> partnerCategories = repository.findByPartnerIdAndIsActive(partnerId, isActive);
-        partnerCategories.forEach(partnerLocation -> partnerLocation.setStateName(stateRepository
-                .findStateById(partnerLocation.getStateId()).getName()));
-        return partnerCategories;
+
+//        partnerCategories.forEach(partnerLocation -> partnerLocation.setStateName(stateRepository
+//                .findStateById(partnerLocation.getStateId()).getName()));
+        return repository.findByPartnerIdAndIsActive(partnerId, isActive);
 
     }
 

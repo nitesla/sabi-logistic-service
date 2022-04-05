@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
+import com.sabi.framework.globaladminintegration.GlobalService;
 import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
@@ -46,6 +47,9 @@ public class RouteLocationService {
     private TollPriceService tollPriceService;
     @Autowired
     private TollPricesRepository tollPricesRepository;
+
+    @Autowired
+    private GlobalService globalService;
 
 
     public RouteLocationService(RouteLocationRepository routeLocationRepository, ModelMapper mapper) {
@@ -186,6 +190,7 @@ public class RouteLocationService {
             genericSpecification.add(new SearchCriteria("hasToll", hasToll, SearchOperation.EQUAL));
 
         Page<RouteLocation> routeLocations = routeLocationRepository.findAll(genericSpecification, pageRequest);
+
         return routeLocations;
     }
 

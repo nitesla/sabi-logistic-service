@@ -11,7 +11,9 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.WarehouseRequestDto;
 import com.sabi.logistics.core.dto.response.WarehouseResponseDto;
-import com.sabi.logistics.core.models.*;
+import com.sabi.logistics.core.models.Partner;
+import com.sabi.logistics.core.models.Warehouse;
+import com.sabi.logistics.core.models.WarehouseProduct;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
@@ -22,9 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @Service
@@ -89,18 +89,18 @@ public class WarehouseService {
         Warehouse warehouse = warehouseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Warehouse Id does not exist!"));
-        LGA lga  =  lgaRepository.findLGAById (warehouse.getLgaId());
-        warehouse.setLgaName(lga.getName());
-        State state = stateRepository.findStateById(lga.getStateId());
-        warehouse.setStateName(state.getName());
+//        LGA lga  =  lgaRepository.findLGAById (warehouse.getLgaId());
+//        warehouse.setLgaName(lga.getName());
+//        State state = stateRepository.findStateById(lga.getStateId());
+//        warehouse.setStateName(state.getName());
         List<WarehouseProduct> warehouseProductsList = warehouseProductRepository.findByWarehouseId(warehouse.getId());
         if (warehouseProductsList != null) {
             warehouse.setProductInfo(warehouseProductsList);
         }
         WarehouseResponseDto warehouseResponseDto = mapper.map(warehouse, WarehouseResponseDto.class);
         warehouseResponseDto.setStockLeft(warehouseResponseDto.getTotalStock() - warehouseResponseDto.getStockSold());
-        warehouseResponseDto.setLgaId(lga.getId());
-        warehouseResponseDto.setStateId(state.getId());
+//        warehouseResponseDto.setLgaId(lga.getId());
+//        warehouseResponseDto.setStateId(state.getId());
         Partner partner = partnerRepository.findPartnerById(warehouse.getPartnerId());
         User user = userRepository.getOne(partner.getUserId());
         warehouseResponseDto.setWareHouseManager(user.getLastName() + " " + user.getFirstName());
@@ -114,10 +114,10 @@ public class WarehouseService {
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
         warehouse.forEach(warehouse1 ->{
-                LGA   lga  =  lgaRepository.findLGAById (warehouse1.getLgaId());
-        warehouse1.setLgaName(lga.getName());
-        State state = stateRepository.getOne(lga.getStateId());
-            warehouse1.setStateName(state.getName());
+//                LGA   lga  =  lgaRepository.findLGAById (warehouse1.getLgaId());
+//        warehouse1.setLgaName(lga.getName());
+//        State state = stateRepository.getOne(lga.getStateId());
+//            warehouse1.setStateName(state.getName());
             List<WarehouseProduct> warehouseProductsList = warehouseProductRepository.findByWarehouseId(warehouse1.getId());
             if (warehouseProductsList != null) {
                 warehouse1.setProductInfo(warehouseProductsList);
