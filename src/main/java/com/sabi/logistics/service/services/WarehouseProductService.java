@@ -47,12 +47,12 @@ public class WarehouseProductService {
         WarehouseProduct warehouseProduct = mapper.map(request,WarehouseProduct.class);
         WarehouseProduct warehouseProductExist = repository.findByThirdPartyProductID(request.getThirdPartyProductID());
         if(warehouseProductExist !=null){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " warehouse product already exist");
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "warehouse product already exist");
         }
         warehouseProduct.setCreatedBy(userCurrent.getId());
         warehouseProduct.setIsActive(true);
         warehouseProduct = repository.save(warehouseProduct);
-        log.debug("Create new State - {}"+ new Gson().toJson(warehouseProduct));
+        log.debug("Create new WareHouseProduct - {}"+ new Gson().toJson(warehouseProduct));
         return mapper.map(warehouseProduct, WarehouseProductResponseDto.class);
     }
 

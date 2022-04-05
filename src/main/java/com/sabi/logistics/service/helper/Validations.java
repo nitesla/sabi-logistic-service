@@ -902,22 +902,28 @@ public class Validations {
         if(warehouseProductDto.getThirdPartyProductID() == null || warehouseProductDto.getThirdPartyProductID().isEmpty()){
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Thirdparty Product id can not be empty");
         }
+        if (warehouseProductDto.getImage() == null || warehouseProductDto.getImage().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Product image cannot be empty");
+        if (warehouseProductDto.getCategory() == null || warehouseProductDto.getCategory().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Product category cannot be empty");
 
         Warehouse warehouse = warehouseRepository.findById(warehouseProductDto.getWarehouseId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " Enter a valid warehouse id!"));
-        if (warehouseProductDto.getThirdPartyProductID() == null || warehouseProductDto.getThirdPartyProductID().isEmpty())
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Product Name cannot be empty");
+        /**
+         Description: This 'ThirdPartyProductID' property is already validated, hence I am commenting it.
+         Date:       4/5/2022
+         Author:     Afam Okonkwo
+         */
+        //if (warehouseProductDto.getThirdPartyProductID() == null || warehouseProductDto.getThirdPartyProductID().isEmpty())
+        //    throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Product Name cannot be empty");
+
         if (warehouseProductDto.getQuantityAvailable() < 1)
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "quantity avaliable cannot be less than 1");
         if (warehouseProductDto.getQuantity() < 1)
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "quantity cannot be less than 1");
         if (warehouseProductDto.getQuantitySold() < 1)
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "quantity sold cannot be less than 1");
-        if (warehouseProductDto.getImage() == null || warehouseProductDto.getImage().isEmpty())
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Product image cannot be empty");
-        if (warehouseProductDto.getCategory() == null || warehouseProductDto.getCategory().isEmpty())
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Product category cannot be empty");
     }
 
     public void validatePricingConfiguration(PricingConfigurationRequest request) {
