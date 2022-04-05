@@ -228,6 +228,9 @@ public class PartnerService {
               PartnerLocation partnerLocation = PartnerLocation.builder()
                       .stateId(l.getStateId())
                       .wareHouses(l.getWareHouses())
+                      .stateName(l.getStateName())
+                      .countryId(l.getCountryId())
+                      .countryName(l.getCountryName())
                       .build();
               partnerLocation.setPartnerId(partner.getId());
               partnerLocation.setCreatedBy(partner.getUserId());
