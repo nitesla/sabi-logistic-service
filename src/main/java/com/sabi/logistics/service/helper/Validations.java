@@ -383,7 +383,10 @@ public class Validations {
     public void validateBrand(BrandRequestDto request) {
         if(request.getName() != null && !request.getName().isEmpty()){}
         else throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Brand Name cannot be empty");
+        if (request.getImage()==null && request.getImage().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"Brand image cannot be empty");
     }
+
 
 
     public void validateWarehouse(WarehouseRequestDto request) {
@@ -923,6 +926,10 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "quantity cannot be less than 1");
         if (warehouseProductDto.getQuantitySold() < 1)
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "quantity sold cannot be less than 1");
+        if (warehouseProductDto.getImage() == null || warehouseProductDto.getImage().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Product image cannot be empty");
+        if (warehouseProductDto.getCategory() == null || warehouseProductDto.getCategory().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Product category cannot be empty");
     }
 
     public void validatePricingConfiguration(PricingConfigurationRequest request) {
