@@ -9,7 +9,6 @@ import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.PreviousPasswords;
 import com.sabi.framework.models.User;
-import com.sabi.framework.models.UserRole;
 import com.sabi.framework.repositories.PreviousPasswordRepository;
 import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.repositories.UserRoleRepository;
@@ -131,11 +130,11 @@ public class PartnerService {
         user = userRepository.save(user);
         log.debug("Create new agent user - {}"+ new Gson().toJson(user));
 
-        UserRole userRole = UserRole.builder()
-                .userId(user.getId())
-                .roleId(user.getRoleId())
-                .build();
-        userRoleRepository.save(userRole);
+//        UserRole userRole = UserRole.builder()
+//                .userId(user.getId())
+//                .roleId(user.getRoleId())
+//                .build();
+//        userRoleRepository.save(userRole);
 
         PreviousPasswords previousPasswords = PreviousPasswords.builder()
                 .userId(user.getId())
@@ -228,6 +227,9 @@ public class PartnerService {
               PartnerLocation partnerLocation = PartnerLocation.builder()
                       .stateId(l.getStateId())
                       .wareHouses(l.getWareHouses())
+                      .stateName(l.getStateName())
+                      .countryId(l.getCountryId())
+                      .countryName(l.getCountryName())
                       .build();
               partnerLocation.setPartnerId(partner.getId());
               partnerLocation.setCreatedBy(partner.getUserId());
