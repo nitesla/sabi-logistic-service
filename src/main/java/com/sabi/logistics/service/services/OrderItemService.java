@@ -29,6 +29,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -141,8 +142,22 @@ public class OrderItemService {
     }
 
 
+    /**
+     * @Description  includes Search by startDate and endDate
+     * @Author   Afam Okonkwo
+     * @Date    07/04/2022
+     * @param wareHouseId
+     * @param deliveryStatus
+     * @param hasInventory
+     * @param productName
+     * @param qty
+     * @param startDate
+     * @param endDate
+     * @param pageRequest
+     * @return OrderItem Page
+     */
     public Page<OrderItem> findAll(Long wareHouseId, String deliveryStatus, Boolean hasInventory,
-                                   String productName, Integer qty,  PageRequest pageRequest ){
+                                   String productName,Integer qty, LocalDateTime startDate,LocalDateTime endDate, PageRequest pageRequest ){
 
         GenericSpecification<OrderItem> genericSpecification = new GenericSpecification<OrderItem>();
 
@@ -168,10 +183,22 @@ public class OrderItemService {
         if (qty != null)
         genericSpecification.add(new SearchCriteria("qty", qty, SearchOperation.EQUAL));
 
+        if (startDate!=null){
+            if (endDate!=null && endDate.isBefore(startDate)){
+                throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"endDate cannot be earlier than startDate");
+            }
+            genericSpecification.add(new SearchCriteria("createdDate",startDate,SearchOperation.GREATER_THAN_EQUAL));
+        }
+        if (endDate!=null){
+            if (startDate == null){
+                throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"'startDate' must also be included when searching by 'endDate'");
+            }
+            genericSpecification.add(new SearchCriteria("createdDate",endDate,SearchOperation.LESS_THAN_EQUAL));
+        }
 
-
-
+        log.info("before searching is here...");
         Page<OrderItem> orderItems = orderItemRepository.findAll(genericSpecification,pageRequest);
+        log.info("before searching is here 2...");
         if(orderItems == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
