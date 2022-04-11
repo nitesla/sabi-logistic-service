@@ -36,8 +36,8 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long>, Jpa
             "AND ((:qty IS NULL ) OR (:qty IS NOT NULL AND oi.qty = :qty))" +
             "AND ((:startDate IS NULL ) OR (:startDate IS NOT NULL AND oi.createdDate >= :startDate))" +
             "AND ((:endDate IS NULL ) OR (:endDate IS NOT NULL AND oi.createdDate <= :endDate))" +
-            "AND ((:deliveryAddress IS NULL ) OR (:deliveryAddress IS NOT NULL AND o.deliveryAddress LIKE %:deliveryAddress%)))")
+            "AND ((:customerName IS NULL ) OR (:customerName IS NOT NULL AND o.customerName LIKE %:customerName%)))")
     public Page<OrderItem> searchOrderItems(Long wareHouseId, String deliveryStatus, Boolean hasInventory,
-                                            String productName, Integer qty, LocalDateTime startDate, LocalDateTime endDate, String deliveryAddress, Pageable pageable);
+                                            String productName, Integer qty, LocalDateTime startDate, LocalDateTime endDate, String customerName, Pageable pageable);
 
 }

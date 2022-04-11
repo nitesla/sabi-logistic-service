@@ -143,13 +143,14 @@ public class OrderItemService {
 
 
     /**
-     * @Description  includes Search by startDate and endDate
+     * @Description  includes Search by startDate, endDate and customer's Order name which was not initially included in the search parameters
      * @Author   Afam Okonkwo
-     * @Date    07/04/2022
+     * @Date    11/04/2022
      * @param wareHouseId
      * @param deliveryStatus
      * @param hasInventory
      * @param productName
+     * @param customerName
      * @param qty
      * @param startDate
      * @param endDate
@@ -157,8 +158,9 @@ public class OrderItemService {
      * @return OrderItem Page
      */
     public Page<OrderItem> findAll(Long wareHouseId, String deliveryStatus, Boolean hasInventory,
-                                   String productName,Integer qty, LocalDateTime startDate,LocalDateTime endDate, String deliveryAddress, PageRequest pageRequest ){
+                                   String productName,Integer qty, LocalDateTime startDate,LocalDateTime endDate, String customerName, PageRequest pageRequest ){
 
+        /**
         GenericSpecification<OrderItem> genericSpecification = new GenericSpecification<OrderItem>();
 
         if (wareHouseId != null)
@@ -182,28 +184,22 @@ public class OrderItemService {
         }
         if (qty != null)
         genericSpecification.add(new SearchCriteria("qty", qty, SearchOperation.EQUAL));
-
+        Page<OrderItem> orderItems = orderItemRepository.findAll(genericSpecification,pageRequest);
+         */
         if (startDate!=null){
             if (endDate!=null && endDate.isBefore(startDate)){
                 throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"endDate cannot be earlier than startDate");
             }
-            genericSpecification.add(new SearchCriteria("createdDate",startDate,SearchOperation.GREATER_THAN_EQUAL));
         }
         if (endDate!=null){
             if (startDate == null){
                 throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"'startDate' must also be included when searching by 'endDate'");
             }
-            genericSpecification.add(new SearchCriteria("createdDate",endDate,SearchOperation.LESS_THAN_EQUAL));
         }
-
-        log.info("before searching is here...");
-        Page<OrderItem> orderItems = orderItemRepository.findAll(genericSpecification,pageRequest);
-        //Page<OrderItem> orderItems = orderItemRepository.searchOrderItems(wareHouseId, deliveryStatus, hasInventory, productName, qty, startDate,endDate,deliveryAddress,pageRequest);
-        log.info("before searching is here 2...");
+        Page<OrderItem> orderItems = orderItemRepository.searchOrderItems(wareHouseId, deliveryStatus, hasInventory, productName, qty, startDate,endDate,customerName,pageRequest);
         if(orderItems == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
-
         orderItems.getContent().forEach(item ->{
             Order order = orderRepository.getOne(item.getOrderId());
             item.setCustomerName(order.getCustomerName());
