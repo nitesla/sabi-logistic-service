@@ -157,7 +157,7 @@ public class OrderItemService {
      * @return OrderItem Page
      */
     public Page<OrderItem> findAll(Long wareHouseId, String deliveryStatus, Boolean hasInventory,
-                                   String productName,Integer qty, LocalDateTime startDate,LocalDateTime endDate, PageRequest pageRequest ){
+                                   String productName,Integer qty, LocalDateTime startDate,LocalDateTime endDate, String deliveryAddress, PageRequest pageRequest ){
 
         GenericSpecification<OrderItem> genericSpecification = new GenericSpecification<OrderItem>();
 
@@ -198,6 +198,7 @@ public class OrderItemService {
 
         log.info("before searching is here...");
         Page<OrderItem> orderItems = orderItemRepository.findAll(genericSpecification,pageRequest);
+        //Page<OrderItem> orderItems = orderItemRepository.searchOrderItems(wareHouseId, deliveryStatus, hasInventory, productName, qty, startDate,endDate,deliveryAddress,pageRequest);
         log.info("before searching is here 2...");
         if(orderItems == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
