@@ -29,6 +29,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -141,9 +142,25 @@ public class OrderItemService {
     }
 
 
+    /**
+     * @Description  includes Search by startDate, endDate and customer's Order name which was not initially included in the search parameters
+     * @Author   Afam Okonkwo
+     * @Date    11/04/2022
+     * @param wareHouseId
+     * @param deliveryStatus
+     * @param hasInventory
+     * @param productName
+     * @param customerName
+     * @param qty
+     * @param startDate
+     * @param endDate
+     * @param pageRequest
+     * @return OrderItem Page
+     */
     public Page<OrderItem> findAll(Long wareHouseId, String deliveryStatus, Boolean hasInventory,
-                                   String productName, Integer qty,  PageRequest pageRequest ){
+                                   String productName,Integer qty, LocalDateTime startDate,LocalDateTime endDate, String customerName, PageRequest pageRequest ){
 
+        /**
         GenericSpecification<OrderItem> genericSpecification = new GenericSpecification<OrderItem>();
 
         if (wareHouseId != null)
@@ -167,15 +184,22 @@ public class OrderItemService {
         }
         if (qty != null)
         genericSpecification.add(new SearchCriteria("qty", qty, SearchOperation.EQUAL));
-
-
-
-
         Page<OrderItem> orderItems = orderItemRepository.findAll(genericSpecification,pageRequest);
+         */
+        if (startDate!=null){
+            if (endDate!=null && endDate.isBefore(startDate)){
+                throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"endDate cannot be earlier than startDate");
+            }
+        }
+        if (endDate!=null){
+            if (startDate == null){
+                throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"'startDate' must also be included when searching by 'endDate'");
+            }
+        }
+        Page<OrderItem> orderItems = orderItemRepository.searchOrderItems(wareHouseId, deliveryStatus, hasInventory, productName, qty, startDate,endDate,customerName,pageRequest);
         if(orderItems == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
-
         orderItems.getContent().forEach(item ->{
             Order order = orderRepository.getOne(item.getOrderId());
             item.setCustomerName(order.getCustomerName());

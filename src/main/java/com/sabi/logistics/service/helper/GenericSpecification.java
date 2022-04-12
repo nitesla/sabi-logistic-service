@@ -8,6 +8,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,12 +49,27 @@ public class GenericSpecification<T> implements Specification<T> {
                 predicates.add(builder.lessThan(
                         root.get(criteria.getKey()), criteria.getValue().toString()));
             } else if (criteria.getOperation().equals(SearchOperation.GREATER_THAN_EQUAL)) {
-                predicates.add(builder.greaterThanOrEqualTo(
-                        root.get(criteria.getKey()), criteria.getValue().toString()));
+
+                if (criteria.getValue() instanceof LocalDateTime){
+                    Predicate fromDateTimePredicate = builder.greaterThanOrEqualTo(
+                            root.get(criteria.getKey()), LocalDateTime.parse(criteria.getValue().toString()));
+                    predicates.add(fromDateTimePredicate);
+                }
+                else {
+                    predicates.add(builder.greaterThanOrEqualTo(
+                            root.get(criteria.getKey()), criteria.getValue().toString()));
+                }
             } else if (criteria.getOperation().equals(SearchOperation.LESS_THAN_EQUAL)) {
-                predicates.add(builder.lessThanOrEqualTo(
-                        root.get(criteria.getKey()), criteria.getValue().toString()));
-            } else if (criteria.getOperation().equals(SearchOperation.NOT_EQUAL)) {
+                if (criteria.getValue() instanceof LocalDateTime){
+                    Predicate fromDateTimePredicate = builder.lessThanOrEqualTo(
+                            root.get(criteria.getKey()), LocalDateTime.parse(criteria.getValue().toString()));
+                    predicates.add(fromDateTimePredicate);
+                }
+                else {
+                    predicates.add(builder.lessThanOrEqualTo(
+                            root.get(criteria.getKey()), criteria.getValue().toString()));
+                }
+            }else if (criteria.getOperation().equals(SearchOperation.NOT_EQUAL)) {
                 predicates.add(builder.notEqual(
                         root.get(criteria.getKey()), criteria.getValue()));
             } else if (criteria.getOperation().equals(SearchOperation.EQUAL)) {

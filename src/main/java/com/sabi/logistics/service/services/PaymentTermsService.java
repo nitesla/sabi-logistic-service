@@ -9,6 +9,7 @@ import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.PaymentTermsDto;
+import com.sabi.logistics.core.dto.response.PartnerAssetTypeResponseDto;
 import com.sabi.logistics.core.dto.response.PaymentTermsResponseDto;
 import com.sabi.logistics.core.models.AssetTypeProperties;
 import com.sabi.logistics.core.models.PartnerAssetType;
@@ -43,12 +44,16 @@ public class PaymentTermsService {
     @Autowired
     private AssetTypePropertiesRepository assetTypePropertiesRepository;
 
+    @Autowired
+    private final PartnerAssetTypeService partnerAssetTypeService;
 
-    public PaymentTermsService(PaymentTermsRepository paymentTermsRepository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
+
+    public PaymentTermsService(PaymentTermsRepository paymentTermsRepository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations, PartnerAssetTypeService partnerAssetTypeService) {
         this.paymentTermsRepository = paymentTermsRepository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
         this.validations = validations;
+        this.partnerAssetTypeService = partnerAssetTypeService;
     }
 
 
@@ -115,9 +120,39 @@ public class PaymentTermsService {
         PaymentTerms paymentTerms  = paymentTermsRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested paymentTerms id does not exist!"));
+        /**
+         @Description: Sets related and needed field of PaymentTerms
+         @Date:       06/04/2022
+         @Author:     Afam Okonkwo
+         */
+        paymentTerms = this.setNeededVaribles(paymentTerms);
         return mapper.map(paymentTerms,PaymentTermsResponseDto.class);
     }
 
+    /**
+     *
+     * This method sets related and needed field of PaymentTerms
+     * @param paymentTerms
+     * @return PaymentTerms
+     * @Author Afam Okonkwo
+     * @Date 06/04/2022
+     */
+     public PaymentTerms setNeededVaribles(PaymentTerms paymentTerms){
+         if (paymentTerms.getPartnerAssetTypeId()!=null){
+             PartnerAssetTypeResponseDto partnerAssetTypeResponseDto = partnerAssetTypeService.findPartnerAssetType(paymentTerms.getPartnerAssetTypeId());
+             if (partnerAssetTypeResponseDto!=null){
+                 paymentTerms.setPartnerAssetTypeName(partnerAssetTypeResponseDto.getAssetTypeName());
+                 paymentTerms.setPartnerName(partnerAssetTypeResponseDto.getPartnerName());
+             }
+             else {
+                 throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION , "Related PartnerAssetType NotFound: Error getting paymentTerm");
+             }
+         }
+         else {
+             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION , " The Related PartnerAssetType Id is invalid: Error getting paymentTerm");
+         }
+        return paymentTerms;
+     }
 
     /** <summary>
      * Find all PaymentTermss
@@ -129,6 +164,12 @@ public class PaymentTermsService {
         if(paymentTerms == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
+        /**
+         @Description: Sets related and needed field of PaymentTerms
+         @Date:       06/04/2022
+         @Author:     Afam Okonkwo
+         */
+        paymentTerms.getContent().stream().forEach(this::setNeededVaribles);
         return paymentTerms;
 
     }
@@ -153,20 +194,12 @@ public class PaymentTermsService {
 
     public List<PaymentTerms> getAll(Long partnerId, Boolean isActive){
         List<PaymentTerms> paymentTerms = paymentTermsRepository.findByPartnerIdAndIsActive(partnerId, isActive);
-
-        for (PaymentTerms term : paymentTerms) {
-
-            PartnerAssetType partnerAssetType = partnerAssetTypeRepository.findPartnerAssetTypeById(term.getPartnerAssetTypeId());
-            if (partnerAssetType == null) {
-                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAssetType Id");
-            }
-            AssetTypeProperties assetTypeProperties = assetTypePropertiesRepository.findAssetTypePropertiesById(partnerAssetType.getAssetTypeId());
-
-            term.setPartnerAssetTypeName(assetTypeProperties.getName());
-
-        }
-
+        /**
+         @Description: Sets related and needed field of PaymentTerms
+         @Date:       6/04/2022
+         @Author:     Afam Okonkwo
+         */
+        paymentTerms.stream().forEach(this::setNeededVaribles);
         return paymentTerms;
-
     }
 }
