@@ -14,7 +14,6 @@ import com.sabi.logistics.core.dto.response.RouteLocationResponse;
 import com.sabi.logistics.core.dto.response.RouteLocationTollPriceResponse;
 import com.sabi.logistics.core.dto.response.TollPricesResponseDto;
 import com.sabi.logistics.core.models.RouteLocation;
-import com.sabi.logistics.core.models.State;
 import com.sabi.logistics.core.models.TollPrices;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
@@ -67,10 +66,10 @@ public class RouteLocationService {
         if (routeLocationExists != null) {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "routeLocation already exist");
         }
-        State SavedState = stateRepository.findStateById(request.getStateId());
+//        State SavedState = stateRepository.findStateById(request.getStateId());
         routeLocation.setCreatedBy(userCurrent.getId());
         routeLocation.setIsActive(true);
-        routeLocation.setStateName(SavedState.getName());
+        routeLocation.setStateName(request.getStateName());
         routeLocation = routeLocationRepository.save(routeLocation);
         log.debug("Create new tripRequestResponse - {}" + new Gson().toJson(routeLocation));
         return mapper.map(routeLocation, RouteLocationResponse.class);
@@ -87,10 +86,10 @@ public class RouteLocationService {
         if (routeLocationExists != null) {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "routeLocation already exist");
         }
-        State SavedState = stateRepository.findStateById(request.getStateId());
+//        State SavedState = stateRepository.findStateById(request.getStateId());
         routeLocation.setCreatedBy(userCurrent.getId());
         routeLocation.setIsActive(true);
-        routeLocation.setStateName(SavedState.getName());
+        routeLocation.setStateName(request.getStateName());
         log.debug("Create new shipment - {}"+ new Gson().toJson(routeLocation));
         RouteLocationTollPriceResponse orderResponseDto = mapper.map(routeLocation, RouteLocationTollPriceResponse.class);
         log.info("request sent ::::::::::::::::::::::::::::::::: " + request.getTollPricesDtos());

@@ -96,12 +96,12 @@ public class PricingConfigurationService {
         PricingConfigurationResponse pricingConfigurationResponse =  mapper.map(pricingConfiguration, PricingConfigurationResponse.class);
 
         if (pricingConfigurationResponse.getArrivalStateId() != null) {
-            State arrivalState = stateRepository.findStateById(pricingConfigurationResponse.getArrivalStateId());
-            pricingConfigurationResponse.setArrivalStateName(arrivalState.getName());
+//            State arrivalState = stateRepository.findStateById(pricingConfigurationResponse.getArrivalStateId());
+            pricingConfigurationResponse.setArrivalStateName(request.getArrivalStateName());
         }
         if (pricingConfigurationResponse.getDepartureStateId() != null) {
-            State departureState = stateRepository.findStateById(pricingConfigurationResponse.getDepartureStateId());
-            pricingConfigurationResponse.setDepartureStateName(departureState.getName());
+//            State departureState = stateRepository.findStateById(pricingConfigurationResponse.getDepartureStateId());
+            pricingConfigurationResponse.setDepartureStateName(request.getDepartureStateName());
         }
 
         if(pricingConfiguration.getDestinationLocations() != null) {
@@ -160,12 +160,12 @@ public class PricingConfigurationService {
         PricingConfigurationResponse pricingConfigurationResponse = mapper.map(pricingConfiguration, PricingConfigurationResponse.class);
 
         if (pricingConfigurationResponse.getArrivalStateId() != null) {
-            State arrivalState = stateRepository.findStateById(pricingConfigurationResponse.getArrivalStateId());
-            pricingConfigurationResponse.setArrivalStateName(arrivalState.getName());
+//            State arrivalState = stateRepository.findStateById(pricingConfigurationResponse.getArrivalStateId());
+            pricingConfigurationResponse.setArrivalStateName(request.getArrivalStateName());
         }
         if (pricingConfigurationResponse.getDepartureStateId() != null) {
-            State departureState = stateRepository.findStateById(pricingConfigurationResponse.getDepartureStateId());
-            pricingConfigurationResponse.setDepartureStateName(departureState.getName());
+//            State departureState = stateRepository.findStateById(pricingConfigurationResponse.getDepartureStateId());
+            pricingConfigurationResponse.setDepartureStateName(request.getDepartureStateName());
         }
 
         if(pricingConfiguration.getDestinationLocations() != null) {
@@ -197,10 +197,10 @@ public class PricingConfigurationService {
                         "Requested pricingConfiguration Id does not exist!"));
         PricingConfigurationResponse pricingConfigurationResponse = mapper.map(pricingConfiguration, PricingConfigurationResponse.class);
 
-        State arrivalState = stateRepository.findStateById(pricingConfiguration.getArrivalStateId());
-        State departureState = stateRepository.findStateById(pricingConfiguration.getDepartureStateId());
-        pricingConfigurationResponse.setArrivalStateName(arrivalState.getName());
-        pricingConfigurationResponse.setDepartureStateName(departureState.getName());
+//        State arrivalState = stateRepository.findStateById(pricingConfiguration.getArrivalStateId());
+//        State departureState = stateRepository.findStateById(pricingConfiguration.getDepartureStateId());
+        pricingConfigurationResponse.setArrivalStateName(pricingConfiguration.getArrivalStateName());
+        pricingConfigurationResponse.setDepartureStateName(pricingConfiguration.getDepartureStateName());
 
         if(pricingConfiguration.getDestinationLocations() != null) {
             String str = pricingConfiguration.getDestinationLocations();
@@ -285,14 +285,14 @@ public class PricingConfigurationService {
         }
         pricingConfigurations.getContent().forEach(config -> {
 
-            if (config.getArrivalStateId() != null) {
-                State arrivalState = stateRepository.findStateById(config.getArrivalStateId());
-                config.setArrivalStateName(arrivalState.getName());
-            }
-            if (config.getDepartureStateId() != null) {
-                State departureState = stateRepository.findStateById(config.getDepartureStateId());
-                config.setDepartureStateName(departureState.getName());
-            }
+//            if (config.getArrivalStateId() != null) {
+//                State arrivalState = stateRepository.findStateById(config.getArrivalStateId());
+//                config.setArrivalStateName(arrivalState.getName());
+//            }
+//            if (config.getDepartureStateId() != null) {
+//                State departureState = stateRepository.findStateById(config.getDepartureStateId());
+//                config.setDepartureStateName(departureState.getName());
+//            }
 
             if(config.getDestinationLocations() != null) {
                 String str = config.getDestinationLocations();
@@ -349,14 +349,14 @@ public class PricingConfigurationService {
         pricingConfigurations.forEach(config -> {
             PricingConfigurationResponse pricingConfigurationResponse = mapper.map(config, PricingConfigurationResponse.class);
 
-            if (pricingConfigurationResponse.getArrivalStateId() != null) {
-                State arrivalState = stateRepository.findStateById(pricingConfigurationResponse.getArrivalStateId());
-                pricingConfigurationResponse.setArrivalStateName(arrivalState.getName());
-            }
-            if (pricingConfigurationResponse.getDepartureStateId() != null) {
-                State departureState = stateRepository.findStateById(pricingConfigurationResponse.getDepartureStateId());
-                pricingConfigurationResponse.setDepartureStateName(departureState.getName());
-            }
+//            if (pricingConfigurationResponse.getArrivalStateId() != null) {
+//                State arrivalState = stateRepository.findStateById(pricingConfigurationResponse.getArrivalStateId());
+//                pricingConfigurationResponse.setArrivalStateName(arrivalState.getName());
+//            }
+//            if (pricingConfigurationResponse.getDepartureStateId() != null) {
+//                State departureState = stateRepository.findStateById(pricingConfigurationResponse.getDepartureStateId());
+//                pricingConfigurationResponse.setDepartureStateName(departureState.getName());
+//            }
 
             if(config.getDestinationLocations() != null) {
                 String str = config.getDestinationLocations();
