@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.NotFoundException;
+import com.sabi.framework.models.Permission;
 import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
@@ -200,20 +201,26 @@ public class OrderItemService {
         if(orderItems == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
-        orderItems.getContent().forEach(item ->{
-            Order order = orderRepository.getOne(item.getOrderId());
-            item.setCustomerName(order.getCustomerName());
-            item.setDeliveryAddress(order.getDeliveryAddress());
+        /**
+         * Call the refactored re-usable method to set the needed parameters of OrderItems
+         * @Author: Afam Okonkwo
+         * @Date: 14/04/2022
+         */
+        orderItems.getContent().stream().forEach(this::setNeededParameters);
+        /**
+         orderItems.getContent().stream().forEach(item ->{
+         Order order = orderRepository.getOne(item.getOrderId());
+         item.setCustomerName(order.getCustomerName());
+         item.setDeliveryAddress(order.getDeliveryAddress());
 
-            if(item.getInventoryId() != null) {
-                Inventory inventory = inventoryRepository.getOne(item.getInventoryId());
-                item.setCreatedDate(inventory.getCreatedDate());
-                item.setAcceptedDate(inventory.getAcceptedDate());
-            }
+         if(item.getInventoryId() != null) {
+         Inventory inventory = inventoryRepository.getOne(item.getInventoryId());
+         item.setCreatedDate(inventory.getCreatedDate());
+         item.setAcceptedDate(inventory.getAcceptedDate());
+         }
 
-        });
-
-
+         });
+         */
         return orderItems;
 
     }
@@ -233,8 +240,36 @@ public class OrderItemService {
 
 
     public List<OrderItem> getAll(Boolean isActive){
-        return orderItemRepository.findByIsActive(isActive);
+        List<OrderItem> orderItems = orderItemRepository.findByIsActive(isActive);
+        /**
+         * Call the refactored re-usable method to set the needed parameters of OrderItems
+         * @Author: Afam Okonkwo
+         * @Date: 14/04/2022
+         */
+        orderItems.stream().forEach(this::setNeededParameters);
+        return orderItems;
+        //return orderItemRepository.findByIsActive(isActive);
+    }
 
+    /**
+     * Just normal refactoring in order to reuse a code section.
+     * @Author Afam Okonkwo
+     * @Date 14/04/2022
+     * @param item
+     */
+
+    private OrderItem setNeededParameters(OrderItem item) {
+
+            Order order = orderRepository.getOne(item.getOrderId());
+            item.setCustomerName(order.getCustomerName());
+            item.setDeliveryAddress(order.getDeliveryAddress());
+
+            if(item.getInventoryId() != null) {
+                Inventory inventory = inventoryRepository.getOne(item.getInventoryId());
+                item.setCreatedDate(inventory.getCreatedDate());
+                item.setAcceptedDate(inventory.getAcceptedDate());
+            }
+            return item;
     }
 
     public Page<OrderItem> getAllDeliveries(Long partnerId, String deliveryStatus, PageRequest pageRequest ){

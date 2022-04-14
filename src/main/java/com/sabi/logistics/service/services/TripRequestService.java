@@ -729,6 +729,10 @@ public class TripRequestService {
         return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getAmountCollected).reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 
+    private Number getTotalItemsPickedUp(List<TripItem> tripItems) {
+        return ((Number)tripItems.stream().filter(Objects::nonNull).map(TripItem::getQtyPickedUp).reduce(Integer.valueOf(0), Integer::sum));
+    }
+
 
 
 
