@@ -443,6 +443,9 @@ public class Validations {
         if (request.getDeliveryAddress() == null || request.getDeliveryAddress().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Address cannot be empty");
 
+        if (request.getOrderNumber() == null || request.getOrderNumber().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Order Number cannot be empty");
+
         if (request.getTotalAmount() == null )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Total Amount cannot be empty");
         if (request.getTotalAmount()  <= 0.0)
@@ -474,6 +477,9 @@ public class Validations {
 
         if (request.getDeliveryAddress() == null || request.getDeliveryAddress().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Address cannot be empty");
+
+        if (request.getOrderNumber() == null || request.getOrderNumber().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Order Number cannot be empty");
 
         if (request.getTotalAmount() == null )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Total Amount cannot be empty");
