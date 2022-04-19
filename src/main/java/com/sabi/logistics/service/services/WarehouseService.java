@@ -107,9 +107,22 @@ public class WarehouseService {
         return warehouseResponseDto;
     }
 
-
-    public Page<Warehouse> findAll(String owner, String name, Long partnerId, Boolean isActive,Long lgaId, PageRequest pageRequest) {
-        Page<Warehouse> warehouse = warehouseRepository.findWarehouse(owner, name, partnerId,isActive, lgaId, pageRequest);
+    /**
+     * Adds 'state' parameter to query by state in WareHouseRepository
+     * @Author: Afam Okonkwo
+     * @Date: 19/04/2022
+     * @param owner
+     * @param name
+     * @param partnerId
+     * @param state
+     * @param isActive
+     * @param lgaId
+     * @param pageRequest
+     * @return
+     */
+    public Page<Warehouse> findAll(String owner, String name, Long partnerId, String state, Boolean isActive,Long lgaId, PageRequest pageRequest) {
+    //public Page<Warehouse> findAll(String owner, String name, Long partnerId, Boolean isActive,Long lgaId, PageRequest pageRequest)
+        Page<Warehouse> warehouse = warehouseRepository.findWarehouse(owner, name, partnerId, state,isActive, lgaId, pageRequest);
         if (warehouse == null) {
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }

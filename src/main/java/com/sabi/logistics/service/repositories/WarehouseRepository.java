@@ -15,11 +15,13 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
     @Query("SELECT s FROM Warehouse s WHERE ((:owner IS NULL) OR (:owner IS NOT NULL AND s.owner like %:owner%))" +
             " AND ((:name IS NULL) OR (:name IS NOT NULL AND s.name like %:name%))" +
             " AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND s.partnerId = :partnerId))"+
+            " AND ((:state IS NULL) OR (:state IS NOT NULL AND s.stateName LIKE %:state%))"+
             " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND s.isActive = :isActive))"+
             " AND ((:lgaId IS NULL) OR (:lgaId IS NOT NULL AND s.lgaId = :lgaId)) order by s.id desc")
     Page<Warehouse> findWarehouse(@Param("owner") String owner,
                                   @Param("name") String name,
                                   @Param("partnerId") Long partnerId,
+                                  String state,
                                   @Param("isActive") Boolean isActive,
                                   @Param("lgaId") Long lgaId,
                                   Pageable pageable);
