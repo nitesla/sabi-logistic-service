@@ -541,6 +541,7 @@ public class TripRequestService {
 
                 if(partnerAsset.getName() != null || !partnerAsset.getName().isEmpty()){
                     request.setPartnerAssetName(partnerAsset.getName());
+                    request.setPartnerAssetTypeName(partnerAsset.getAssetTypeName());
                 }
             }
 
