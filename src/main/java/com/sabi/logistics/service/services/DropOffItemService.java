@@ -15,6 +15,9 @@ import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.DropOffItemRequestDto;
 import com.sabi.logistics.core.dto.request.TripItemRequestDto;
 import com.sabi.logistics.core.dto.response.DropOffItemResponseDto;
+import com.sabi.logistics.core.enums.PaymentMode;
+import com.sabi.logistics.core.enums.PaymentStatus;
+import com.sabi.logistics.core.enums.VerificationStatus;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.*;
@@ -94,8 +97,12 @@ public class DropOffItemService {
         dropOffItem.setCreatedBy(userCurrent.getId());
         dropOffItem.setIsActive(true);
         dropOffItem.setFinalDropOff(false);
+        dropOffItem.setProductName(orderItem.getProductName());
         dropOffItem.setQty(orderItem.getQty());
         dropOffItem.setUnitPrice(orderItem.getUnitPrice());
+        if (order.getPaymentStatus() == PaymentStatus.paid){
+            dropOffItem.setTransactionReference(orderItem.getPaymentReference());
+        }
         dropOffItem.setTotalAmount((dropOffItem.getUnitPrice().multiply(new BigDecimal(orderItem.getQty()))));
         if(request.getAmountCollected()!=null){
             dropOffItem.setOutstandingAmount(dropOffItem.getTotalAmount().subtract(request.getAmountCollected()));
@@ -171,7 +178,11 @@ public class DropOffItemService {
             dropOffItem.setIsActive(true);
             dropOffItem.setFinalDropOff(false);
             dropOffItem.setQty(orderItem.getQty());
+            dropOffItem.setProductName(orderItem.getProductName());
             dropOffItem.setUnitPrice(orderItem.getUnitPrice());
+            if (order.getPaymentStatus() == PaymentStatus.paid){
+                dropOffItem.setTransactionReference(orderItem.getPaymentReference());
+            }
             dropOffItem.setTotalAmount(dropOffItem.getUnitPrice().multiply(new BigDecimal(orderItem.getQty())));
             if(request.getAmountCollected()!=null){
                 dropOffItem.setOutstandingAmount(dropOffItem.getTotalAmount().subtract(request.getAmountCollected()));
@@ -232,9 +243,30 @@ public class DropOffItemService {
                         "Requested dropOffItem Id does not exist!"));
         OrderItem orderItem = orderItemRepository.getOne(request.getOrderItemId());
         Order order = orderRepository.getOne(orderItem.getOrderId());
-        DropOff dropOff = dropOffRepository.getOne(request.getDropOffId());
+        DropOff dropOff = dropOffRepository.getOne(dropOffItem.getDropOffId());
         mapper.map(request, dropOffItem);
         dropOffItem.setUpdatedBy(userCurrent.getId());
+
+        if(dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.paid){
+            orderItem.setVerificationStatus(VerificationStatus.verified);
+        }
+
+        if (dropOffItem.getStatus() == "pending" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery) {
+            orderItem.setVerificationStatus(VerificationStatus.pending);
+        }
+
+        if (dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (dropOff.getPaymentMode() == PaymentMode.CASH || dropOff.getPaymentMode() == PaymentMode.POS)) {
+            orderItem.setVerificationStatus(VerificationStatus.verified);
+        }
+
+        if (dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (dropOff.getPaymentMode() == PaymentMode.BANK_TRANSFER)) {
+            orderItem.setVerificationStatus(VerificationStatus.AwaitingVerification);
+        }
+
+        orderItemRepository.save(orderItem);
+
+
+
         if(request.getQtyGoodsDelivered() != null && request.getQtyGoodsDelivered() > orderItem.getQty()){
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Quantity of Items Delivered can't be greater than Total Quantity");
         }
@@ -314,6 +346,7 @@ public class DropOffItemService {
             request.setDropOffId(dropOffId);
             validations.validateDropOffItem(request);
             OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
+            DropOff dropOff = dropOffRepository.getOne(dropOffItem.getDropOffId());
 
             if(request.getQtyGoodsDelivered() != null && request.getQtyGoodsDelivered() > orderItem.getQty()){
                 throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Quantity of Items Delivered can't be greater than Total Quantity");
@@ -334,6 +367,27 @@ public class DropOffItemService {
             }
             mapper.map(request, dropOffItem);
             dropOffItem.setUpdatedBy(userCurrent.getId());
+
+
+            if(dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.paid){
+                orderItem.setVerificationStatus(VerificationStatus.verified);
+            }
+
+            if (dropOffItem.getStatus() == "pending" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery) {
+                orderItem.setVerificationStatus(VerificationStatus.pending);
+            }
+
+            if (dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (dropOff.getPaymentMode() == PaymentMode.CASH || dropOff.getPaymentMode() == PaymentMode.POS)) {
+                orderItem.setVerificationStatus(VerificationStatus.verified);
+            }
+
+            if (dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (dropOff.getPaymentMode() == PaymentMode.BANK_TRANSFER)) {
+                orderItem.setVerificationStatus(VerificationStatus.AwaitingVerification);
+            }
+
+            orderItemRepository.save(orderItem);
+
+
             dropOffItemRepository.save(dropOffItem);
             log.debug("record updated - {}"+ new Gson().toJson(dropOffItem));
             DropOffItemResponseDto dropOffItemResponseDto = mapper.map(dropOffItem, DropOffItemResponseDto.class);

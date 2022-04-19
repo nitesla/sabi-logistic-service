@@ -15,6 +15,8 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.*;
 import com.sabi.logistics.core.dto.response.DropOffItemResponseDto;
 import com.sabi.logistics.core.dto.response.DropOffResponseDto;
+import com.sabi.logistics.core.enums.PaymentMode;
+import com.sabi.logistics.core.enums.PaymentStatus;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.*;
@@ -90,6 +92,11 @@ public class DropOffService {
         dropOff.setReturnStatus("none");
         dropOff.setDeliveryAddress(order.getDeliveryAddress());
         dropOff.setPaymentStatus(order.getPaymentStatus());
+
+        if (order.getPaymentStatus() == PaymentStatus.paid){
+            dropOff.setPaymentMode(PaymentMode.ONLINE);
+        }
+
         dropOff = dropOffRepository.save(dropOff);
         log.debug("Create new trip item - {}"+ new Gson().toJson(dropOff));
         DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
@@ -124,6 +131,11 @@ public class DropOffService {
             dropOff.setReturnStatus("none");
             dropOff.setDeliveryAddress(order.getDeliveryAddress());
             dropOff.setPaymentStatus(order.getPaymentStatus());
+
+            if (order.getPaymentStatus() == PaymentStatus.paid){
+                dropOff.setPaymentMode(PaymentMode.ONLINE);
+            }
+
             dropOff = dropOffRepository.save(dropOff);
             log.debug("Create new trip item - {}" + new Gson().toJson(dropOff));
             DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
@@ -169,14 +181,24 @@ public class DropOffService {
         }
 
         if (dropOff.getPaymentStatus() != null) {
-            if (dropOff.getPaymentStatus().equalsIgnoreCase("paid")) {
+            if (dropOff.getPaymentStatus() == PaymentStatus.paid) {
                 dropOff.setPaidStatus("paid");
             }
-            if (dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")) {
+            if (dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery) {
                 dropOff.setPaidStatus("pending");
             }
         }
 
+        if (dropOff.getPaymentStatus() == PaymentStatus.paid){
+            dropOff.setPaymentMode(PaymentMode.ONLINE);
+
+            List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
+            for (DropOffItem dropOffItem : dropOffItems) {
+                OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
+                dropOffItem.setTransactionReference(orderItem.getPaymentReference());
+                dropOffItemRepository.save(dropOffItem);
+            }
+        }
 
         dropOff.setUpdatedBy(userCurrent.getId());
         dropOff.setDeliveryAddress(order.getDeliveryAddress());
@@ -217,11 +239,11 @@ public class DropOffService {
             }
         }
 
-        if (request.getDeliveryStatus().equalsIgnoreCase("completed") && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery") && (!(request.getTotalAmount().equals(dropOff.getTotalAmount())))) {
+        if (request.getDeliveryStatus().equalsIgnoreCase("completed") && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (!(request.getTotalAmount().equals(dropOff.getTotalAmount())))) {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Amount");
         }
 
-        if (request.getDeliveryStatus().equalsIgnoreCase("PartiallyCompleted") && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery") && request.getTotalAmount().equals(0)) {
+        if (request.getDeliveryStatus().equalsIgnoreCase("PartiallyCompleted") && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery  && request.getTotalAmount().equals(0)) {
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Invalid Amount");
         }
 
@@ -242,11 +264,22 @@ public class DropOffService {
         }
 
         if (dropOff.getPaymentStatus() != null) {
-            if (dropOff.getPaymentStatus().equalsIgnoreCase("paid")) {
+            if (dropOff.getPaymentStatus() == PaymentStatus.paid) {
                 dropOff.setPaidStatus("paid");
             }
-            if (dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")) {
+            if (dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery ) {
                 dropOff.setPaidStatus("pending");
+            }
+        }
+
+        if (dropOff.getPaymentStatus() == PaymentStatus.paid){
+            dropOff.setPaymentMode(PaymentMode.ONLINE);
+
+            List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
+            for (DropOffItem dropOffItem : dropOffItems) {
+                OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
+                dropOffItem.setTransactionReference(orderItem.getPaymentReference());
+                dropOffItemRepository.save(dropOffItem);
             }
         }
 
@@ -304,7 +337,7 @@ public class DropOffService {
         dropOffResponseDto.setCustomerPhone(order.getCustomerPhone());
         dropOffResponseDto.setDeliveryAddress(order.getDeliveryAddress());
 
-        if (dropOff.getPaymentStatus() != null && dropOffResponseDto.getPaymentStatus().equalsIgnoreCase("Pay On Delivery")) {
+        if (dropOff.getPaymentStatus() != null && dropOffResponseDto.getPaymentStatus() == PaymentStatus.PayOnDelivery ) {
             List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(id);
             dropOffResponseDto.setTotalAmount(getTotalAmount(dropOffItems));
             dropOffResponseDto.setAmountCollected(getTotalAmountCollected(dropOffItems));
@@ -320,8 +353,8 @@ public class DropOffService {
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
         dropOffs.getContent().stream().forEach((dropOff)->dropOff.setDropOffItem(getAllDropOffItems(dropOff.getId())));
-        dropOffs.getContent().stream().filter((dropOff)->dropOff.getPaymentStatus()!=null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")).forEach((dropOff)->dropOff.setTotalAmount(getTotalAmount(dropOff.getDropOffItem())));
-        dropOffs.getContent().stream().filter((dropOff)->dropOff.getPaymentStatus()!=null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")).forEach((dropOff)->dropOff.setAmountCollected(getTotalAmountCollected(dropOff.getDropOffItem())));
+        dropOffs.getContent().stream().filter((dropOff)->dropOff.getPaymentStatus()!=null && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery ).forEach((dropOff)->dropOff.setTotalAmount(getTotalAmount(dropOff.getDropOffItem())));
+        dropOffs.getContent().stream().filter((dropOff)->dropOff.getPaymentStatus()!=null && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery ).forEach((dropOff)->dropOff.setAmountCollected(getTotalAmountCollected(dropOff.getDropOffItem())));
 
 
         return dropOffs;
@@ -329,8 +362,8 @@ public class DropOffService {
     }
     private List<DropOff> setAndCaluateDroppOffsParameters(List<DropOff> dropOffs){
         dropOffs.stream().forEach((dropOff)->dropOff.setDropOffItem(getAllDropOffItems(dropOff.getId())));
-        dropOffs.stream().filter((dropOff)->dropOff.getPaymentStatus()!=null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")).forEach((dropOff)->dropOff.setTotalAmount(getTotalAmount(dropOff.getDropOffItem())));
-        dropOffs.stream().filter((dropOff)->dropOff.getPaymentStatus()!=null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")).forEach((dropOff)->dropOff.setAmountCollected(getTotalAmountCollected(dropOff.getDropOffItem())));
+        dropOffs.stream().filter((dropOff)->dropOff.getPaymentStatus()!=null && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery ).forEach((dropOff)->dropOff.setTotalAmount(getTotalAmount(dropOff.getDropOffItem())));
+        dropOffs.stream().filter((dropOff)->dropOff.getPaymentStatus()!=null && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery ).forEach((dropOff)->dropOff.setAmountCollected(getTotalAmountCollected(dropOff.getDropOffItem())));
         return dropOffs;
     }
 
@@ -430,7 +463,7 @@ public class DropOffService {
             dropOff.setCustomerPhone(order.getCustomerPhone());
 
 
-            if (dropOff.getPaymentStatus() != null && dropOff.getPaymentStatus().equalsIgnoreCase("PayOnDelivery")) {
+            if (dropOff.getPaymentStatus() != null && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery ) {
                 List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
                 dropOff.setTotalAmount(getTotalAmount(dropOffItems));
                 dropOff.setAmountCollected(getTotalAmountCollected(dropOffItems));
