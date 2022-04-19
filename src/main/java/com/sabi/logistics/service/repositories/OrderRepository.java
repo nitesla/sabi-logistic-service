@@ -21,6 +21,8 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
 
     Order findOrderById(Long id);
 
+    Order findByOrderNumber(String orderNumber);
+
     List<Order> findByIsActive(Boolean isActive);
 
     @Query("SELECT MAX(o.id) FROM Order o ")

@@ -59,11 +59,16 @@ public class OrderService {
 
         order.setReferenceNo(validations.generateReferenceNumber(10));
         Order orderExists = orderRepository.findByReferenceNo(order.getReferenceNo());
+        Order orderNumberExists = orderRepository.findByOrderNumber(order.getOrderNumber());
         if(order.getReferenceNo() == null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order does not have Reference Number");
         }
 
         if(orderExists != null){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order already exist");
+        }
+
+        if(orderNumberExists != null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order already exist");
         }
 
@@ -93,11 +98,15 @@ public class OrderService {
 
         order.setReferenceNo(validations.generateReferenceNumber(10));
         Order orderExists = orderRepository.findByReferenceNo(order.getReferenceNo());
+        Order orderNumberExists = orderRepository.findByOrderNumber(order.getOrderNumber());
         if(order.getReferenceNo() == null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order does not have Reference Number");
         }
         if(orderExists != null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order already exist");
+        }
+        if(orderNumberExists != null){
+            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order Number already exist");
         }
 
         order.setBarCode(validations.generateCode(order.getReferenceNo()));
@@ -170,6 +179,17 @@ public class OrderService {
 
     }
 
+    public OrderResponseDto findOrderNumber(String orderNumber){
+        Order order  = orderRepository.findByOrderNumber(orderNumber);
+        if(order == null){
+            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
+        }
+        OrderResponseDto orderResponseDto = mapper.map(order, OrderResponseDto.class);
+        orderResponseDto.setOrderItem(getAllOrderItems(order.getId()));
+
+        return orderResponseDto;
+
+    }
 
     public Page<Order> findAll( String referenceNo, String deliveryStatus,
                                String customerName, String customerPhone, String deliveryAddress,
