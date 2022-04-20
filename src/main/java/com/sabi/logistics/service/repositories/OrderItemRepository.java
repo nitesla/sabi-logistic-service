@@ -3,7 +3,6 @@ package com.sabi.logistics.service.repositories;
 
 import com.sabi.logistics.core.models.OrderItem;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -39,5 +38,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long>, Jpa
             "AND ((:customerName IS NULL ) OR (:customerName IS NOT NULL AND o.customerName LIKE %:customerName%)))")
     public Page<OrderItem> searchOrderItems(Long wareHouseId, String deliveryStatus, Boolean hasInventory,
                                             String productName, Integer qty, LocalDateTime startDate, LocalDateTime endDate, String customerName, Pageable pageable);
+
+    OrderItem findByPaymentReference(String paymentReference);
 
 }
