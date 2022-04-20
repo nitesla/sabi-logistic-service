@@ -8,10 +8,7 @@ import com.sabi.framework.models.User;
 import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
-import com.sabi.logistics.core.dto.request.ShipmentTripRequest;
-import com.sabi.logistics.core.dto.request.TripMasterRequestDto;
-import com.sabi.logistics.core.dto.request.TripRequestDto;
-import com.sabi.logistics.core.dto.request.TripRequestResponseReqDto;
+import com.sabi.logistics.core.dto.request.*;
 import com.sabi.logistics.core.dto.response.DropOffResponseDto;
 import com.sabi.logistics.core.dto.response.TripMasterResponseDto;
 import com.sabi.logistics.core.dto.response.TripRequestStatusCountResponse;
@@ -758,6 +755,18 @@ public class TripRequestService {
         }
 
 
+    }
+
+    public List<OrderItem> updateVerificationStatus(OrderItemVerificationDto request) {
+        validations.validateOrderItemVerificationStatus(request);
+        Order order = orderRepository.findByReferenceNo(request.getOrderReference());
+        List<OrderItem> orderItems = orderItemRepository.findByOrderId(order.getId());
+        log.info("Current size of orderItems=={}",orderItems.size());
+        for (OrderItem orderItem: orderItems){
+            orderItem.setVerificationStatus(request.getVerificationStatus());
+            orderItemRepository.save(orderItem);
+        }
+        return orderItems;
     }
 
 }

@@ -980,6 +980,46 @@ public class Validations {
     }
 
 
+    public void validateOrderItemVerificationStatus (OrderItemVerificationDto request){
+
+        if (request.getTripRequestReference() == null || request.getTripRequestReference().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "TripRequest Reference Number cannot be empty");
+
+        if (request.getOrderReference() == null || request.getOrderReference().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Order Reference Number cannot be empty");
+
+        if (request.getPaymentReference() == null || request.getPaymentReference().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Payment Reference Number cannot be empty");
+
+        if (request.getVerificationStatus() == null || request.getVerificationStatus().toString().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Verification Status cannot be empty");
+
+        if (request.getAmountPaid() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Amount Paid cannot be empty");
+
+        if (request.getTripRequestReference() != null) {
+            TripRequest exist = tripRequestRepository.findByReferenceNo(request.getTripRequestReference());
+                if(exist == null){
+                    throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " TripRequest Reference Number does not exist");
+                }
+        }
+
+        if (request.getOrderReference() != null) {
+            Order orderExists = orderRepository.findByReferenceNo(request.getOrderReference());
+            if(orderExists == null){
+                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order Reference Number does not exist");
+            }
+        }
+
+        if (request.getPaymentReference() != null) {
+            OrderItem exist = orderItemRepository.findByPaymentReference(request.getPaymentReference());
+            if(exist == null){
+                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Payment Reference Number does not exist");
+            }
+        }
+    }
+
+
 }
 
 
