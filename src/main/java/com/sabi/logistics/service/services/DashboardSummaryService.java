@@ -1,12 +1,15 @@
 package com.sabi.logistics.service.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sabi.framework.exceptions.NotFoundException;
+import com.sabi.framework.models.User;
+import com.sabi.framework.repositories.UserRepository;
+import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.DashBoardSummaryRequest;
 import com.sabi.logistics.core.dto.request.TripAssetDto;
 import com.sabi.logistics.core.dto.response.DashboardResponseDto;
-import com.sabi.logistics.core.models.DashboardSummary;
-import com.sabi.logistics.core.models.PartnerAsset;
-import com.sabi.logistics.core.models.TripRequest;
+import com.sabi.logistics.core.dto.response.DriverDashboardResponseDto;
+import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.*;
 import org.modelmapper.ModelMapper;
@@ -17,6 +20,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,6 +33,9 @@ public class DashboardSummaryService {
     private static final Logger log = LoggerFactory.getLogger(DashboardSummaryService.class);
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
+    private final DriverRepository driverRepository;
+    private final PartnerRepository partnerRepository;
+    private final UserRepository userRepository;
     @Autowired
     TripRequestRepository tripRequestRepository;
     @Autowired
@@ -42,9 +49,12 @@ public class DashboardSummaryService {
     @Autowired
     private Validations validations;
 
-    public DashboardSummaryService(ModelMapper mapper, ObjectMapper objectMapper) {
+    public DashboardSummaryService(ModelMapper mapper, ObjectMapper objectMapper, DriverRepository driverRepository, PartnerRepository partnerRepository, UserRepository userRepository) {
         this.mapper = mapper;
         this.objectMapper = objectMapper;
+        this.driverRepository = driverRepository;
+        this.partnerRepository = partnerRepository;
+        this.userRepository = userRepository;
     }
 
     @Scheduled(
@@ -115,6 +125,43 @@ public class DashboardSummaryService {
             tripAssetDtos.add(tripAsset);
         });
         return tripAssetDtos;
+    }
+
+    /**
+     * @Description: Returns driver's trips delivery status statistics: failed, completed and partial.
+     * @Author: Afam Okonkwo
+     * @Date: 21/04/22
+     * @param driverId
+     * @return
+     */
+
+    public DriverDashboardResponseDto getDriverTripsStatistics(Long driverId) {
+        Driver driver = driverRepository.findById(driverId)
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, "The driverId does not exist"));
+        Partner partner = partnerRepository.findById(driver.getPartnerId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The driver's partnerId does not exist"));
+
+        User partnerUser = userRepository.findById(partner.getUserId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The user Id of the driver's partner does not exist"));
+
+        User driverUser = userRepository.findById(driver.getUserId())
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The driver's userId doesn't exist"));
+
+        DriverDashboardResponseDto driverDashboardResponseDto = new DriverDashboardResponseDto();
+        driverDashboardResponseDto.setDriverId(driverId);
+        driverDashboardResponseDto.setPartnerId(driver.getPartnerId());
+        driverDashboardResponseDto.setDriverName(driverUser.getFirstName()+" "+driverUser.getLastName());
+        driverDashboardResponseDto.setPartnerName(partnerUser.getFirstName()+" "+partnerUser.getLastName());
+
+        BigInteger totalCompletedTrips = tripRequestRepository.countByDriverIdAndDeliveryStatus(driverId,"Completed");
+        BigInteger partialCompletedTrips = tripRequestRepository.countByDriverIdAndDeliveryStatus(driverId,"PartiallyCompleted");
+        BigInteger totalFailedTrips = tripRequestRepository.countByDriverIdAndDeliveryStatus(driverId,"failed");
+        driverDashboardResponseDto.setTotalCompletedTrips(totalCompletedTrips);
+        driverDashboardResponseDto.setTotalFailedTrips(totalFailedTrips);
+        driverDashboardResponseDto.setTotalPartiallyCompletedTrips(partialCompletedTrips);
+
+        return driverDashboardResponseDto;
+
     }
 
 

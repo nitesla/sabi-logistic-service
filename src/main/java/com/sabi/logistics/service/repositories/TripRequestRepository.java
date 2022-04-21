@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -23,6 +24,8 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
     Integer countByPartnerIdAndDeliveryStatusAndIsActiveAndCreatedDateGreaterThanEqual(Long partnerId, String deliveryStatus, Boolean isActive, LocalDateTime date);
 
     List<TripRequest> findByCreatedDate(LocalDateTime date);
+
+    BigInteger countByDriverIdAndDeliveryStatus(Long driverId, String deliveryStatus);
 
     List<TripRequest> findByDriverId(Long driverId);
 
