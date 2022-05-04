@@ -11,6 +11,7 @@ import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.*;
+import com.sabi.logistics.core.enums.PaymentStatus;
 import com.sabi.logistics.core.enums.TransAction;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.repositories.*;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("All")
 @Slf4j
@@ -411,7 +413,6 @@ public class Validations {
     }
 
 
-
     public String generateReferenceNumber(int numOfDigits) {
         if (numOfDigits < 1) {
             throw new IllegalArgumentException(numOfDigits + ": Number must be equal or greater than 1");
@@ -434,7 +435,10 @@ public class Validations {
 
         if (request.getCustomerName() == null || request.getCustomerName().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Customer Name cannot be empty");
-
+        if (request.getPaymentStatus() ==null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"Payment Status cannot be empty");
+        if (!request.getPaymentStatus().equals(PaymentStatus.PayOnDelivery) || !request.getPaymentStatus().equals(PaymentStatus.paid))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"Invalid Payment Status");
         if (request.getCustomerPhone() == null || request.getCustomerPhone().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Customer Phone cannot be empty");
         if (!Utility.validatePhoneNumber(request.getCustomerPhone().toString()))
@@ -1034,6 +1038,20 @@ public class Validations {
     }
 
 
+    public void validateAdminAuth(AdminAuthDto adminAuthDto) {
+        if (adminAuthDto.getUserId() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Please provide a valid userId");
+        if (adminAuthDto.getApplicationCode() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Please provide an applicationCode");
+        if (Utility.isNumeric(adminAuthDto.getApplicationCode()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"ApplicationCode cannot be a number");
+        if (adminAuthDto.getApplicationCode().isEmpty() || !adminAuthDto.getApplicationCode().equals("LG"))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"Empty/Invalid applicationCode");
+        if (adminAuthDto.getAuthKey() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"Please provide authKey");
+        if (adminAuthDto.getAuthKey().isEmpty())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"autkKey canno be empty");
+    }
 }
 
 
