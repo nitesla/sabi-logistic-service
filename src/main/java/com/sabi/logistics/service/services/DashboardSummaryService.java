@@ -135,9 +135,10 @@ public class DashboardSummaryService {
      * @return
      */
 
-    public DriverDashboardResponseDto getDriverTripsStatistics(Long driverId) {
-        Driver driver = driverRepository.findById(driverId)
-                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, "The driverId does not exist"));
+    public DriverDashboardResponseDto getDriverTripsStatistics(Long driverUserId) {
+        Driver driver = driverRepository.findByUserId(driverUserId);
+        if (driver == null)
+           throw  new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, "This driver does not exist");
         Partner partner = partnerRepository.findById(driver.getPartnerId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The driver's partnerId does not exist"));
 
@@ -148,14 +149,14 @@ public class DashboardSummaryService {
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The driver's userId doesn't exist"));
 
         DriverDashboardResponseDto driverDashboardResponseDto = new DriverDashboardResponseDto();
-        driverDashboardResponseDto.setDriverId(driverId);
+        driverDashboardResponseDto.setDriverId(driver.getId());
         driverDashboardResponseDto.setPartnerId(driver.getPartnerId());
         driverDashboardResponseDto.setDriverName(driverUser.getFirstName()+" "+driverUser.getLastName());
         driverDashboardResponseDto.setPartnerName(partnerUser.getFirstName()+" "+partnerUser.getLastName());
 
-        BigInteger totalCompletedTrips = tripRequestRepository.countByDriverIdAndDeliveryStatus(driverId,"Completed");
-        BigInteger partialCompletedTrips = tripRequestRepository.countByDriverIdAndDeliveryStatus(driverId,"PartiallyCompleted");
-        BigInteger totalFailedTrips = tripRequestRepository.countByDriverIdAndDeliveryStatus(driverId,"failed");
+        BigInteger totalCompletedTrips = tripRequestRepository.countByDriverIdAndDeliveryStatus(driver.getId(),"Completed");
+        BigInteger partialCompletedTrips = tripRequestRepository.countByDriverIdAndDeliveryStatus(driver.getId(),"PartiallyCompleted");
+        BigInteger totalFailedTrips = tripRequestRepository.countByDriverIdAndDeliveryStatus(driver.getId(),"failed");
         driverDashboardResponseDto.setTotalCompletedTrips(totalCompletedTrips);
         driverDashboardResponseDto.setTotalFailedTrips(totalFailedTrips);
         driverDashboardResponseDto.setTotalPartiallyCompletedTrips(partialCompletedTrips);
@@ -163,8 +164,6 @@ public class DashboardSummaryService {
         return driverDashboardResponseDto;
 
     }
-
-
 
 
     public void moveTripRecordToDashBoard()  {
