@@ -99,6 +99,9 @@ public class DropOffItemService {
         dropOffItem.setFinalDropOff(false);
         dropOffItem.setProductName(orderItem.getProductName());
         dropOffItem.setQty(orderItem.getQty());
+        if(orderItem.getDeliveryAddress() != null){
+        dropOffItem.setDeliveryAddress(orderItem.getDeliveryAddress());
+        }
         dropOffItem.setUnitPrice(orderItem.getUnitPrice());
         if (order.getPaymentStatus() == PaymentStatus.paid){
             dropOffItem.setTransactionReference(orderItem.getPaymentReference());
@@ -178,6 +181,9 @@ public class DropOffItemService {
             dropOffItem.setIsActive(true);
             dropOffItem.setFinalDropOff(false);
             dropOffItem.setQty(orderItem.getQty());
+            if(orderItem.getDeliveryAddress() != null){
+                dropOffItem.setDeliveryAddress(orderItem.getDeliveryAddress());
+            }
             dropOffItem.setProductName(orderItem.getProductName());
             dropOffItem.setUnitPrice(orderItem.getUnitPrice());
             if (order.getPaymentStatus() == PaymentStatus.paid){
