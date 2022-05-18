@@ -844,14 +844,10 @@ public class Validations {
         if (request.getDays() == null )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "days cannot be empty");
         /**
-         *  Validates newly introduced image and companyName
+         *  Validates newly introduced companyName
          *  @Date:       14/04/2022
          *  @Author:     Afam Okonkwo
          */
-        if (request.getImage() == null || request.getImage().isEmpty())
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "image field must be provided");
-        if (Utility.isNumeric(request.getImage()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "image cannot be a number");
         if (request.getCompanyName() == null || request.getCompanyName().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "companyName must be provided");
         if (Utility.isNumeric(request.getCompanyName()))

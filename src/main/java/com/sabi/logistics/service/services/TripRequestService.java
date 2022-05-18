@@ -401,7 +401,7 @@ public class TripRequestService {
             tripRequest.setDriverUserId(driver.getUserId());
             tripRequest.setDriverName(user.getLastName() + " " + user.getFirstName());
             //Has the driver accepted the trip?
-            if (request.getDriverStatus().equalsIgnoreCase("accepted")){
+            if (request.getDriverStatus()!=null && request.getDriverStatus().equalsIgnoreCase("accepted")){
                 //Then update the driver's status accordingly
                 tripRequest.setDriverStatus(tripRequest.getStatus());
             }
@@ -419,7 +419,7 @@ public class TripRequestService {
             tripRequest.setDriverAssistantUserId(driver2.getUserId());
             tripRequest.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
             //Has the driver accepted the trip?
-            if (request.getDriverStatus().equalsIgnoreCase("accepted")){
+            if (!Objects.isNull(request.getDriverStatus()) && request.getDriverStatus().equalsIgnoreCase("accepted")){
                 //Then update the driver's status accordingly
                 tripRequest.setDriverStatus(tripRequest.getStatus());
             }
@@ -674,33 +674,30 @@ public class TripRequestService {
 
     public List<TripRequest> getAll(Boolean isActive){
         List<TripRequest> tripRequests = tripRequestRepository.findByIsActive(isActive);
-        for (TripRequest request : tripRequests) {
+        tripRequests.forEach(request -> {
             Partner partner = partnerRepository.findPartnerById(request.getPartnerId());
-            if (partner == null) {
-                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid Partner Id");
+            if (partner != null) {
+                request.setPartnerName(partner.getName());
             }
-            request.setPartnerName(partner.getName());
             PartnerAsset partnerAsset = partnerAssetRepository.findPartnerAssetById(request.getPartnerAssetId());
-            if (partnerAsset == null) {
-                throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION , " Invalid PartnerAsset Id");
-            };
-            request.setPartnerAssetName(partnerAsset.getName());
+            if (partnerAsset != null) {
+                request.setPartnerAssetName(partnerAsset.getName());
+            }
+            ;
             Driver driver = driverRepository.findDriverById(request.getDriverId());
-
-            User user = userRepository.getOne(driver.getUserId());
-            request.setDriverName(user.getLastName() + " " + user.getFirstName());
-            request.setDriverPhone(user.getPhone());
-
+            if (driver != null) {
+                User user = userRepository.getOne(driver.getUserId());
+                request.setDriverName(user.getLastName() + " " + user.getFirstName());
+                request.setDriverPhone(user.getPhone());
+            }
             Driver driver2 = driverRepository.findDriverById(request.getDriverAssistantId());
-
-            User user2 = userRepository.getOne(driver2.getUserId());
-            request.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
-            request.setDriverAssistantPhone(user2.getPhone());
-
+            if (driver2 != null) {
+                User user2 = userRepository.getOne(driver2.getUserId());
+                request.setDriverAssistantName(user2.getLastName() + " " + user2.getFirstName());
+                request.setDriverAssistantPhone(user2.getPhone());
+            }
             request.setDropOffCount(getDropOff(request.getId()));
-
-
-        }
+        });
         return tripRequests;
 
     }
