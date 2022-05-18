@@ -126,7 +126,7 @@ public class OrderItemService {
 
         Order order = orderRepository.getOne(orderItem.getOrderId());
         orderItemResponseDto.setCustomerName(order.getCustomerName());
-        if (!order.getHasMultipleDeliveryAddress()){
+        if (!order.getHasMultipleDeliveryAddress() && order.getHasMultipleDeliveryAddress() != null ){
             orderItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
         }
         orderItemResponseDto.setUnitPrice(orderItem.getUnitPrice());
@@ -263,7 +263,7 @@ public class OrderItemService {
 
             Order order = orderRepository.getOne(item.getOrderId());
             item.setCustomerName(order.getCustomerName());
-            if (!order.getHasMultipleDeliveryAddress()){
+            if (!order.getHasMultipleDeliveryAddress() && order.getHasMultipleDeliveryAddress() != null){
             item.setDeliveryAddress(order.getDeliveryAddress());
             }
 
