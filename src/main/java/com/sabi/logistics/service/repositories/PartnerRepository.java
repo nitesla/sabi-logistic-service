@@ -36,6 +36,6 @@ public interface PartnerRepository extends JpaRepository<Partner, Long> {
 
     Partner findBySupplierId (Long supplierId);
 
-    @Query("SELECT p FROM Partner  p INNER JOIN PartnerCategories pc ON p.id = pc.partnerId WHERE ((pc.categoryId =:categoryId) AND (p.isActive = TRUE)) ORDER BY p.id")
+    @Query("SELECT p FROM Partner  p INNER JOIN PartnerCategories pc ON  p.id = pc.partnerId WHERE ((pc.categoryId =:categoryId) AND (p.isActive = TRUE)) ORDER BY p.id")
     Page<Partner> getAllPartnersByCategory(Long categoryId, Pageable pageable);
 }
