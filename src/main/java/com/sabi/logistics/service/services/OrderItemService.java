@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.NotFoundException;
-import com.sabi.framework.models.Permission;
 import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
@@ -134,7 +133,9 @@ public class OrderItemService {
 
         Order order = orderRepository.getOne(orderItem.getOrderId());
         orderItemResponseDto.setCustomerName(order.getCustomerName());
-        orderItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
+        if (!order.getHasMultipleDeliveryAddress() && order.getHasMultipleDeliveryAddress() != null ){
+            orderItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
+        }
         orderItemResponseDto.setUnitPrice(orderItem.getUnitPrice());
         orderItemResponseDto.setTotalPrice(orderItem.getTotalPrice());
         orderItemResponseDto.setReferenceNo(order.getReferenceNo());
@@ -267,7 +268,9 @@ public class OrderItemService {
 
             Order order = orderRepository.getOne(item.getOrderId());
             item.setCustomerName(order.getCustomerName());
+            if (!order.getHasMultipleDeliveryAddress() && order.getHasMultipleDeliveryAddress() != null){
             item.setDeliveryAddress(order.getDeliveryAddress());
+            }
 
             if(item.getInventoryId() != null) {
                 Inventory inventory = inventoryRepository.getOne(item.getInventoryId());
