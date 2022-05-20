@@ -121,11 +121,11 @@ public class OrderService {
         request.getOrderItemRequestDto().forEach(orderItems ->{
             orderItems.setOrderId(orderResponseDto.getId());
         });
-        responseDtos = orderItemService.createOrderItems(request.getOrderItemRequestDto());
-        List<OrderItemResponseDto> finalResponseDtos = responseDtos;
-        responseDtos.forEach(orderItemResponseDto -> {
-            orderResponseDto.setOrderItem(finalResponseDtos);
-        });
+        responseDtos = orderItemService.createOrderItems(request.getOrderItemRequestDto(),order);
+        //List<OrderItemResponseDto> finalResponseDtos = responseDtos;
+//        responseDtos.forEach(orderItemResponseDto -> {
+            orderResponseDto.setOrderItem(responseDtos);
+//        });
 
         auditTrailService
                 .logEvent(userCurrent.getUsername(),

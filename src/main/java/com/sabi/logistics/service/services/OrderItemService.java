@@ -66,16 +66,20 @@ public class OrderItemService {
         }
         OrderItem orderItem = mapper.map(request,OrderItem.class);
         Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseId());
+        Order order = orderRepository.getOne(request.getOrderId());
+        if (order!=null){
+            orderItem.setCustomerPhone(order.getCustomerPhone());
+        }
         orderItem.setCreatedBy(userCurrent.getId());
         orderItem.setIsActive(true);
         orderItem = orderItemRepository.save(orderItem);
-        log.debug("Create new order item - {}"+ new Gson().toJson(orderItem));
+        log.info("Create new order item - {}", orderItem);
         OrderItemResponseDto orderItemResponseDto = mapper.map(orderItem, OrderItemResponseDto.class);
         orderItemResponseDto.setWareHouseName(warehouse.getName());
         return orderItemResponseDto;
     }
 
-    public  List<OrderItemResponseDto> createOrderItems(List<OrderItemRequestDto> requests) {
+    public  List<OrderItemResponseDto> createOrderItems(List<OrderItemRequestDto> requests, Order order) {
         List<OrderItemResponseDto> responseDtos = new ArrayList<>();
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         requests.forEach(request->{
@@ -85,10 +89,13 @@ public class OrderItemService {
                 throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "totalPrice MUST be equal to (unitPrice * qty)");
             }
             OrderItem orderItem = mapper.map(request,OrderItem.class);
+            if (order != null){
+                orderItem.setCustomerPhone(order.getCustomerPhone());
+            }
             orderItem.setCreatedBy(userCurrent.getId());
             orderItem.setIsActive(true);
             orderItem = orderItemRepository.save(orderItem);
-            log.debug("Create new asset picture - {}"+ new Gson().toJson(orderItem));
+            log.debug("Create new asset picture - {}"+ orderItem);
             responseDtos.add(mapper.map(orderItem, OrderItemResponseDto.class));
         });
         return responseDtos;
@@ -224,8 +231,6 @@ public class OrderItemService {
         return orderItems;
 
     }
-
-
 
     public void enableDisable (EnableDisEnableDto request){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
