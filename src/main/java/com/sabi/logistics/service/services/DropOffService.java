@@ -105,10 +105,10 @@ public class DropOffService {
         //send notifications of the deliveryCode
         SmsRequest smsRequest = SmsRequest.builder().build();
         WhatsAppRequest whatsAppRequest = WhatsAppRequest.builder().build();
-        smsRequest.setPhoneNumber(dropOff.getPhoneNo());
+        smsRequest.setPhoneNumber(order.getCustomerPhone());
         smsRequest.setMessage("This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode());
         whatsAppRequest.setMessage("This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode());
-        whatsAppRequest.setPhoneNumber(dropOff.getPhoneNo());
+        whatsAppRequest.setPhoneNumber(order.getCustomerPhone());
         notificationService.smsNotificationRequest(smsRequest);
         whatsAppService.whatsAppNotification(whatsAppRequest);
         return dropOffResponseDto;
@@ -152,10 +152,10 @@ public class DropOffService {
             //send notifications of the deliveryCode
             SmsRequest smsRequest = SmsRequest.builder().build();
             WhatsAppRequest whatsAppRequest = WhatsAppRequest.builder().build();
-            smsRequest.setPhoneNumber(dropOff.getPhoneNo());
+            smsRequest.setPhoneNumber(order.getCustomerPhone());
             smsRequest.setMessage("This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode());
             whatsAppRequest.setMessage("This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode());
-            whatsAppRequest.setPhoneNumber(dropOff.getPhoneNo());
+            whatsAppRequest.setPhoneNumber(order.getCustomerPhone());
             notificationService.smsNotificationRequest(smsRequest);
             whatsAppService.whatsAppNotification(whatsAppRequest);
         });
