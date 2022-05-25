@@ -357,6 +357,18 @@ public class DropOffItemService {
             if(request.getQtyGoodsDelivered() != null && request.getQtyGoodsDelivered() > orderItem.getQty()){
                 throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Quantity of Items Delivered can't be greater than Total Quantity");
             }
+
+            //Validate DropOff amountCollected for DropOffItem whose deliverytatus is either failed or PartiallyCompleted
+            if (dropOff.getDeliveryStatus().equalsIgnoreCase("PartiallyCompleted") || dropOff.getDeliveryStatus().equalsIgnoreCase("completed")){
+                if (request.getAmountCollected() == null)
+                    throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "AmountCollected cannot be empty for PartiallyCompleted delivery");
+                else if (request.getAmountCollected().longValue() <= 0)
+                    throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"Enusre that none of the AmountCollected for each dropoffItem is zero/negative");
+                else if (request.getQtyGoodsReturned()> 0 && request.getAmountCollected().longValue() != (dropOffItem.getUnitPrice().longValue()*request.getQtyGoodsReturned()))
+                    throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"The amountCollected should be equal to the product of unitPrice and QtyGoodsReturned ");
+                else if (request.getAmountCollected().longValue() > dropOff.getTotalAmount().longValue() || dropOffItem.getAmountCollected().longValue() < 0)
+                    throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Ensure DropOffTem's AmountCollected  is neither negative and nor greaater than the DropOff's totalAmount");
+            }
             //Calculate Outstanding Amount based on Amount Collected and Total Amount
             if(request.getAmountCollected()!= null){
                 if(request.getAmountCollected().doubleValue() > dropOffItem.getTotalAmount().doubleValue()){
@@ -369,7 +381,36 @@ public class DropOffItemService {
                 else {
                     dropOffItem.setOutstandingAmount(dropOffItem.getTotalAmount().subtract(request.getAmountCollected()));
                 }
+            }
+            // Validate qtyGoodsReturned and qtyGoodsDelivered based on deliveryStatus
+            Long totalQtyReturned= 0L;
+            Long totalQtyDelivered = 0L;
+            if (dropOff.getDeliveryStatus().equalsIgnoreCase("failed") || dropOff.getDeliveryStatus().equalsIgnoreCase("PartiallyCompleted")){
+                if (dropOff.getDeliveryStatus().equalsIgnoreCase("failed")){
+                        if (request.getQtyGoodsDelivered() != 0)
+                            throw  new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"QtyGoodsDelivered must be 0 for failed delivery");
+                        else if (request.getQtyGoodsReturned() <= 0)
+                            throw  new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"QtyGoodsReturned must be gretater than  zero(0) for failed delivery");
+                        if (dropOffItem.getQty() < (request.getQtyGoodsDelivered() + request.getQtyGoodsReturned()))
+                            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "qty must be equal to the sum of QtyGoodsDelivered and QtyGoodsReturned");
+                        dropOffItem.setQtyGoodsDelivered(request.getQtyGoodsDelivered());
+                        dropOffItem.setQtyGoodsReturned(request.getQtyGoodsReturned());
+                        totalQtyDelivered+=request.getQtyGoodsDelivered();
+                        totalQtyReturned+=request.getQtyGoodsReturned();
 
+                    }
+                    else if (dropOff.getDeliveryStatus().equalsIgnoreCase("PartiallyCompleted")){
+                        if (request.getQtyGoodsReturned() <= 0 || request.getQtyGoodsDelivered() <=0)
+                            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "QtyGoodsDelivered/QtyGoodsReturned must be greater than zero(0) for PartiallyCompleted delivery");
+                        if (dropOffItem.getQty() < (request.getQtyGoodsDelivered() + request.getQtyGoodsReturned()))
+                            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "DropOffItem Qty must be equal to the sum of QtyGoodsDelivered and QtyGoodsReturned");
+                        dropOffItem.setQtyGoodsDelivered(request.getQtyGoodsDelivered());
+                        dropOffItem.setQtyGoodsReturned(request.getQtyGoodsReturned());
+                        totalQtyDelivered+=request.getQtyGoodsDelivered();
+                        totalQtyReturned+=request.getQtyGoodsReturned();
+                    }
+                    dropOff.setQtyDelivered(totalQtyDelivered.intValue());
+                    dropOff.setQtyReturned(totalQtyReturned.intValue());
             }
             mapper.map(request, dropOffItem);
             dropOffItem.setUpdatedBy(userCurrent.getId());
