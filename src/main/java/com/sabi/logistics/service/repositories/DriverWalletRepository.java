@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface DriverWalletRepository extends JpaRepository<DriverWallet, Long> {
 
-    @Query("SELECT l FROM DriverWallet l WHERE ((:driverId IS NULL) OR (:driverId IS NOT NULL AND l.driverId = :driverId))" )
+    @Query("SELECT l FROM DriverWallet l WHERE ((:driverId IS NULL) OR (:driverId IS NOT NULL AND l.driverId = :driverId)) order by l.id desc " )
 //            " AND ((:stateId IS NULL) OR (:stateId IS NOT NULL AND l.stateId = :stateId))")
     Page<DriverWallet> findDriverWallets(@Param("driverId") Long driverId,
                                 Pageable pageable);

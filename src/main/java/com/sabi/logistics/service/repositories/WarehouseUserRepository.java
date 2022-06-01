@@ -13,11 +13,11 @@ import java.util.List;
 @Repository
 public interface WarehouseUserRepository extends JpaRepository<WarehouseUser, Long> {
 
-    @Query("SELECT w FROM WarehouseUser w WHERE ((:wareHouseId IS NULL) OR (:wareHouseId IS NOT NULL AND w.wareHouseId = :wareHouseId))")
+    @Query("SELECT w FROM WarehouseUser w WHERE ((:wareHouseId IS NULL) OR (:wareHouseId IS NOT NULL AND w.wareHouseId = :wareHouseId)) ORDER BY w.id desc ")
     Page<WarehouseUser> findByWareHouseId(@Param("wareHouseId") Long wareHouseId, Pageable pageable);
 
     @Query("SELECT w FROM WarehouseUser w WHERE ((:wareHouseId IS NULL) OR (:wareHouseId IS NOT NULL AND w.wareHouseId = :wareHouseId))" +
-            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND w.isActive = :isActive))")
+            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND w.isActive = :isActive)) order by w.id desc ")
     List<WarehouseUser> findByWareHouseIdAndIsActive(Long wareHouseId, Boolean isActive);
 
 }

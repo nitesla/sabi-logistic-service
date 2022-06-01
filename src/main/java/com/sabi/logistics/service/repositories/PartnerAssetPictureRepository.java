@@ -22,7 +22,7 @@ public interface PartnerAssetPictureRepository extends JpaRepository<PartnerAsse
 
 
     @Query("SELECT c FROM PartnerAssetPicture c WHERE ((:partnerAssetId IS NULL) OR (:partnerAssetId IS NOT NULL AND c.partnerAssetId = :partnerAssetId))" +
-            " AND ((:pictureType IS NULL) OR (:pictureType IS NOT NULL AND c.pictureType like %:pictureType%))")
+            " AND ((:pictureType IS NULL) OR (:pictureType IS NOT NULL AND c.pictureType like %:pictureType%)) order by c.id desc ")
     Page<PartnerAssetPicture> findAssetPicture(@Param("partnerAssetId") Long partnerAssetId,
                                 @Param("pictureType") String pictureType,
                                 Pageable pageable);

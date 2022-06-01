@@ -19,7 +19,7 @@ public interface BankRepository extends JpaRepository<Bank, Long>, JpaSpecificat
 
     Bank findBankById(Long id);
 
-    @Query("SELECT b FROM Bank b WHERE ((:isActive IS NULL) OR (:isActive IS NOT NULL AND b.isActive = :isActive))")
+    @Query("SELECT b FROM Bank b WHERE ((:isActive IS NULL) OR (:isActive IS NOT NULL AND b.isActive = :isActive)) order by b.id desc ")
     List<Bank> findByIsActive(Boolean isActive);
 
     @Query("SELECT b FROM Bank b WHERE ((:name IS NULL) OR (:name IS NOT NULL AND b.name like %:name%))" +

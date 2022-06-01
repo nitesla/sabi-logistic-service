@@ -18,22 +18,22 @@ public interface PartnerCategoriesRepository extends JpaRepository<PartnerCatego
     PartnerCategories findPartnerCategoriesById(Long id);
     List<PartnerCategories> findByIsActive(Boolean isActive);
 
-    @Query("SELECT c.categoryId FROM PartnerCategories c WHERE c.partnerId=?1" )
+    @Query("SELECT c.categoryId FROM PartnerCategories c WHERE c.partnerId=?1 order by c.id desc " )
     List<Object[]> findAllByPartnerId(Long partnerId);
 
 
 
 
-    @Query("SELECT c FROM PartnerCategories c WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND c.partnerId = :partnerId))" )
+    @Query("SELECT c FROM PartnerCategories c WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND c.partnerId = :partnerId)) order by c.id desc " )
     Page<PartnerCategories> findAllByPartnerId(@Param("partnerId") Long partnerId,
                                                   Pageable pageable);
 
-    @Query("SELECT c FROM PartnerCategories c WHERE ((:categoryId IS NULL) OR (:categoryId IS NOT NULL AND c.categoryId = :categoryId))" )
+    @Query("SELECT c FROM PartnerCategories c WHERE ((:categoryId IS NULL) OR (:categoryId IS NOT NULL AND c.categoryId = :categoryId)) order by c.id desc " )
     Page<PartnerCategories> findAllByCategoryId(@Param("categoryId") Long categoryId,
                                             Pageable pageable);
 
     @Query("SELECT c FROM PartnerCategories c WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND c.partnerId = :partnerId))" +
-            " AND ((:categoryId IS NULL) OR (:categoryId IS NOT NULL AND c.categoryId = :categoryId))")
+            " AND ((:categoryId IS NULL) OR (:categoryId IS NOT NULL AND c.categoryId = :categoryId)) order by c.id desc ")
     Page<PartnerCategories> findPartnerCategories(@Param("partnerId") Long partnerId,
                                           @Param("categoryId") Long categoryId,
                                           Pageable pageable);

@@ -18,13 +18,13 @@ public interface PartnerLocationRepository extends JpaRepository<PartnerLocation
     List<PartnerLocation> findByIsActive(Boolean isActive);
 
     @Query("SELECT l FROM PartnerLocation l WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND l.partnerId = :partnerId))" +
-            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND l.isActive = :isActive))")
+            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND l.isActive = :isActive)) order by l.id desc ")
     List<PartnerLocation> findByPartnerIdAndIsActive(@Param("partnerId") Long partnerId, @Param("isActive") Boolean isActive);
 
 
     @Query("SELECT s FROM PartnerLocation s WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND s.partnerId = :partnerId))" +
 //            " AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND s.partnerId = :partnerId))" +
-            " AND ((:stateId IS NULL) OR (:stateId IS NOT NULL AND s.stateId = :stateId))"
+            " AND ((:stateId IS NULL) OR (:stateId IS NOT NULL AND s.stateId = :stateId)) order by s.id desc "
     )
     Page<PartnerLocation> findPartnerLocation(
                                               @Param("partnerId") Long partnerId,

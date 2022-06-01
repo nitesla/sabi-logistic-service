@@ -25,7 +25,7 @@ public interface PaymentTermsRepository extends JpaRepository<PaymentTerms, Long
     @Query("SELECT pa FROM PaymentTerms pa inner join PartnerAssetType pt on pa.partnerAssetTypeId = pt.id WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND pt.partnerId = :partnerId))" +
             " AND ((:days IS NULL) OR (:days IS NOT NULL AND pa.days = :days))" +
             "AND ((:isActive IS NULL ) OR (:isActive IS NOT NULL AND pa.isActive = :isActive))" +
-            " AND ((:partnerAssetTypeId IS NULL) OR (:partnerAssetTypeId IS NOT NULL AND pa.partnerAssetTypeId = :partnerAssetTypeId))")
+            " AND ((:partnerAssetTypeId IS NULL) OR (:partnerAssetTypeId IS NOT NULL AND pa.partnerAssetTypeId = :partnerAssetTypeId)) order by pa.id desc ")
     Page<PaymentTerms> findPaymentTerms(@Param("partnerAssetTypeId")Long partnerAssetTypeId,
                                         @Param("days")Integer days,
                                         Boolean isActive,

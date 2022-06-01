@@ -141,6 +141,23 @@ public class DriverAssetService {
         return mapper.map(driverAsset,DriverAssetResponseDto.class);
     }
 
+    public List<DriverAsset> getDriverAssetsByUserId(Long driverUserId) {
+        Driver driver = driverRepository.findByUserId(driverUserId);
+        if (driver == null)
+            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The Specified Driver is not found");
+        List<DriverAsset> driverAssets = repository.findByDriverId(driver.getId());
+        driverAssets.stream().forEach(driverAsset -> {
+            PartnerAsset partnerAsset = partnerAssetRepository.findById(driverAsset.getPartnerAssetId())
+                    .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                            "Requested partner asset id does not exist!"));
+            driverAsset.setAssetTypeName(partnerAsset.getAssetTypeName());
+            driverAsset.setPartnerAssetName(partnerAsset.getName());
+            driverAsset.setPlateNo(partnerAsset.getPlateNo());
+
+        });
+        return driverAssets;
+    }
+
     public Page<DriverAsset> findAll(Long driverId, Long partnerAssestId, PageRequest pageRequest ){
         Page<DriverAsset> drivers = repository.findDriverAssets(driverId, partnerAssestId,pageRequest);
         if(drivers == null){

@@ -31,9 +31,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -105,11 +103,14 @@ public class TripRequestService {
 
     private List<TripRequest> tripsDueForExpiration;
 
-    public TripRequestService(TripRequestRepository tripRequestRepository, ModelMapper mapper, NotificationService notificationService, WhatsAppService whatsAppService) {
+    private final GeneralNotificationService generalNotificationService;
+
+    public TripRequestService(TripRequestRepository tripRequestRepository, ModelMapper mapper, NotificationService notificationService, WhatsAppService whatsAppService, GeneralNotificationService generalNotificationService) {
            this.tripRequestRepository = tripRequestRepository;
         this.mapper = mapper;
         this.notificationService = notificationService;
         this.whatsAppService = whatsAppService;
+        this.generalNotificationService = generalNotificationService;
         this.tripsDueForExpiration = new ArrayList<>();
     }
 
@@ -506,19 +507,34 @@ public class TripRequestService {
             }
             //Is this trip due for expiration?
             if(tripRequest.getExpiredTime().minusMinutes(configExpirationTimeInMinutes).isBefore(tripRequest.getAssignedDate())){
-                if (tripRequest.getPartnerId() != null && tripRequest.getStatus().equalsIgnoreCase("accepted") && tripRequest.getDriverId() !=null && tripRequest.getDriverStatus().equalsIgnoreCase("pending")){
+                if (tripRequest.getPartnerId() != null && tripRequest.getStatus().equalsIgnoreCase("accepted") && (tripRequest.getDriverId() !=null || tripRequest.getDriverAssistantId()!=null) && tripRequest.getDriverStatus().equalsIgnoreCase("pending")){
                     //get the driver instance to be used later for emails and other communications
-                    Driver driver = driverRepository.findDriverById(tripRequest.getDriverId());
-                    if (tripRequest.getDriverId() != null){
-                        tripRequest.setDriverId(null);
-                        tripRequest.setDriverStatus("pending");
+                    Driver driver = null;
+                    Driver driverAssitant = null;
+                    User  driverUser = null;
+                    if (tripRequest.getDriverId()!=null){
+
+                        driver = driverRepository.findDriverById(tripRequest.getDriverId());
+                        if (tripRequest.getDriverId() != null){
+                            tripRequest.setDriverId(null);
+                            tripRequest.setDriverStatus("pending");
+                            driverUser = userRepository.findById(driver.getUserId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"Driver userId not found!"));
+                        }
                     }
-                    log.info("Successfully expired UnAccepted trips assigned to a driver with id {}",tripRequest.getDriverId());
-                    User  driverUser = userRepository.findById(driver.getUserId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"Driver userId not found!"));
+                    if (tripRequest.getDriverAssistantId()!=null){
+                        tripRequest.setDriverAssistantId(null);
+                        driverAssitant = driverRepository.findDriverById(tripRequest.getDriverAssistantId());
+                    }
+                    log.info("Successfully expired UnAccepted trips assigned to a driver with id {}",(tripRequest.getDriverId()!=null ? tripRequest.getDriverId() : tripRequest.getDriverAssistantId()));
                     tripRequestRepository.save(tripRequest);
                     //remove from the pool while avoiding ConcurrentModification exception
                     tripRequestIterator.remove();
-                    this.dispatchTripExpiryNotificationsToPartner(tripRequest.getPartnerId(),"Your driver "+driverUser.getFirstName()+" failed to accepted the assigned trip with reference number "+tripRequest.getReferenceNo()+" before it expired");
+                    if (driverUser!=null)
+                        this.dispatchTripExpiryNotificationsToPartner(tripRequest.getPartnerId(),"Your Driver "+driverUser.getFirstName()+" failed to accept the assigned trip with reference number "+tripRequest.getReferenceNo()+" before it expired");
+                    if (driverAssitant!=null){
+                        User driverAssitantUser = userRepository.findById(driverAssitant.getUserId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"Assitant DriverUserId not found"));
+                        this.dispatchTripExpiryNotificationsToPartner(tripRequest.getPartnerId(),"Your Assitant Driver "+driverAssitantUser.getFirstName()+" failed to accept the assigned trip with reference number "+tripRequest.getReferenceNo()+" before it expired");
+                    }
                 }
             }
         }
@@ -531,7 +547,8 @@ public class TripRequestService {
             User user = userRepository.findById(partner.getUserId())
                     .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The userId of this driver is not found!"));
 
-            AdminUserServiceImp.dispatchNotification(user, message, notificationService, whatsAppService);
+            generalNotificationService.dispatchNotificationsToUser(user,user.getPhone(), message);
+
         }
         else
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The partnerId needed to send trip expiry notification doesn't exist");

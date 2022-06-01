@@ -68,12 +68,15 @@ public class DropOffService {
 
     private final WhatsAppService whatsAppService;
 
+    private final GeneralNotificationService generalNotificationService;
 
-    public DropOffService(DropOffRepository dropOffRepository, ModelMapper mapper, NotificationService notificationService, WhatsAppService whatsAppService) {
+
+    public DropOffService(DropOffRepository dropOffRepository, ModelMapper mapper, NotificationService notificationService, WhatsAppService whatsAppService, GeneralNotificationService generalNotificationService) {
         this.dropOffRepository = dropOffRepository;
         this.mapper = mapper;
         this.notificationService = notificationService;
         this.whatsAppService = whatsAppService;
+        this.generalNotificationService = generalNotificationService;
     }
 
     public DropOffResponseDto createDropOff(DropOffRequestDto request) {
@@ -103,14 +106,10 @@ public class DropOffService {
         dropOffResponseDto.setDeliveryAddress(order.getDeliveryAddress());
 
         //send notifications of the deliveryCode
-        SmsRequest smsRequest = SmsRequest.builder().build();
-        WhatsAppRequest whatsAppRequest = WhatsAppRequest.builder().build();
-        smsRequest.setPhoneNumber(order.getCustomerPhone());
-        smsRequest.setMessage("This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode());
-        whatsAppRequest.setMessage("This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode());
-        whatsAppRequest.setPhoneNumber(order.getCustomerPhone());
-        notificationService.smsNotificationRequest(smsRequest);
-        whatsAppService.whatsAppNotification(whatsAppRequest);
+        String message = "This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode();
+        generalNotificationService.dispatchNotificationsToUser(null,order.getCustomerPhone(),message);
+
+
         return dropOffResponseDto;
     }
 

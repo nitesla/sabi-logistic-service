@@ -24,7 +24,7 @@ public interface PartnerAssetRepository extends JpaRepository<PartnerAsset, Long
 
     List<PartnerAsset> findByIsActive(Boolean isActive);
 
-@Query("SELECT pa from PartnerAsset pa inner join PartnerAssetType pt on pa.partnerAssetTypeId = pt.id  where ((:partnerId IS NULL) OR (pt.partnerId = :partnerId)) and ((:isActive IS NULL) OR(pa.isActive = :isActive))")
+@Query("SELECT pa from PartnerAsset pa inner join PartnerAssetType pt on pa.partnerAssetTypeId = pt.id  where ((:partnerId IS NULL) OR (pt.partnerId = :partnerId)) and ((:isActive IS NULL) OR(pa.isActive = :isActive)) order by pa.id desc ")
 List<PartnerAsset> findByIsActiveAndId(@Param("partnerId") Long partnerId,
                                            @Param("isActive") Boolean isActive);
 

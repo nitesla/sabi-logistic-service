@@ -1,19 +1,10 @@
 package com.sabi.logistics.service.services;
 
 import com.sabi.framework.dto.requestDto.LoginRequest;
-import com.sabi.framework.dto.responseDto.Response;
-import com.sabi.framework.dto.responseDto.UserResponse;
 import com.sabi.framework.exceptions.*;
 import com.sabi.framework.globaladminintegration.GlobalService;
-import com.sabi.framework.globaladminintegration.request.SingleRequest;
-import com.sabi.framework.globaladminintegration.response.SingleResponse;
-import com.sabi.framework.globaladminintegration.response.SingleResponseData;
 import com.sabi.framework.helpers.API;
 import com.sabi.framework.models.*;
-import com.sabi.framework.notification.requestDto.NotificationRequestDto;
-import com.sabi.framework.notification.requestDto.RecipientRequest;
-import com.sabi.framework.notification.requestDto.SmsRequest;
-import com.sabi.framework.notification.requestDto.WhatsAppRequest;
 import com.sabi.framework.repositories.PreviousPasswordRepository;
 import com.sabi.framework.repositories.RoleRepository;
 import com.sabi.framework.repositories.UserRepository;
@@ -32,17 +23,14 @@ import com.sabi.logistics.service.helper.Validations;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,10 +44,6 @@ public class AdminUserServiceImp implements AdminUserService {
     private final PreviousPasswordRepository previousPasswordRepository;
 
     private final API api;
-
-    private final NotificationService notificationService;
-
-    private final WhatsAppService whatsAppService;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -79,6 +63,8 @@ public class AdminUserServiceImp implements AdminUserService {
 
     private final TokenService tokenService;
 
+    private final GeneralNotificationService generalNotificationService;
+
     @Value("${globalAdmin.auth.url}")
     private String globalAdminAuthUrl;
 
@@ -86,12 +72,10 @@ public class AdminUserServiceImp implements AdminUserService {
     private int loginAttempts;
 
 
-    public AdminUserServiceImp(UserRepository userRepository, PreviousPasswordRepository previousPasswordRepository, API api, NotificationService notificationService, WhatsAppService whatsAppService, PasswordEncoder passwordEncoder, RoleRepository roleRepository, AuditTrailService auditTrailService, ModelMapper modelMapper, UserRoleRepository userRoleRepository, UserService userService, Validations validations, GlobalService globalService, TokenService tokenService) {
+    public AdminUserServiceImp(UserRepository userRepository, PreviousPasswordRepository previousPasswordRepository, API api, NotificationService notificationService, WhatsAppService whatsAppService, PasswordEncoder passwordEncoder, RoleRepository roleRepository, AuditTrailService auditTrailService, ModelMapper modelMapper, UserRoleRepository userRoleRepository, UserService userService, Validations validations, GlobalService globalService, TokenService tokenService, GeneralNotificationService generalNotificationService) {
         this.userRepository = userRepository;
         this.previousPasswordRepository = previousPasswordRepository;
         this.api = api;
-        this.notificationService = notificationService;
-        this.whatsAppService = whatsAppService;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
         this.auditTrailService = auditTrailService;
@@ -101,6 +85,7 @@ public class AdminUserServiceImp implements AdminUserService {
         this.validations = validations;
         this.globalService = globalService;
         this.tokenService = tokenService;
+        this.generalNotificationService = generalNotificationService;
     }
 
     private ResponseEntity<? extends Object> loginAdmin(UserInfoResponse userInfoResponse){
@@ -246,33 +231,9 @@ public class AdminUserServiceImp implements AdminUserService {
     @Override
     public void dispatchNotificationsToAdmin(User user, String message) {
 
-        dispatchNotification(user, message, notificationService,whatsAppService);
-
-        log.info("Notification successfully sent to Admin {} ",user.getFirstName());
+        generalNotificationService.dispatchNotificationsToUser(user,user.getPhone(),message);
 
     }
 
-    static void dispatchNotification(User user, String message, NotificationService notificationService, WhatsAppService whatsAppService) {
-        NotificationRequestDto notificationRequestDto = new NotificationRequestDto();
-        notificationRequestDto.setEmail(true);
-        RecipientRequest recipientRequest = new RecipientRequest();
-        recipientRequest.setEmail(user.getEmail());
-        recipientRequest.setPhoneNo(user.getPhone());
-        notificationRequestDto.setMessage(message);
-        notificationRequestDto.setRecipient(Arrays.asList(recipientRequest));
-        notificationService.emailNotificationRequest(notificationRequestDto);
-
-        SmsRequest smsRequest = new SmsRequest();
-        smsRequest.setMessage(message);
-        smsRequest.setPhoneNumber(user.getPhone());
-
-        notificationService.smsNotificationRequest(smsRequest);
-
-        WhatsAppRequest whatsAppRequest = new WhatsAppRequest();
-        whatsAppRequest.setMessage(message);
-        whatsAppRequest.setPhoneNumber(user.getPhone());
-        whatsAppService.whatsAppNotification(whatsAppRequest);
-
-    }
 
 }

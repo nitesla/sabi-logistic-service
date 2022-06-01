@@ -270,9 +270,6 @@ public class DropOffItemService {
         }
 
         orderItemRepository.save(orderItem);
-
-
-
         if(request.getQtyGoodsDelivered() != null && request.getQtyGoodsDelivered() > orderItem.getQty()){
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Quantity of Items Delivered can't be greater than Total Quantity");
         }

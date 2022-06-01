@@ -19,13 +19,13 @@ public interface PartnerUserRepository extends JpaRepository<PartnerUser, Long> 
 
     @Query("SELECT p FROM PartnerUser p WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND p.partnerId = :partnerId))" +
             " AND ((:userType IS NULL) OR (:userType IS NOT NULL AND p.userType like %:userType%))"+
-            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND p.isActive = :isActive))")
+            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND p.isActive = :isActive)) order by p.id desc ")
     Page<PartnerUser> findPartnerUsers(Long partnerId,String userType,Boolean isActive, Pageable pageable);
 
 
 
     @Query("SELECT p FROM PartnerUser p WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND p.partnerId = :partnerId))" +
             " AND ((:userType IS NULL) OR (:userType IS NOT NULL AND p.userType like %:userType%))"+
-            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND p.isActive = :isActive))")
+            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND p.isActive = :isActive)) order by p.id desc ")
     List<PartnerUser> findPartnerUsersList(Long partnerId, String userType,Boolean isActive);
 }

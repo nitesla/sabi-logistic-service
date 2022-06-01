@@ -28,7 +28,7 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
     Warehouse findWarehouseById (Long id);
 
     @Query("SELECT s FROM Warehouse s WHERE ((:isActive IS NULL) OR (:isActive IS NOT NULL AND s.isActive = :isActive))" +
-            " AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND s.partnerId = :partnerId))")
+            " AND ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND s.partnerId = :partnerId)) order by s.id desc ")
     List<Warehouse> findWarehouses(Boolean isActive,Long partnerId);
 
     Warehouse findByPartnerId(Long partnerId);

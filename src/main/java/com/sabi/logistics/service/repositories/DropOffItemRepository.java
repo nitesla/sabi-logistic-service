@@ -17,14 +17,14 @@ import java.util.List;
 public interface DropOffItemRepository extends JpaRepository<DropOffItem, Long>, JpaSpecificationExecutor<DropOffItem> {
 
     @Query("SELECT d FROM DropOffItem d WHERE ((:dropOffId IS NULL) OR (:dropOffId IS NOT NULL AND d.dropOffId = :dropOffId))" +
-            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND d.isActive = :isActive))")
+            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND d.isActive = :isActive)) order by d.id desc ")
     List<DropOffItem> findByDropOffIdAndIsActive(@Param("dropOffId") Long dropOffId, @Param("isActive") Boolean isActive);
 
 
 
     DropOffItem findByOrderItemIdAndDropOffId(Long orderItemId, Long dropOffId);
 
-    @Query("SELECT ti from DropOffItem ti inner join OrderItem oi on ti.orderItemId = oi.id  where ((:orderId IS NULL) OR (oi.orderId = :orderId)) and ((:dropOffId IS NULL) OR(ti.dropOffId = :dropOffId))")
+    @Query("SELECT ti from DropOffItem ti inner join OrderItem oi on ti.orderItemId = oi.id  where ((:orderId IS NULL) OR (oi.orderId = :orderId)) and ((:dropOffId IS NULL) OR(ti.dropOffId = :dropOffId)) order by ti.id desc ")
     List<DropOffItem> findByDropOffIdAndOrderId(@Param("dropOffId")Long dropOffId,
                                                 @Param("orderId") Long orderId);
 
@@ -43,7 +43,7 @@ public interface DropOffItemRepository extends JpaRepository<DropOffItem, Long>,
     DropOffItem findByOrderItemIdAndStatus(Long orderItemId, String status);
 
 
-    @Query("SELECT d from DropOffItem d inner join DropOff od on d.dropOffId = od.id  where ((:tripRequestId IS NULL) OR (:tripRequestId IS NOT NULL AND od.tripRequestId = :tripRequestId)) and ((:thirdPartyProductId IS NULL) OR(:thirdPartyProductId IS NOT NULL AND d.thirdPartyProductId = :thirdPartyProductId))")
+    @Query("SELECT d from DropOffItem d inner join DropOff od on d.dropOffId = od.id  where ((:tripRequestId IS NULL) OR (:tripRequestId IS NOT NULL AND od.tripRequestId = :tripRequestId)) and ((:thirdPartyProductId IS NULL) OR(:thirdPartyProductId IS NOT NULL AND d.thirdPartyProductId = :thirdPartyProductId)) order by d.id desc ")
     List<DropOffItem> findByTripRequestIdAndThirdPartyProductId(@Param("tripRequestId") Long tripRequestId,
                                                                 @Param("thirdPartyProductId") String thirdPartyProductId);
 

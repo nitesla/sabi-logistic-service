@@ -20,12 +20,12 @@ public interface PartnerBankRepository extends JpaRepository<PartnerBank, Long>,
     List<PartnerBank> findByIsActive(Boolean isActive);
 
     @Query("SELECT b FROM PartnerBank b WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND b.partnerId = :partnerId))" +
-            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND b.isActive = :isActive))")
+            " AND ((:isActive IS NULL) OR (:isActive IS NOT NULL AND b.isActive = :isActive)) order by b.id desc ")
     List<PartnerBank> findByPartnerIdAndIsActive(@Param("partnerId") Long partnerId, @Param("isActive") Boolean isActive);
 
     @Query("SELECT b FROM PartnerBank b WHERE ((:partnerId IS NULL) OR (:partnerId IS NOT NULL AND b.partnerId = :partnerId))" +
             " AND ((:bankId IS NULL) OR (:bankId IS NOT NULL AND b.bankId = :bankId))" +
-            " AND ((:accountNumber IS NULL) OR (:accountNumber IS NOT NULL AND b.accountNumber like %:accountNumber%))")
+            " AND ((:accountNumber IS NULL) OR (:accountNumber IS NOT NULL AND b.accountNumber like %:accountNumber%)) order by b.id desc ")
     Page<PartnerBank> findPartnerBanks(@Param("partnerId")Long partnerId,
                                        @Param("bankId")Long bankId,
                                        @Param("accountNumber")String accountNumber,

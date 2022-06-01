@@ -14,7 +14,7 @@ import java.util.List;
 public interface TransactionWalletRepository extends JpaRepository<WalletTransaction, Long> {
 
     @Query("SELECT l FROM WalletTransaction l WHERE ((:driverId IS NULL) OR (:driverId IS NOT NULL AND l.driverWalletId = :driverId))" +
-            " AND ((:dropOffId IS NULL) OR (:dropOffId IS NOT NULL AND l.dropOffId = :dropOffId))")
+            " AND ((:dropOffId IS NULL) OR (:dropOffId IS NOT NULL AND l.dropOffId = :dropOffId)) ORDER BY l.id desc ")
     Page<WalletTransaction> findWalletTransactions(@Param("driverId") Long driverId,
                                                    @Param("dropOffId") Long dropOffId,
                                               Pageable pageable);

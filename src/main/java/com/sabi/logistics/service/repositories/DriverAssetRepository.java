@@ -19,6 +19,7 @@ public interface DriverAssetRepository extends JpaRepository<DriverAsset, Long> 
     DriverAsset findByDriverIdAndPartnerAssetId(Long driverId, Long partnerAssestId);
     DriverAsset findByPartnerAssetIdAndId(Long partnerAssetId,Long id);
     DriverAsset findByPartnerAssetId(Long partnerAssetId);
+    List<DriverAsset> findByDriverId(Long driverId);
 
     @Query("SELECT d FROM DriverAsset d WHERE ((:driverId IS NULL) OR (:driverId IS NOT NULL AND d.driverId = :driverId))" +
             " AND ((:partnerAssetId IS NULL) OR (:partnerAssetId IS NOT NULL AND d.partnerAssetId = :partnerAssetId)) order by d.id desc"
