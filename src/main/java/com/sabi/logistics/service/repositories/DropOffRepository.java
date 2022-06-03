@@ -19,7 +19,7 @@ public interface DropOffRepository extends JpaRepository<DropOff, Long>, JpaSpec
 
     List<DropOff> findByIsActiveAndTripRequestId(Boolean isActive, Long tripRequestId);
 
-    DropOff findByTripRequestIdAndOrderId(Long tripRequestId, Long dropOffId);
+    DropOff findByTripRequestIdAndInvoiceId(Long tripRequestId, Long dropOffId);
 
     List<DropOff> findByTripRequestId(Long tripRequestId);
 

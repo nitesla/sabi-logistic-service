@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("All")
 @Slf4j
@@ -46,13 +45,13 @@ public class Validations {
     private WarehouseRepository warehouseRepository;
 
     @Autowired
-    private OrderItemRepository orderItemRepository;
+    private InvoiceItemRepository invoiceItemRepository;
 
     @Autowired
     private TripRequestRepository tripRequestRepository;
 
     @Autowired
-    private OrderRepository orderRepository;
+    private InvoiceRepository invoiceRepository;
 
     @Autowired
     private DriverAssetRepository driverAssetRepository;
@@ -426,7 +425,7 @@ public class Validations {
         return encodedString;
     }
 
-    public void validateOrder (OrderRequestDto request){
+    public void validateInvoice (InvoiceRequestDto request){
 
         if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
@@ -447,8 +446,8 @@ public class Validations {
         if (request.getDeliveryAddress() == null || request.getDeliveryAddress().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Address cannot be empty");
 
-        if (request.getOrderNumber() == null || request.getOrderNumber().isEmpty() )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Order Number cannot be empty");
+        if (request.getInvoiceNumber() == null || request.getInvoiceNumber().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invoice Number cannot be empty");
 
         if (request.getTotalAmount() == null )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Total Amount cannot be empty");
@@ -464,7 +463,7 @@ public class Validations {
 
     }
 
-    public void validateOrderOrderItems (OrderOrderItemDto request){
+    public void validateInvoiceInvoiceItems (InvoiceInvoiceItemDto request){
 
         if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
@@ -482,8 +481,8 @@ public class Validations {
         if (request.getDeliveryAddress() == null || request.getDeliveryAddress().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Address cannot be empty");
 
-        if (request.getOrderNumber() == null || request.getOrderNumber().isEmpty() )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Order Number cannot be empty");
+        if (request.getInvoiceNumber() == null || request.getInvoiceNumber().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invoice Number cannot be empty");
 
         if (request.getTotalAmount() == null )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Total Amount cannot be empty");
@@ -501,7 +500,7 @@ public class Validations {
 
     }
 
-    public void validateOrderItem (OrderItemRequestDto request){
+    public void validateInvoiceItem (InvoiceItemRequestDto request){
 
         if(request.getWareHouseId() == null)
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " wareHouseId can not be null");
@@ -513,10 +512,10 @@ public class Validations {
         if (!("pending".equalsIgnoreCase(request.getDeliveryStatus())  || "AwaitingDelivery".equalsIgnoreCase(request.getDeliveryStatus())  || "InTransit".equalsIgnoreCase(request.getDeliveryStatus()) || "Returned".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus())))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Delivery Status");
 
-//        if (request.getOrderId() == null )
-//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderId cannot be empty");
-        if (!Utility.isNumeric(request.getOrderId().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for orderId ");
+//        if (request.getInvoiceId() == null )
+//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "InvoiceId cannot be empty");
+        if (!Utility.isNumeric(request.getInvoiceId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for InvoiceId ");
 
 
         if (request.getProductName() == null || request.getProductName().isEmpty() )
@@ -536,9 +535,9 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Qty");
 
 
-        orderRepository.findById(request.getOrderId()).orElseThrow(() ->
+        invoiceRepository.findById(request.getInvoiceId()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " orderId does not Exist!")
+                        " InvoiceId does not Exist!")
         );
 
         warehouseRepository.findById(request.getWareHouseId()).orElseThrow(() ->
@@ -583,10 +582,10 @@ public class Validations {
         if (!Utility.isNumeric(request.getDropOffId().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for dropOffId ");
 
-        if (request.getOrderItemId() == null )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderItemId cannot be empty");
-        if (!Utility.isNumeric(request.getOrderItemId().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for orderItemId");
+        if (request.getInvoiceItemId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "InvoiceItemId cannot be empty");
+        if (!Utility.isNumeric(request.getInvoiceItemId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for InvoiceItemId");
 
         if (request.getStatus() == null || request.getStatus().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Status cannot be empty");
@@ -594,9 +593,9 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Status for dropOffItem");
 
 
-        orderItemRepository.findById(request.getOrderItemId()).orElseThrow(() ->
+        invoiceItemRepository.findById(request.getInvoiceItemId()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " orderItemId does not Exist!")
+                        " InvoiceItemId does not Exist!")
         );
         dropOffRepository.findById(request.getDropOffId()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
@@ -624,10 +623,10 @@ public class Validations {
         if (!Utility.validEmail(request.getEmail().trim()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid Email Address");
 
-        if (request.getOrderId() == null )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderId cannot be empty");
-        if (!Utility.isNumeric(request.getOrderId().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for orderId ");
+        if (request.getInvoiceId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "InvoiceId cannot be empty");
+        if (!Utility.isNumeric(request.getInvoiceId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for InvoiceId ");
 
 
         tripRequestRepository.findById(request.getTripRequestId()).orElseThrow(() ->
@@ -635,9 +634,9 @@ public class Validations {
                         " tripRequestId does not Exist!")
         );
 
-        orderRepository.findById(request.getOrderId()).orElseThrow(() ->
+        invoiceRepository.findById(request.getInvoiceId()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " orderId does not Exist!")
+                        " InvoiceId does not Exist!")
         );
     }
 
@@ -661,10 +660,10 @@ public class Validations {
         if (!Utility.validEmail(request.getEmail().trim()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid Email Address");
 
-        if (request.getOrderId() == null )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "orderId cannot be empty");
-        if (!Utility.isNumeric(request.getOrderId().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for orderId ");
+        if (request.getInvoiceId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "InvoiceId cannot be empty");
+        if (!Utility.isNumeric(request.getInvoiceId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for InvoiceId ");
 
 
         tripRequestRepository.findById(request.getTripRequestId()).orElseThrow(() ->
@@ -672,9 +671,9 @@ public class Validations {
                         " tripRequestId does not Exist!")
         );
 
-        orderRepository.findById(request.getOrderId()).orElseThrow(() ->
+        invoiceRepository.findById(request.getInvoiceId()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " orderId does not Exist!")
+                        " InvoiceId does not Exist!")
         );
     }
 
@@ -994,13 +993,13 @@ public class Validations {
     }
 
 
-    public void validateOrderItemVerificationStatus (OrderItemVerificationDto request){
+    public void validateInvoiceItemVerificationStatus (InvoiceItemVerificationDto request){
 
         if (request.getTripRequestReference() == null || request.getTripRequestReference().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "TripRequest Reference Number cannot be empty");
 
-        if (request.getOrderReference() == null || request.getOrderReference().isEmpty() )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Order Reference Number cannot be empty");
+        if (request.getInvoiceReference() == null || request.getInvoiceReference().isEmpty() )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invoice Reference Number cannot be empty");
 
         if (request.getPaymentReference() == null || request.getPaymentReference().isEmpty() )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Payment Reference Number cannot be empty");
@@ -1018,15 +1017,15 @@ public class Validations {
                 }
         }
 
-        if (request.getOrderReference() != null) {
-            Order orderExists = orderRepository.findByReferenceNo(request.getOrderReference());
-            if(orderExists == null){
-                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order Reference Number does not exist");
+        if (request.getInvoiceReference() != null) {
+            Invoice invoiceExists = invoiceRepository.findByReferenceNo(request.getInvoiceReference());
+            if(invoiceExists == null){
+                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Invoice Reference Number does not exist");
             }
         }
 
         if (request.getPaymentReference() != null) {
-            OrderItem exist = orderItemRepository.findByPaymentReference(request.getPaymentReference());
+            InvoiceItem exist = invoiceItemRepository.findByPaymentReference(request.getPaymentReference());
             if(exist == null){
                 throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Payment Reference Number does not exist");
             }

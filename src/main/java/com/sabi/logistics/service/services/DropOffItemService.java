@@ -45,10 +45,10 @@ public class DropOffItemService {
     private Validations validations;
 
     @Autowired
-    private OrderItemRepository orderItemRepository;
+    private InvoiceItemRepository invoiceItemRepository;
 
     @Autowired
-    private OrderRepository orderRepository;
+    private InvoiceRepository invoiceRepository;
 
     @Autowired
     private TripRequestRepository tripRequestRepository;
@@ -81,67 +81,67 @@ public class DropOffItemService {
         validations.validateDropOffItem(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         DropOffItem dropOffItem = mapper.map(request,DropOffItem.class);
-        DropOffItem dropOffItemExists = dropOffItemRepository.findByOrderItemIdAndDropOffId(request.getOrderItemId(), request.getDropOffId());
+        DropOffItem dropOffItemExists = dropOffItemRepository.findByInvoiceItemIdAndDropOffId(request.getInvoiceItemId(), request.getDropOffId());
         if(dropOffItemExists !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " DropOff Item already exist");
         }
         if (!(request.getStatus().equalsIgnoreCase("completed") || request.getStatus().equalsIgnoreCase("cancelled"))) {
-            DropOffItem dropOffItemm = dropOffItemRepository.findByOrderItemIdAndStatus(request.getOrderItemId(), request.getStatus());
+            DropOffItem dropOffItemm = dropOffItemRepository.findByInvoiceItemIdAndStatus(request.getInvoiceItemId(), request.getStatus());
             if (dropOffItemm != null) {
                 throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " DropOff Item already exist");
             }
         }
-        OrderItem orderItem = orderItemRepository.getOne(request.getOrderItemId());
-        Order order = orderRepository.getOne(orderItem.getOrderId());
+        InvoiceItem invoiceItem = invoiceItemRepository.getOne(request.getInvoiceItemId());
+        Invoice invoice = invoiceRepository.getOne(invoiceItem.getInvoiceId());
         DropOff dropOff = dropOffRepository.getOne(request.getDropOffId());
         dropOffItem.setCreatedBy(userCurrent.getId());
         dropOffItem.setIsActive(true);
         dropOffItem.setFinalDropOff(false);
-        dropOffItem.setProductName(orderItem.getProductName());
-        dropOffItem.setQty(orderItem.getQty());
-        if(orderItem.getDeliveryAddress() != null){
-        dropOffItem.setDeliveryAddress(orderItem.getDeliveryAddress());
+        dropOffItem.setProductName(invoiceItem.getProductName());
+        dropOffItem.setQty(invoiceItem.getQty());
+        if(invoiceItem.getDeliveryAddress() != null){
+        dropOffItem.setDeliveryAddress(invoiceItem.getDeliveryAddress());
         }
-        dropOffItem.setUnitPrice(orderItem.getUnitPrice());
-        if (order.getPaymentStatus() == PaymentStatus.paid){
-            dropOffItem.setTransactionReference(orderItem.getPaymentReference());
+        dropOffItem.setUnitPrice(invoiceItem.getUnitPrice());
+        if (invoice.getPaymentStatus() == PaymentStatus.paid){
+            dropOffItem.setTransactionReference(invoiceItem.getPaymentReference());
         }
-        dropOffItem.setTotalAmount((dropOffItem.getUnitPrice().multiply(new BigDecimal(orderItem.getQty()))));
+        dropOffItem.setTotalAmount((dropOffItem.getUnitPrice().multiply(new BigDecimal(invoiceItem.getQty()))));
         if(request.getAmountCollected()!=null){
             dropOffItem.setOutstandingAmount(dropOffItem.getTotalAmount().subtract(request.getAmountCollected()));
         }
         dropOffItem = dropOffItemRepository.save(dropOffItem);
         log.debug("Create new trip item - {}"+ new Gson().toJson(dropOffItem));
         DropOffItemResponseDto dropOffItemResponseDto = mapper.map(dropOffItem, DropOffItemResponseDto.class);
-        dropOffItemResponseDto.setOrderItemName(orderItem.getProductName());
-        dropOffItemResponseDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
-        dropOffItemResponseDto.setCustomerName(order.getCustomerName());
-        dropOffItemResponseDto.setCustomerPhone(order.getCustomerPhone());
-        dropOffItemResponseDto.setOrderId(orderItem.getOrderId());
+        dropOffItemResponseDto.setInvoiceItemName(invoiceItem.getProductName());
+        dropOffItemResponseDto.setThirdPartyProductId(invoiceItem.getThirdPartyProductId());
+        dropOffItemResponseDto.setCustomerName(invoice.getCustomerName());
+        dropOffItemResponseDto.setCustomerPhone(invoice.getCustomerPhone());
+        dropOffItemResponseDto.setInvoiceId(invoiceItem.getInvoiceId());
         dropOffItemResponseDto.setDropOffId(dropOffItem.getDropOffId());
-        dropOffItemResponseDto.setOrderItemId(dropOffItem.getOrderItemId());
+        dropOffItemResponseDto.setInvoiceItemId(dropOffItem.getInvoiceItemId());
 
         List<DropOffItem> dropOffItems = new ArrayList<>();
-        List<OrderItem> orderItems = new ArrayList<>();
+        List<InvoiceItem> invoiceItems = new ArrayList<>();
         TripItem tripItem = new TripItem();
         TripItemRequestDto tripItemRequestDto = new TripItemRequestDto();
 
-        tripItem = tripItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), orderItem.getThirdPartyProductId());
-        dropOffItems = dropOffItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), orderItem.getThirdPartyProductId());
-        orderItems = orderItemRepository.findByOrderIdAndThirdPartyProductId(dropOff.getOrderId(), orderItem.getThirdPartyProductId());
+        tripItem = tripItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
+        dropOffItems = dropOffItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
+        invoiceItems = invoiceItemRepository.findByInvoiceIdAndThirdPartyProductId(dropOff.getInvoiceId(), invoiceItem.getThirdPartyProductId());
 
         if(tripItem == null) {
             tripItemRequestDto.setTripRequestId(dropOff.getTripRequestId());
-            tripItemRequestDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
-            tripItemRequestDto.setProductName(orderItem.getProductName());
-            tripItemRequestDto.setQty(getQty(orderItems));
+            tripItemRequestDto.setThirdPartyProductId(invoiceItem.getThirdPartyProductId());
+            tripItemRequestDto.setProductName(invoiceItem.getProductName());
+            tripItemRequestDto.setQty(getQty(invoiceItems));
             tripItemRequestDto.setQtyPickedUp(getQtyPickedUp(dropOffItems));
             tripItemService.createTripItem(tripItemRequestDto);
         } else {
             tripItemRequestDto.setTripRequestId(dropOff.getTripRequestId());
-            tripItemRequestDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
-            tripItemRequestDto.setProductName(orderItem.getProductName());
-            tripItemRequestDto.setQty(getQty(orderItems));
+            tripItemRequestDto.setThirdPartyProductId(invoiceItem.getThirdPartyProductId());
+            tripItemRequestDto.setProductName(invoiceItem.getProductName());
+            tripItemRequestDto.setQty(getQty(invoiceItems));
             tripItemRequestDto.setQtyPickedUp(getQtyPickedUp(dropOffItems));
             tripItemRequestDto.setId(tripItem.getId());
             tripItemService.updateTripItem(tripItemRequestDto);
@@ -161,73 +161,73 @@ public class DropOffItemService {
         requests.forEach(request-> {
             request.setDropOffId(dropOffId);
             validations.validateDropOffItem(request);
-            DropOffItem dropOffItemExists = dropOffItemRepository.findByOrderItemIdAndDropOffId(request.getOrderItemId(), request.getDropOffId());
+            DropOffItem dropOffItemExists = dropOffItemRepository.findByInvoiceItemIdAndDropOffId(request.getInvoiceItemId(), request.getDropOffId());
             if(dropOffItemExists !=null){
                 throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " DropOff Item already exist");
             }
 
             if (!(request.getStatus().equalsIgnoreCase("completed") || request.getStatus().equalsIgnoreCase("cancelled"))) {
-                DropOffItem dropOffItemm = dropOffItemRepository.findByOrderItemIdAndStatus(request.getOrderItemId(), request.getStatus());
+                DropOffItem dropOffItemm = dropOffItemRepository.findByInvoiceItemIdAndStatus(request.getInvoiceItemId(), request.getStatus());
                 if (dropOffItemm != null) {
                     throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " DropOff Item already exist");
                 }
             }
 
             DropOffItem dropOffItem = mapper.map(request, DropOffItem.class);
-            OrderItem orderItem = orderItemRepository.getOne(request.getOrderItemId());
-            Order order = orderRepository.getOne(orderItem.getOrderId());
+            InvoiceItem invoiceItem = invoiceItemRepository.getOne(request.getInvoiceItemId());
+            Invoice invoice = invoiceRepository.getOne(invoiceItem.getInvoiceId());
             DropOff dropOff = dropOffRepository.getOne(request.getDropOffId());
             dropOffItem.setCreatedBy(userCurrent.getId());
             dropOffItem.setIsActive(true);
             dropOffItem.setFinalDropOff(false);
-            dropOffItem.setQty(orderItem.getQty());
-            if(orderItem.getDeliveryAddress() != null){
-                dropOffItem.setDeliveryAddress(orderItem.getDeliveryAddress());
+            dropOffItem.setQty(invoiceItem.getQty());
+            if(invoiceItem.getDeliveryAddress() != null){
+                dropOffItem.setDeliveryAddress(invoiceItem.getDeliveryAddress());
             }
-            dropOffItem.setProductName(orderItem.getProductName());
-            dropOffItem.setUnitPrice(orderItem.getUnitPrice());
-            if (order.getPaymentStatus() == PaymentStatus.paid){
-                dropOffItem.setTransactionReference(orderItem.getPaymentReference());
+            dropOffItem.setProductName(invoiceItem.getProductName());
+            dropOffItem.setUnitPrice(invoiceItem.getUnitPrice());
+            if (invoice.getPaymentStatus() == PaymentStatus.paid){
+                dropOffItem.setTransactionReference(invoiceItem.getPaymentReference());
             }
-            dropOffItem.setTotalAmount(dropOffItem.getUnitPrice().multiply(new BigDecimal(orderItem.getQty())));
+            dropOffItem.setTotalAmount(dropOffItem.getUnitPrice().multiply(new BigDecimal(invoiceItem.getQty())));
             if(request.getAmountCollected()!=null){
                 dropOffItem.setOutstandingAmount(dropOffItem.getTotalAmount().subtract(request.getAmountCollected()));
             }
             dropOffItem = dropOffItemRepository.save(dropOffItem);
             log.debug("Create new trip item - {}" + new Gson().toJson(dropOffItem));
             DropOffItem dropOffItemResponseDto = mapper.map(dropOffItem, DropOffItem.class);
-            dropOffItemResponseDto.setOrderItemName(orderItem.getProductName());
-            dropOffItemResponseDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
-            dropOffItemResponseDto.setCustomerName(order.getCustomerName());
-            dropOffItemResponseDto.setCustomerPhone(order.getCustomerPhone());
-            dropOffItemResponseDto.setOrderId(orderItem.getOrderId());
+            dropOffItemResponseDto.setInvoiceItemName(invoiceItem.getProductName());
+            dropOffItemResponseDto.setThirdPartyProductId(invoiceItem.getThirdPartyProductId());
+            dropOffItemResponseDto.setCustomerName(invoice.getCustomerName());
+            dropOffItemResponseDto.setCustomerPhone(invoice.getCustomerPhone());
+            dropOffItemResponseDto.setInvoiceId(invoiceItem.getInvoiceId());
             dropOffItemResponseDto.setDropOffId(dropOffItem.getDropOffId());
-            dropOffItemResponseDto.setOrderItemId(dropOffItem.getOrderItemId());
+            dropOffItemResponseDto.setInvoiceItemId(dropOffItem.getInvoiceItemId());
 
-            orderItem.setDeliveryStatus("AwaitingDelivery");
-            orderItemRepository.save(orderItem);
+            invoiceItem.setDeliveryStatus("AwaitingDelivery");
+            invoiceItemRepository.save(invoiceItem);
 
             List<DropOffItem> dropOffItems = new ArrayList<>();
-            List<OrderItem> orderItems = new ArrayList<>();
+            List<InvoiceItem> invoiceItems = new ArrayList<>();
             TripItem tripItem = new TripItem();
             TripItemRequestDto tripItemRequestDto = new TripItemRequestDto();
 
-            tripItem = tripItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), orderItem.getThirdPartyProductId());
-            dropOffItems = dropOffItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), orderItem.getThirdPartyProductId());
-            orderItems = orderItemRepository.findByOrderIdAndThirdPartyProductId(dropOff.getOrderId(), orderItem.getThirdPartyProductId());
+            tripItem = tripItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
+            dropOffItems = dropOffItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
+            invoiceItems = invoiceItemRepository.findByInvoiceIdAndThirdPartyProductId(dropOff.getInvoiceId(), invoiceItem.getThirdPartyProductId());
 
             if (tripItem == null) {
                 tripItemRequestDto.setTripRequestId(dropOff.getTripRequestId());
-                tripItemRequestDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
-                tripItemRequestDto.setProductName(orderItem.getProductName());
-                tripItemRequestDto.setQty(getQty(orderItems));
+                tripItemRequestDto.setThirdPartyProductId(invoiceItem.getThirdPartyProductId());
+                tripItemRequestDto.setProductName(invoiceItem.getProductName());
+                tripItemRequestDto.setQty(getQty(invoiceItems));
                 tripItemRequestDto.setQtyPickedUp(getQtyPickedUp(dropOffItems));
                 tripItemService.createTripItem(tripItemRequestDto);
             } else {
                 tripItemRequestDto.setTripRequestId(dropOff.getTripRequestId());
-                tripItemRequestDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
-                tripItemRequestDto.setProductName(orderItem.getProductName());
-                tripItemRequestDto.setQty(getQty(orderItems));
+                tripItemRequestDto.setThirdPartyProductId(invoiceItem.getThirdPartyProductId());
+                tripItemRequestDto.setProductName(invoiceItem.getProductName());
+                tripItemRequestDto.setQty(getQty(invoiceItems));
                 tripItemRequestDto.setQtyPickedUp(getQtyPickedUp(dropOffItems));
                 tripItemRequestDto.setId(tripItem.getId());
                 tripItemService.updateTripItem(tripItemRequestDto);
@@ -247,30 +247,30 @@ public class DropOffItemService {
         DropOffItem dropOffItem = dropOffItemRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested dropOffItem Id does not exist!"));
-        OrderItem orderItem = orderItemRepository.getOne(request.getOrderItemId());
-        Order order = orderRepository.getOne(orderItem.getOrderId());
+        InvoiceItem invoiceItem = invoiceItemRepository.getOne(request.getInvoiceItemId());
+        Invoice invoice = invoiceRepository.getOne(invoiceItem.getInvoiceId());
         DropOff dropOff = dropOffRepository.getOne(dropOffItem.getDropOffId());
         mapper.map(request, dropOffItem);
         dropOffItem.setUpdatedBy(userCurrent.getId());
 
         if(dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.paid){
-            orderItem.setVerificationStatus(VerificationStatus.verified);
+            invoiceItem.setVerificationStatus(VerificationStatus.verified);
         }
 
         if (dropOffItem.getStatus() == "pending" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery) {
-            orderItem.setVerificationStatus(VerificationStatus.pending);
+            invoiceItem.setVerificationStatus(VerificationStatus.pending);
         }
 
         if (dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (dropOff.getPaymentMode() == PaymentMode.CASH || dropOff.getPaymentMode() == PaymentMode.POS)) {
-            orderItem.setVerificationStatus(VerificationStatus.verified);
+            invoiceItem.setVerificationStatus(VerificationStatus.verified);
         }
 
         if (dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (dropOff.getPaymentMode() == PaymentMode.BANK_TRANSFER)) {
-            orderItem.setVerificationStatus(VerificationStatus.AwaitingVerification);
+            invoiceItem.setVerificationStatus(VerificationStatus.AwaitingVerification);
         }
 
-        orderItemRepository.save(orderItem);
-        if(request.getQtyGoodsDelivered() != null && request.getQtyGoodsDelivered() > orderItem.getQty()){
+        invoiceItemRepository.save(invoiceItem);
+        if(request.getQtyGoodsDelivered() != null && request.getQtyGoodsDelivered() > invoiceItem.getQty()){
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Quantity of Items Delivered can't be greater than Total Quantity");
         }
         //Calculate Outstanding Amount based on Amount Collected and Total Amount
@@ -292,38 +292,38 @@ public class DropOffItemService {
         log.debug("record updated - {}"+ new Gson().toJson(dropOffItem));
         DropOffItemResponseDto dropOffItemResponseDto = mapper.map(dropOffItem, DropOffItemResponseDto.class);
 
-        if(request.getOrderItemId() != null ) {
+        if(request.getInvoiceItemId() != null ) {
 
-            dropOffItemResponseDto.setOrderItemName(orderItem.getProductName());
-            dropOffItemResponseDto.setQty(orderItem.getQty());
-            dropOffItemResponseDto.setCustomerName(order.getCustomerName());
-            dropOffItemResponseDto.setCustomerPhone(order.getCustomerPhone());
-            dropOffItemResponseDto.setOrderId(orderItem.getOrderId());
+            dropOffItemResponseDto.setInvoiceItemName(invoiceItem.getProductName());
+            dropOffItemResponseDto.setQty(invoiceItem.getQty());
+            dropOffItemResponseDto.setCustomerName(invoice.getCustomerName());
+            dropOffItemResponseDto.setCustomerPhone(invoice.getCustomerPhone());
+            dropOffItemResponseDto.setInvoiceId(invoiceItem.getInvoiceId());
             dropOffItemResponseDto.setDropOffId(dropOffItem.getDropOffId());
-            dropOffItemResponseDto.setOrderItemId(dropOffItem.getOrderItemId());
+            dropOffItemResponseDto.setInvoiceItemId(dropOffItem.getInvoiceItemId());
         }
 
         List<DropOffItem> dropOffItems = new ArrayList<>();
-        List<OrderItem> orderItems = new ArrayList<>();
+        List<InvoiceItem> invoiceItems = new ArrayList<>();
         TripItem tripItem = new TripItem();
         TripItemRequestDto tripItemRequestDto = new TripItemRequestDto();
 
-        tripItem = tripItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), orderItem.getThirdPartyProductId());
-        dropOffItems = dropOffItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), orderItem.getThirdPartyProductId());
-        orderItems = orderItemRepository.findByOrderIdAndThirdPartyProductId(dropOff.getOrderId(), orderItem.getThirdPartyProductId());
+        tripItem = tripItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
+        dropOffItems = dropOffItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
+        invoiceItems = invoiceItemRepository.findByInvoiceIdAndThirdPartyProductId(dropOff.getInvoiceId(), invoiceItem.getThirdPartyProductId());
 
         if(tripItem == null) {
             tripItemRequestDto.setTripRequestId(dropOff.getTripRequestId());
-            tripItemRequestDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
-            tripItemRequestDto.setProductName(orderItem.getProductName());
-            tripItemRequestDto.setQty(getQty(orderItems));
+            tripItemRequestDto.setThirdPartyProductId(invoiceItem.getThirdPartyProductId());
+            tripItemRequestDto.setProductName(invoiceItem.getProductName());
+            tripItemRequestDto.setQty(getQty(invoiceItems));
             tripItemRequestDto.setQtyPickedUp(getQtyPickedUp(dropOffItems));
             tripItemService.createTripItem(tripItemRequestDto);
         } else {
             tripItemRequestDto.setTripRequestId(dropOff.getTripRequestId());
-            tripItemRequestDto.setThirdPartyProductId(orderItem.getThirdPartyProductId());
-            tripItemRequestDto.setProductName(orderItem.getProductName());
-            tripItemRequestDto.setQty(getQty(orderItems));
+            tripItemRequestDto.setThirdPartyProductId(invoiceItem.getThirdPartyProductId());
+            tripItemRequestDto.setProductName(invoiceItem.getProductName());
+            tripItemRequestDto.setQty(getQty(invoiceItems));
             tripItemRequestDto.setQtyPickedUp(getQtyPickedUp(dropOffItems));
             tripItemRequestDto.setId(tripItem.getId());
             tripItemService.updateTripItem(tripItemRequestDto);
@@ -348,10 +348,10 @@ public class DropOffItemService {
                             "Requested dropOffItem Id does not exist!"));
             request.setDropOffId(dropOffId);
             validations.validateDropOffItem(request);
-            OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
+            InvoiceItem invoiceItem = invoiceItemRepository.getOne(dropOffItem.getInvoiceItemId());
             DropOff dropOff = dropOffRepository.getOne(dropOffItem.getDropOffId());
 
-            if(request.getQtyGoodsDelivered() != null && request.getQtyGoodsDelivered() > orderItem.getQty()){
+            if(request.getQtyGoodsDelivered() != null && request.getQtyGoodsDelivered() > invoiceItem.getQty()){
                 throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Quantity of Items Delivered can't be greater than Total Quantity");
             }
 
@@ -414,22 +414,22 @@ public class DropOffItemService {
 
 
             if(dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.paid){
-                orderItem.setVerificationStatus(VerificationStatus.verified);
+                invoiceItem.setVerificationStatus(VerificationStatus.verified);
             }
 
             if (dropOffItem.getStatus() == "pending" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery) {
-                orderItem.setVerificationStatus(VerificationStatus.pending);
+                invoiceItem.setVerificationStatus(VerificationStatus.pending);
             }
 
             if (dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (dropOff.getPaymentMode() == PaymentMode.CASH || dropOff.getPaymentMode() == PaymentMode.POS)) {
-                orderItem.setVerificationStatus(VerificationStatus.verified);
+                invoiceItem.setVerificationStatus(VerificationStatus.verified);
             }
 
             if (dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (dropOff.getPaymentMode() == PaymentMode.BANK_TRANSFER)) {
-                orderItem.setVerificationStatus(VerificationStatus.AwaitingVerification);
+                invoiceItem.setVerificationStatus(VerificationStatus.AwaitingVerification);
             }
 
-            orderItemRepository.save(orderItem);
+            invoiceItemRepository.save(invoiceItem);
 
 
             dropOffItemRepository.save(dropOffItem);
@@ -446,42 +446,42 @@ public class DropOffItemService {
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested trip item Id does not exist!"));
         DropOffItemResponseDto dropOffItemResponseDto = mapper.map(dropOffItem, DropOffItemResponseDto.class);
-        OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
+        InvoiceItem invoiceItem = invoiceItemRepository.getOne(dropOffItem.getInvoiceItemId());
 
-        Order order = orderRepository.getOne(orderItem.getOrderId());
+        Invoice invoice = invoiceRepository.getOne(invoiceItem.getInvoiceId());
 
-        dropOffItemResponseDto.setOrderItemName(orderItem.getProductName());
-        dropOffItemResponseDto.setQty(orderItem.getQty());
-        dropOffItemResponseDto.setCustomerName(order.getCustomerName());
-        dropOffItemResponseDto.setCustomerPhone(order.getCustomerPhone());
-        dropOffItemResponseDto.setOrderId(orderItem.getOrderId());
+        dropOffItemResponseDto.setInvoiceItemName(invoiceItem.getProductName());
+        dropOffItemResponseDto.setQty(invoiceItem.getQty());
+        dropOffItemResponseDto.setCustomerName(invoice.getCustomerName());
+        dropOffItemResponseDto.setCustomerPhone(invoice.getCustomerPhone());
+        dropOffItemResponseDto.setInvoiceId(invoiceItem.getInvoiceId());
         dropOffItemResponseDto.setDropOffId(dropOffItem.getDropOffId());
-        dropOffItemResponseDto.setOrderItemId(dropOffItem.getOrderItemId());
+        dropOffItemResponseDto.setInvoiceItemId(dropOffItem.getInvoiceItemId());
 
         return dropOffItemResponseDto;
     }
 
-    public DropOffItemResponseDto findDropOffItemDetails(Long orderItemId, String status){
-        DropOffItem dropOffItem  = dropOffItemRepository.findByOrderItemIdAndStatus(orderItemId, status.toLowerCase());
+    public DropOffItemResponseDto findDropOffItemDetails(Long invoiceItemId, String status){
+        DropOffItem dropOffItem  = dropOffItemRepository.findByInvoiceItemIdAndStatus(invoiceItemId, status.toLowerCase());
         if(dropOffItem == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
         DropOffItemResponseDto dropOffItemDetailDto = mapper.map(dropOffItem, DropOffItemResponseDto.class);
-        OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
+        InvoiceItem invoiceItem = invoiceItemRepository.getOne(dropOffItem.getInvoiceItemId());
 
-        Order order = orderRepository.getOne(orderItem.getOrderId());
+        Invoice invoice = invoiceRepository.getOne(invoiceItem.getInvoiceId());
 
         DropOff dropOff = dropOffRepository.getOne(dropOffItem.getDropOffId());
 
         TripRequest tripRequest = tripRequestRepository.getOne(dropOff.getTripRequestId());
 
-        dropOffItemDetailDto.setOrderItemName(orderItem.getProductName());
-        dropOffItemDetailDto.setQty(orderItem.getQty());
-        dropOffItemDetailDto.setCustomerName(order.getCustomerName());
-        dropOffItemDetailDto.setCustomerPhone(order.getCustomerPhone());
-        dropOffItemDetailDto.setOrderId(orderItem.getOrderId());
+        dropOffItemDetailDto.setInvoiceItemName(invoiceItem.getProductName());
+        dropOffItemDetailDto.setQty(invoiceItem.getQty());
+        dropOffItemDetailDto.setCustomerName(invoice.getCustomerName());
+        dropOffItemDetailDto.setCustomerPhone(invoice.getCustomerPhone());
+        dropOffItemDetailDto.setInvoiceId(invoiceItem.getInvoiceId());
         dropOffItemDetailDto.setDropOffId(dropOffItem.getDropOffId());
-        dropOffItemDetailDto.setOrderItemId(dropOffItem.getOrderItemId());
+        dropOffItemDetailDto.setInvoiceItemId(dropOffItem.getInvoiceItemId());
         if (tripRequest.getDriverId() != null) {
             Driver driver = driverRepository.findDriverById(tripRequest.getDriverId());
 
@@ -502,10 +502,10 @@ public class DropOffItemService {
     }
 
 
-    public Page<DropOffItem> findAll(Long orderItemId, Long dropOffId,
+    public Page<DropOffItem> findAll(Long invoiceItemId, Long dropOffId,
                                    String status, PageRequest pageRequest ){
 
-        Page<DropOffItem> tripItems = dropOffItemRepository.findDropOffItem(orderItemId, dropOffId, status,  pageRequest);
+        Page<DropOffItem> tripItems = dropOffItemRepository.findDropOffItem(invoiceItemId, dropOffId, status,  pageRequest);
         if(tripItems == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
@@ -513,15 +513,15 @@ public class DropOffItemService {
             DropOffItem dropOffItem = dropOffItemRepository.getOne(item.getId());
 
 
-            OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
+            InvoiceItem invoiceItem = invoiceItemRepository.getOne(dropOffItem.getInvoiceItemId());
 
-            Order order = orderRepository.getOne(orderItem.getOrderId());
+            Invoice invoice = invoiceRepository.getOne(invoiceItem.getInvoiceId());
 
-            item.setOrderItemName(orderItem.getProductName());
-            item.setQty(orderItem.getQty());
-            item.setCustomerName(order.getCustomerName());
-            item.setCustomerPhone(order.getCustomerPhone());
-            item.setOrderId(orderItem.getOrderId());
+            item.setInvoiceItemName(invoiceItem.getProductName());
+            item.setQty(invoiceItem.getQty());
+            item.setCustomerName(invoice.getCustomerName());
+            item.setCustomerPhone(invoice.getCustomerPhone());
+            item.setInvoiceId(invoiceItem.getInvoiceId());
 
         });
 
@@ -555,27 +555,27 @@ public class DropOffItemService {
         List<DropOffItem> tripItems = dropOffItemRepository.findByDropOffIdAndIsActive(dropOffId, isActive);
 
         for (DropOffItem item : tripItems) {
-            OrderItem orderItem = orderItemRepository.getOne(item.getOrderItemId());
+            InvoiceItem invoiceItem = invoiceItemRepository.getOne(item.getInvoiceItemId());
 
-            Order order = orderRepository.getOne(orderItem.getOrderId());
+            Invoice invoice = invoiceRepository.getOne(invoiceItem.getInvoiceId());
 
-            item.setOrderItemName(orderItem.getProductName());
-            item.setQty(orderItem.getQty());
-            item.setCustomerName(order.getCustomerName());
-            item.setCustomerPhone(order.getCustomerPhone());
-            item.setOrderId(orderItem.getOrderId());
+            item.setInvoiceItemName(invoiceItem.getProductName());
+            item.setQty(invoiceItem.getQty());
+            item.setCustomerName(invoice.getCustomerName());
+            item.setCustomerPhone(invoice.getCustomerPhone());
+            item.setInvoiceId(invoiceItem.getInvoiceId());
 
         }
         return tripItems;
 
     }
 
-    public List<DropOffItem> getInvoice(Long dropOffId, Long orderId){
+    public List<DropOffItem> getInvoice(Long dropOffId, Long invoiceId){
 
-        List<DropOffItem> tripItems = dropOffItemRepository.findByDropOffIdAndOrderId(dropOffId, orderId);
+        List<DropOffItem> tripItems = dropOffItemRepository.findByDropOffIdAndInvoiceId(dropOffId, invoiceId);
 
         for (DropOffItem item : tripItems) {
-            OrderItem orderItem = orderItemRepository.getOne(item.getOrderItemId());
+            InvoiceItem invoiceItem = invoiceItemRepository.getOne(item.getInvoiceItemId());
 
             DropOff dropOff = dropOffRepository.findById(item.getDropOffId())
                     .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
@@ -585,23 +585,23 @@ public class DropOffItemService {
                     .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                     "Requested tripRequestId does not exist!"));
 
-            Order order = orderRepository.getOne(orderItem.getOrderId());
+            Invoice invoice = invoiceRepository.getOne(invoiceItem.getInvoiceId());
 
-            item.setOrderItemName(orderItem.getProductName());
-            item.setQty(orderItem.getQty());
-            item.setCustomerName(order.getCustomerName());
-            item.setCustomerPhone(order.getCustomerPhone());
-            item.setOrderId(orderItem.getOrderId());
+            item.setInvoiceItemName(invoiceItem.getProductName());
+            item.setQty(invoiceItem.getQty());
+            item.setCustomerName(invoice.getCustomerName());
+            item.setCustomerPhone(invoice.getCustomerPhone());
+            item.setInvoiceId(invoiceItem.getInvoiceId());
             item.setDeliveryDate(tripRequest.getDateDelivered());
-            item.setTax(order.getTax());
+            item.setTax(invoice.getTax());
             item.setReferenceNo(tripRequest.getReferenceNo());
         }
         return tripItems;
 
     }
 
-    private Integer getQty(List<OrderItem> orderItems) {
-        return ((Integer)orderItems.stream().filter(Objects::nonNull).map(OrderItem::getQty).reduce(Integer.valueOf(0), Integer::sum));
+    private Integer getQty(List<InvoiceItem> invoiceItems) {
+        return ((Integer)invoiceItems.stream().filter(Objects::nonNull).map(InvoiceItem::getQty).reduce(Integer.valueOf(0), Integer::sum));
     }
 
     private Integer getQtyPickedUp(List<DropOffItem> dropOffItems) {

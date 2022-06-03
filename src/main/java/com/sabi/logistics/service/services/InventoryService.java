@@ -11,11 +11,11 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.InventoryDto;
 import com.sabi.logistics.core.dto.response.InventoryResponseDto;
 import com.sabi.logistics.core.models.Inventory;
-import com.sabi.logistics.core.models.OrderItem;
+import com.sabi.logistics.core.models.InvoiceItem;
 import com.sabi.logistics.core.models.Warehouse;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.InventoryRepository;
-import com.sabi.logistics.service.repositories.OrderItemRepository;
+import com.sabi.logistics.service.repositories.InvoiceItemRepository;
 import com.sabi.logistics.service.repositories.WarehouseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -36,7 +36,7 @@ public class InventoryService {
     @Autowired
     private WarehouseRepository warehouseRepository;
     @Autowired
-    private OrderItemRepository orderItemRepository;
+    private InvoiceItemRepository invoiceItemRepository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
     private final Validations validations;
@@ -64,11 +64,11 @@ public class InventoryService {
             throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " warehouse not found");
         }
 
-        if (request.getOrderItemId() != null) {
-            request.getOrderItemId().forEach(id -> {
-                OrderItem exist = orderItemRepository.findOrderItemById(id);
+        if (request.getInvoiceItemId() != null) {
+            request.getInvoiceItemId().forEach(id -> {
+                InvoiceItem exist = invoiceItemRepository.findInvoiceItemById(id);
                 if (exist == null) {
-                    throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Order Item Id does not exist");
+                    throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Invoice Item Id does not exist");
                 }
             });
         }
@@ -78,11 +78,11 @@ public class InventoryService {
         log.debug("Create new inventory - {}"+ new Gson().toJson(inventory));
         InventoryResponseDto inventoryResponseDto = mapper.map(inventory, InventoryResponseDto.class);
 
-        if (request.getOrderItemId() != null) {
-            request.getOrderItemId().forEach(id -> {
-                OrderItem orderItem = orderItemRepository.findOrderItemById(id);
+        if (request.getInvoiceItemId() != null) {
+            request.getInvoiceItemId().forEach(id -> {
+                InvoiceItem orderItem = invoiceItemRepository.findInvoiceItemById(id);
                 orderItem.setInventoryId(inventoryResponseDto.getId());
-                orderItemRepository.save(orderItem);
+                invoiceItemRepository.save(orderItem);
 
             });
         }
