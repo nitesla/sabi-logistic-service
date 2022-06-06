@@ -436,6 +436,7 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Customer Name cannot be empty");
         if (request.getPaymentStatus() ==null)
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"Payment Status cannot be empty");
+        System.out.println("Payment Status Sent::"+request.getPaymentStatus().toString());
         if (!request.getPaymentStatus().equals(PaymentStatus.PayOnDelivery) || !request.getPaymentStatus().equals(PaymentStatus.paid))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"Invalid Payment Status");
         if (request.getCustomerPhone() == null || request.getCustomerPhone().isEmpty() )
