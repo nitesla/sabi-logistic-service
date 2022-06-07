@@ -52,44 +52,7 @@ public class InvoiceService {
         this.auditTrailService = auditTrailService;
     }
 
-    public InvoiceResponseDto createInvoice(InvoiceRequestDto request,HttpServletRequest request1) {
-        validations.validateInvoice(request);
-        User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-        Invoice invoice = mapper.map(request,Invoice.class);
-
-        invoice.setReferenceNo(validations.generateReferenceNumber(10));
-        Invoice invoiceExists = invoiceRepository.findByReferenceNo(invoice.getReferenceNo());
-        Invoice invoiceNumberExists = invoiceRepository.findByInvoiceNumber(invoice.getInvoiceNumber());
-        if(invoice.getReferenceNo() == null){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Invoice does not have Reference Number");
-        }
-
-        if(invoiceExists != null){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Invoice already exist");
-        }
-
-        if(invoiceNumberExists != null){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Invoice already exist");
-        }
-
-        invoice.setBarCode(validations.generateCode(invoice.getReferenceNo()));
-        invoice.setQrCode(validations.generateCode(invoice.getReferenceNo()));
-
-        invoice.setCreatedBy(userCurrent.getId());
-        invoice.setIsActive(true);
-        invoice = invoiceRepository.save(invoice);
-        log.debug("Create new invoice - {}"+ new Gson().toJson(invoice));
-
-        auditTrailService
-                .logEvent(userCurrent.getUsername(),
-                        "Create new invoice by :" + userCurrent.getUsername(),
-                        AuditTrailFlag.CREATE,
-                        " Create new invoice for:" + invoice.getCustomerName() + " "+ invoice.getReferenceNo() ,1, Utility.getClientIp(request1));
-        InvoiceResponseDto invoiceResponseDto = mapper.map(invoice, InvoiceResponseDto.class);
-        return invoiceResponseDto;
-    }
-
-    public InvoiceInvoiceItemResponseDto createInvoiceInvoiceItems(InvoiceInvoiceItemDto request,HttpServletRequest request1) {
+    public InvoiceInvoiceItemResponseDto createInvoiceAndItsItems(InvoiceInvoiceItemDto request,HttpServletRequest request1) {
         List<InvoiceItemResponseDto> responseDtos = new ArrayList<>();
         validations.validateInvoiceInvoiceItems(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
