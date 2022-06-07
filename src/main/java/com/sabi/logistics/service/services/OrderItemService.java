@@ -66,11 +66,17 @@ public class OrderItemService {
         OrderItem orderItem = mapper.map(request,OrderItem.class);
         Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseId());
         Order order = orderRepository.getOne(request.getOrderId());
-        if (order!=null){
-            orderItem.setCustomerPhone(order.getCustomerPhone());
-        }
+        /**
+         * No longer needed since customerPhone and customerName is now saved in OrderItem table
+         *  if (order!=null){
+         *             orderItem.setCustomerPhone(order.getCustomerPhone());
+         *         }
+         */
+
         orderItem.setCreatedBy(userCurrent.getId());
         orderItem.setIsActive(true);
+        orderItem.setCustomerPhone(order.getCustomerPhone());
+        orderItem.setCustomerName(order.getCustomerName());
         orderItem = orderItemRepository.save(orderItem);
         log.info("Create new order item - {}", orderItem);
         OrderItemResponseDto orderItemResponseDto = mapper.map(orderItem, OrderItemResponseDto.class);
@@ -88,11 +94,16 @@ public class OrderItemService {
                 throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "totalPrice MUST be equal to (unitPrice * qty)");
             }
             OrderItem orderItem = mapper.map(request,OrderItem.class);
-            if (order != null){
-                orderItem.setCustomerPhone(order.getCustomerPhone());
-            }
+            /**
+             * No longer needed since customerPhone and customerName is now saved in OrderItem table
+             *  if (order!=null){
+             *             orderItem.setCustomerPhone(order.getCustomerPhone());
+             *         }
+             */
             orderItem.setCreatedBy(userCurrent.getId());
             orderItem.setIsActive(true);
+            orderItem.setCustomerPhone(order.getCustomerPhone());
+            orderItem.setCustomerName(order.getCustomerName());
             orderItem = orderItemRepository.save(orderItem);
             log.debug("Create new asset picture - {}"+ orderItem);
             responseDtos.add(mapper.map(orderItem, OrderItemResponseDto.class));
@@ -132,7 +143,7 @@ public class OrderItemService {
         OrderItemResponseDto orderItemResponseDto = mapper.map(orderItem, OrderItemResponseDto.class);
 
         Order order = orderRepository.getOne(orderItem.getOrderId());
-        orderItemResponseDto.setCustomerName(order.getCustomerName());
+        //orderItemResponseDto.setCustomerName(order.getCustomerName());
         if (!order.getHasMultipleDeliveryAddress() && order.getHasMultipleDeliveryAddress() != null ){
             orderItemResponseDto.setDeliveryAddress(order.getDeliveryAddress());
         }
@@ -263,11 +274,10 @@ public class OrderItemService {
      * @Date 14/04/2022
      * @param item
      */
-
     private OrderItem setNeededParameters(OrderItem item) {
 
             Order order = orderRepository.getOne(item.getOrderId());
-            item.setCustomerName(order.getCustomerName());
+            //item.setCustomerName(order.getCustomerName());
             if (!order.getHasMultipleDeliveryAddress() && order.getHasMultipleDeliveryAddress() != null){
             item.setDeliveryAddress(order.getDeliveryAddress());
             }
