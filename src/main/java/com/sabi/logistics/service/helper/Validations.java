@@ -756,7 +756,7 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Contact Email cannot be empty");
         } else if(request.getWareHouseId() == null && (request.getContactPhone() == null || request.getContactPhone().isEmpty())){
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Contact Phone cannot be empty");
-        } 
+        }
 
         if (request.getWareHouseId() != null) {
             warehouseRepository.findById(request.getWareHouseId()).orElseThrow(() ->
