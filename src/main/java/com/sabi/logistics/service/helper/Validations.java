@@ -721,8 +721,6 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Contact Email cannot be empty");
         } else if(request.getWareHouseId() == null && (request.getContactPhone() == null || request.getContactPhone().isEmpty())){
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Contact Phone cannot be empty");
-        } else if(request.getWareHouseId() == null && (request.getWareHouseAddress() == null || request.getWareHouseAddress().isEmpty())) {
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "WareHouse Address cannot be empty");
         }
 
         if (request.getWareHouseId() != null) {
@@ -759,8 +757,6 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Contact Email cannot be empty");
         } else if(request.getWareHouseId() == null && (request.getContactPhone() == null || request.getContactPhone().isEmpty())){
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Contact Phone cannot be empty");
-        } else if(request.getWareHouseId() == null && (request.getWareHouseAddress() == null || request.getWareHouseAddress().isEmpty())) {
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "WareHouse Address cannot be empty");
         }
 
         if (request.getWareHouseId() != null) {
