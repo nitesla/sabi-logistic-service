@@ -106,7 +106,7 @@ public class DropOffService {
         }
 
         dropOff = dropOffRepository.save(dropOff);
-        log.debug("Create new trip item - {}"+ new Gson().toJson(dropOff));
+        log.debug("Created new dropOff - {}"+ new Gson().toJson(dropOff));
         DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
         dropOffResponseDto.setDeliveryAddress(invoice.getDeliveryAddress());
 
