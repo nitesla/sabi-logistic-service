@@ -12,8 +12,8 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.InvoiceInvoiceItemDto;
 import com.sabi.logistics.core.dto.request.InvoiceRequestDto;
-import com.sabi.logistics.core.dto.response.InvoiceItemResponseDto;
 import com.sabi.logistics.core.dto.response.InvoiceInvoiceItemResponseDto;
+import com.sabi.logistics.core.dto.response.InvoiceItemResponseDto;
 import com.sabi.logistics.core.dto.response.InvoiceResponseDto;
 import com.sabi.logistics.core.models.Invoice;
 import com.sabi.logistics.core.models.InvoiceItem;
@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class InvoiceService {
         this.mapper = mapper;
         this.auditTrailService = auditTrailService;
     }
-
+    @Transactional
     public InvoiceInvoiceItemResponseDto createInvoiceAndItsItems(InvoiceInvoiceItemDto request,HttpServletRequest request1) {
         List<InvoiceItemResponseDto> responseDtos = new ArrayList<>();
         validations.validateInvoiceInvoiceItems(request);

@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -210,6 +211,7 @@ public class TripRequestService {
         return tripResponseDto;
     }
 
+    @Transactional
     public TripMasterResponseDto createMasterTripRequest(TripMasterRequestDto request) {
         validations.validateMasterTripRequest(request);
         List<DropOffResponseDto> dropOffResponseDtos = new ArrayList<>();
