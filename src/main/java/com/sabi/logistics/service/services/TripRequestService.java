@@ -28,8 +28,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,20 +42,19 @@ import java.util.Objects;
 @SuppressWarnings("All")
 @Service
 @Slf4j
+@EnableAsync
 public class TripRequestService {
 
     @Value("${trip-request-due-for-expiry-db-load-time}")
     private String tripRequestDueForExpireTimeInMiliseconds;
     private final TripRequestRepository tripRequestRepository;
     private final ModelMapper mapper;
-    private final NotificationService notificationService;
-
-    private final WhatsAppService whatsAppService;
     @Autowired
     private Validations validations;
 
     @Autowired
     private PartnerRepository partnerRepository;
+
 
     @Autowired
     private PartnerAssetRepository partnerAssetRepository;
@@ -89,8 +90,7 @@ public class TripRequestService {
     @Autowired
     private WarehouseRepository warehouseRepository;
 
-    @Autowired
-    private DropOffService dropOffService;
+    private final DropOffService dropOffService;
 
     @Autowired
     private DropOffItemService dropOffItemService;
@@ -105,11 +105,10 @@ public class TripRequestService {
 
     private final GeneralNotificationService generalNotificationService;
 
-    public TripRequestService(TripRequestRepository tripRequestRepository, ModelMapper mapper, NotificationService notificationService, WhatsAppService whatsAppService, GeneralNotificationService generalNotificationService) {
-           this.tripRequestRepository = tripRequestRepository;
+    public TripRequestService(TripRequestRepository tripRequestRepository, ModelMapper mapper, NotificationService notificationService, WhatsAppService whatsAppService, DropOffService dropOffService, GeneralNotificationService generalNotificationService) {
+        this.tripRequestRepository = tripRequestRepository;
         this.mapper = mapper;
-        this.notificationService = notificationService;
-        this.whatsAppService = whatsAppService;
+        this.dropOffService = dropOffService;
         this.generalNotificationService = generalNotificationService;
         this.tripsDueForExpiration = new ArrayList<>();
     }
@@ -210,6 +209,7 @@ public class TripRequestService {
         return tripResponseDto;
     }
 
+    @Transactional
     public TripMasterResponseDto createMasterTripRequest(TripMasterRequestDto request) {
         validations.validateMasterTripRequest(request);
         List<DropOffResponseDto> dropOffResponseDtos = new ArrayList<>();
@@ -405,6 +405,9 @@ public class TripRequestService {
             if (request.getDriverStatus()!=null && request.getDriverStatus().equalsIgnoreCase("accepted")){
                 //Then update the driver's status accordingly
                 tripRequest.setDriverStatus(tripRequest.getStatus());
+                //get DropOffs of a Driver, generate DeliveryCode & send deliveryCode and update
+                List<DropOff> driversDropOffs = dropOffService.getDropOffsByTripRequestId(tripRequest.getId());
+                dropOffService.generateDeliveryCodeUpdateDropOffAndSend(driversDropOffs);
             }
             // sets up timer for this driver and update the date for tracking during expiration
             tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(Long.parseLong(tripRequestDueForExpireTimeInMiliseconds)/(60*1000)));
@@ -423,6 +426,9 @@ public class TripRequestService {
             if (!Objects.isNull(request.getDriverStatus()) && request.getDriverStatus().equalsIgnoreCase("accepted")){
                 //Then update the driver's status accordingly
                 tripRequest.setDriverStatus(tripRequest.getStatus());
+                //get DropOffs of a Driver, generate DeliveryCode & send deliveryCode and update
+                List<DropOff> driversDropOffs = dropOffService.getDropOffsByTripRequestId(tripRequest.getId());
+                dropOffService.generateDeliveryCodeUpdateDropOffAndSend(driversDropOffs);
             }
             // sets up timer for this assistant driver and update the date for tracking during expiration
             tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(Long.parseLong(tripRequestDueForExpireTimeInMiliseconds)/(60*1000)));
@@ -547,7 +553,7 @@ public class TripRequestService {
             User user = userRepository.findById(partner.getUserId())
                     .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The userId of this driver is not found!"));
 
-            generalNotificationService.dispatchNotificationsToUser(user,user.getPhone(), message);
+            generalNotificationService.dispatchNotificationsToUser(user, message);
 
         }
         else

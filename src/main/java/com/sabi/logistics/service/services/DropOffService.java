@@ -25,8 +25,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +39,7 @@ import java.util.Objects;
 @SuppressWarnings("All")
 @Service
 @Slf4j
+@EnableAsync
 public class DropOffService {
     private final DropOffRepository dropOffRepository;
     private final ModelMapper mapper;
@@ -105,14 +108,10 @@ public class DropOffService {
         DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
         dropOffResponseDto.setDeliveryAddress(invoice.getDeliveryAddress());
 
-        //send notifications of the deliveryCode
-        String message = "This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode();
-        generalNotificationService.dispatchNotificationsToUser(null,invoice.getCustomerPhone(),message);
-
-
         return dropOffResponseDto;
     }
 
+    @Transactional
     public List<DropOffResponseDto> createDropOffs(List<DropOffMasterRequestDto> requests, Long tripRequestId) {
         List<DropOffResponseDto> responseDtos = new ArrayList<>();
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
@@ -146,19 +145,29 @@ public class DropOffService {
                     dropOffResponseDto.setDropOffItem(finalDropOffItemResponse);
                 });
             }
-
             responseDtos.add(dropOffResponseDto);
-            //send notifications of the deliveryCode
-            SmsRequest smsRequest = SmsRequest.builder().build();
-            WhatsAppRequest whatsAppRequest = WhatsAppRequest.builder().build();
-            smsRequest.setPhoneNumber(invoice.getCustomerPhone());
-            smsRequest.setMessage("This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode());
-            whatsAppRequest.setMessage("This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode());
-            whatsAppRequest.setPhoneNumber(invoice.getCustomerPhone());
-            notificationService.smsNotificationRequest(smsRequest);
-            whatsAppService.whatsAppNotification(whatsAppRequest);
         });
         return responseDtos;
+    }
+
+    public void generateDeliveryCodeUpdateDropOffAndSend(List<DropOff> dropOffList) {
+        for (DropOff dropOff: dropOffList){
+            dropOff.setDeliveryCode(validations.generateReferenceNumber(6));
+            dropOff = dropOffRepository.save(dropOff);
+            log.debug("Updated  Droff with DeliveryCode - {}" + dropOff);
+            Invoice invoice = invoiceRepository.getOne(dropOff.getInvoiceId());
+            //send notifications of the deliveryCode
+            String message = "This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode();
+            User customerUser = new User();
+            customerUser.setPhone(invoice.getCustomerPhone());
+            customerUser.setEmail(dropOff.getEmail());
+            customerUser.setFirstName(dropOff.getCustomerName());
+            generalNotificationService.dispatchNotificationsToUser(customerUser,message);
+        }
+    }
+
+    public List<DropOff> getDropOffsByTripRequestId(Long tripRequestId) {
+        return dropOffRepository.findByTripRequestId(tripRequestId);
     }
 
     public DropOffResponseDto updateDropOff(DropOffRequestDto request) {

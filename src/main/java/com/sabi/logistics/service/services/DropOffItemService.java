@@ -99,6 +99,8 @@ public class DropOffItemService {
         dropOffItem.setFinalDropOff(false);
         dropOffItem.setProductName(invoiceItem.getProductName());
         dropOffItem.setQty(invoiceItem.getQty());
+        dropOffItem.setCustomerName(invoice.getCustomerName());
+        dropOffItem.setCustomerPhone(invoice.getCustomerPhone());
         if(invoiceItem.getDeliveryAddress() != null){
         dropOffItem.setDeliveryAddress(invoiceItem.getDeliveryAddress());
         }
@@ -181,6 +183,8 @@ public class DropOffItemService {
             dropOffItem.setIsActive(true);
             dropOffItem.setFinalDropOff(false);
             dropOffItem.setQty(invoiceItem.getQty());
+            dropOffItem.setCustomerName(invoice.getCustomerName());
+            dropOffItem.setCustomerPhone(invoice.getCustomerPhone());
             if(invoiceItem.getDeliveryAddress() != null){
                 dropOffItem.setDeliveryAddress(invoiceItem.getDeliveryAddress());
             }
@@ -198,8 +202,6 @@ public class DropOffItemService {
             DropOffItem dropOffItemResponseDto = mapper.map(dropOffItem, DropOffItem.class);
             dropOffItemResponseDto.setInvoiceItemName(invoiceItem.getProductName());
             dropOffItemResponseDto.setThirdPartyProductId(invoiceItem.getThirdPartyProductId());
-            dropOffItemResponseDto.setCustomerName(invoice.getCustomerName());
-            dropOffItemResponseDto.setCustomerPhone(invoice.getCustomerPhone());
             dropOffItemResponseDto.setInvoiceId(invoiceItem.getInvoiceId());
             dropOffItemResponseDto.setDropOffId(dropOffItem.getDropOffId());
             dropOffItemResponseDto.setInvoiceItemId(dropOffItem.getInvoiceItemId());
@@ -296,8 +298,8 @@ public class DropOffItemService {
 
             dropOffItemResponseDto.setInvoiceItemName(invoiceItem.getProductName());
             dropOffItemResponseDto.setQty(invoiceItem.getQty());
-            dropOffItemResponseDto.setCustomerName(invoice.getCustomerName());
-            dropOffItemResponseDto.setCustomerPhone(invoice.getCustomerPhone());
+            //dropOffItemResponseDto.setCustomerName(invoice.getCustomerName());
+            //dropOffItemResponseDto.setCustomerPhone(invoice.getCustomerPhone());
             dropOffItemResponseDto.setInvoiceId(invoiceItem.getInvoiceId());
             dropOffItemResponseDto.setDropOffId(dropOffItem.getDropOffId());
             dropOffItemResponseDto.setInvoiceItemId(dropOffItem.getInvoiceItemId());
@@ -452,8 +454,8 @@ public class DropOffItemService {
 
         dropOffItemResponseDto.setInvoiceItemName(invoiceItem.getProductName());
         dropOffItemResponseDto.setQty(invoiceItem.getQty());
-        dropOffItemResponseDto.setCustomerName(invoice.getCustomerName());
-        dropOffItemResponseDto.setCustomerPhone(invoice.getCustomerPhone());
+        //dropOffItemResponseDto.setCustomerName(invoice.getCustomerName());
+        //dropOffItemResponseDto.setCustomerPhone(invoice.getCustomerPhone());
         dropOffItemResponseDto.setInvoiceId(invoiceItem.getInvoiceId());
         dropOffItemResponseDto.setDropOffId(dropOffItem.getDropOffId());
         dropOffItemResponseDto.setInvoiceItemId(dropOffItem.getInvoiceItemId());
@@ -477,8 +479,8 @@ public class DropOffItemService {
 
         dropOffItemDetailDto.setInvoiceItemName(invoiceItem.getProductName());
         dropOffItemDetailDto.setQty(invoiceItem.getQty());
-        dropOffItemDetailDto.setCustomerName(invoice.getCustomerName());
-        dropOffItemDetailDto.setCustomerPhone(invoice.getCustomerPhone());
+        //dropOffItemDetailDto.setCustomerName(invoice.getCustomerName());
+        //dropOffItemDetailDto.setCustomerPhone(invoice.getCustomerPhone());
         dropOffItemDetailDto.setInvoiceId(invoiceItem.getInvoiceId());
         dropOffItemDetailDto.setDropOffId(dropOffItem.getDropOffId());
         dropOffItemDetailDto.setInvoiceItemId(dropOffItem.getInvoiceItemId());
@@ -519,8 +521,8 @@ public class DropOffItemService {
 
             item.setInvoiceItemName(invoiceItem.getProductName());
             item.setQty(invoiceItem.getQty());
-            item.setCustomerName(invoice.getCustomerName());
-            item.setCustomerPhone(invoice.getCustomerPhone());
+            //item.setCustomerName(invoice.getCustomerName());
+            //item.setCustomerPhone(invoice.getCustomerPhone());
             item.setInvoiceId(invoiceItem.getInvoiceId());
 
         });
@@ -561,8 +563,8 @@ public class DropOffItemService {
 
             item.setInvoiceItemName(invoiceItem.getProductName());
             item.setQty(invoiceItem.getQty());
-            item.setCustomerName(invoice.getCustomerName());
-            item.setCustomerPhone(invoice.getCustomerPhone());
+            //item.setCustomerName(invoice.getCustomerName());
+            //item.setCustomerPhone(invoice.getCustomerPhone());
             item.setInvoiceId(invoiceItem.getInvoiceId());
 
         }
@@ -589,8 +591,8 @@ public class DropOffItemService {
 
             item.setInvoiceItemName(invoiceItem.getProductName());
             item.setQty(invoiceItem.getQty());
-            item.setCustomerName(invoice.getCustomerName());
-            item.setCustomerPhone(invoice.getCustomerPhone());
+            //item.setCustomerName(invoice.getCustomerName());
+            //item.setCustomerPhone(invoice.getCustomerPhone());
             item.setInvoiceId(invoiceItem.getInvoiceId());
             item.setDeliveryDate(tripRequest.getDateDelivered());
             item.setTax(invoice.getTax());

@@ -28,10 +28,10 @@ public class GeneralNotificationServiceImp implements GeneralNotificationService
 
     }
 
-    @Override
     @Async
-    public  CompletableFuture<Boolean> dispatchNotificationsToUser(User user, String phone, String message) {
-
+    @Override
+    public  void dispatchNotificationsToUser(User user, String message) {
+        log.info("Notification Initiated... ");
         if (user != null){
             NotificationRequestDto notificationRequestDto = new NotificationRequestDto();
             notificationRequestDto.setEmail(true);
@@ -44,16 +44,17 @@ public class GeneralNotificationServiceImp implements GeneralNotificationService
         }
         SmsRequest smsRequest = new SmsRequest();
         smsRequest.setMessage(message);
-        smsRequest.setPhoneNumber(user.getPhone()!=null ? user.getPhone() : phone);
+        smsRequest.setPhoneNumber(user.getPhone());
 
         notificationService.smsNotificationRequest(smsRequest);
 
         WhatsAppRequest whatsAppRequest = new WhatsAppRequest();
         whatsAppRequest.setMessage(message);
-        whatsAppRequest.setPhoneNumber(user.getPhone()!=null ? user.getPhone() : phone);
+        whatsAppRequest.setPhoneNumber(user.getPhone());
         whatsAppService.whatsAppNotification(whatsAppRequest);
+        log.info("Notifications Initiated and successfully initiated and sent to User {} ",user.getFirstName());
 
-        log.info("Notification successfully sent to User {} ",user.getPhone()!=null? user.getFirstName() : phone);
-        return CompletableFuture.completedFuture(true);
+        log.info("Notification successfully sent to User {} ",user.getFirstName());
+        log.info("Notification Ended... ");
     }
 }
