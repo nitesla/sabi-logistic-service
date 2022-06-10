@@ -66,13 +66,9 @@ public class OrderItemService {
         OrderItem orderItem = mapper.map(request,OrderItem.class);
         Warehouse warehouse = warehouseRepository.getOne(request.getWareHouseId());
         Order order = orderRepository.getOne(request.getOrderId());
-        /**
-         * No longer needed since customerPhone and customerName is now saved in OrderItem table
-         *  if (order!=null){
-         *             orderItem.setCustomerPhone(order.getCustomerPhone());
-         *         }
-         */
-
+        if (order!=null){
+                      orderItem.setCustomerPhone(order.getCustomerPhone());
+           }
         orderItem.setCreatedBy(userCurrent.getId());
         orderItem.setIsActive(true);
         orderItem.setCustomerPhone(order.getCustomerPhone());
@@ -94,18 +90,15 @@ public class OrderItemService {
                 throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "totalPrice MUST be equal to (unitPrice * qty)");
             }
             OrderItem orderItem = mapper.map(request,OrderItem.class);
-            /**
-             * No longer needed since customerPhone and customerName is now saved in OrderItem table
-             *  if (order!=null){
-             *             orderItem.setCustomerPhone(order.getCustomerPhone());
-             *         }
-             */
+            if (order!=null){
+                orderItem.setCustomerPhone(order.getCustomerPhone());
+            }
             orderItem.setCreatedBy(userCurrent.getId());
             orderItem.setIsActive(true);
             orderItem.setCustomerPhone(order.getCustomerPhone());
             orderItem.setCustomerName(order.getCustomerName());
             orderItem = orderItemRepository.save(orderItem);
-            log.debug("Create new asset picture - {}"+ orderItem);
+            log.debug("Create new orderItem - {}"+ orderItem);
             responseDtos.add(mapper.map(orderItem, OrderItemResponseDto.class));
         });
         return responseDtos;

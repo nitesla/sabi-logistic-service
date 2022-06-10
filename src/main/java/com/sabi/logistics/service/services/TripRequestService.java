@@ -405,6 +405,9 @@ public class TripRequestService {
             if (request.getDriverStatus()!=null && request.getDriverStatus().equalsIgnoreCase("accepted")){
                 //Then update the driver's status accordingly
                 tripRequest.setDriverStatus(tripRequest.getStatus());
+                //get DropOffs of a Driver, generate DeliveryCode & send deliveryCode and update
+                List<DropOff> driversDropOffs = dropOffService.getDropOffsByTripRequestId(tripRequest.getId());
+                dropOffService.generateDeliveryCodeUpdateDropOffAndSend(driversDropOffs);
             }
             // sets up timer for this driver and update the date for tracking during expiration
             tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(Long.parseLong(tripRequestDueForExpireTimeInMiliseconds)/(60*1000)));
@@ -833,7 +836,7 @@ public class TripRequestService {
     }
 
     private BigDecimal getTotalAmount(List<DropOffItem> dropOffItems) {
-        return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getAmountCollected).reduce(BigDecimal.ZERO, BigDecimal::add));
+        return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getAmountCollected).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 
     private Number getTotalItemsPickedUp(List<TripItem> tripItems) {
