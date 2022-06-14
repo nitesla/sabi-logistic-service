@@ -427,8 +427,10 @@ public class DropOffService {
             totalQtyReturned+=itemDto.getQty();
             dropOffItem.setQtyGoodsReturned(itemDto.getQty());
             dropOffItem.setQtyGoodsDelivered((dropOffItem.getQty()-dropOffItem.getQtyGoodsReturned()));
+            if (itemDto.getReturnedStatus() == null)
+                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"Please provide returnedStatus field for each dropOffItem whether delvered or returned");
+            dropOffItem.setReturnedStatus(itemDto.getReturnedStatus());
             dropOffItemList.add(dropOffItem);
-
         }
         if(dropOff.getQty()==null){
             log.info("DropOff Quantity is found to be null during dropOff update::{}",dropOff);

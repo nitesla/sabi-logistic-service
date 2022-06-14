@@ -634,6 +634,7 @@ public class TripRequestService {
         }
         tripRequests.getContent().forEach(request ->{
 
+            request.setCurrentSystemTime(LocalDateTime.now());
             if (request.getPartnerId() != null && !request.getPartnerId().equals(0)) {
                 Partner partner = partnerRepository.findPartnerById(request.getPartnerId());
                 if (partner == null) {
@@ -698,6 +699,7 @@ public class TripRequestService {
     public List<TripRequest> getAll(Boolean isActive){
         List<TripRequest> tripRequests = tripRequestRepository.findByIsActive(isActive);
         tripRequests.forEach(request -> {
+            request.setCurrentSystemTime(LocalDateTime.now());
             Partner partner = partnerRepository.findPartnerById(request.getPartnerId());
             if (partner != null) {
                 request.setPartnerName(partner.getName());
