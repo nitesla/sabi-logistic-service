@@ -22,10 +22,7 @@ import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.CompleteSignupRequest;
 import com.sabi.logistics.core.dto.request.PartnerDto;
 import com.sabi.logistics.core.dto.request.PartnerSignUpDto;
-import com.sabi.logistics.core.dto.response.CompleteSignUpResponse;
-import com.sabi.logistics.core.dto.response.PartnerActivationResponse;
-import com.sabi.logistics.core.dto.response.PartnerResponseDto;
-import com.sabi.logistics.core.dto.response.PartnerSignUpResponseDto;
+import com.sabi.logistics.core.dto.response.*;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.*;
@@ -180,6 +177,28 @@ public class PartnerService {
                         " Sign up partner Request for:" + user.getFirstName() + " " + user.getLastName() + " " + user.getEmail()
                         , 1, Utility.getClientIp(request1));
         return response;
+    }
+
+
+
+    public PartnerSupplierResponse getUserByEmail(String email){
+        User user  = userRepository.findByEmail(email);
+        PartnerUser partnerUser = partnerUserRepository.findByUserId(user.getId());
+
+        PartnerSupplierResponse partnerSupplierResponse = new PartnerSupplierResponse();
+        partnerSupplierResponse.setId(user.getId());
+        partnerSupplierResponse.setEmail(user.getEmail());
+        partnerSupplierResponse.setFirstName(user.getFirstName());
+        partnerSupplierResponse.setLastName(user.getLastName());
+        partnerSupplierResponse.setPhone(user.getPhone());
+        partnerSupplierResponse.setUsername(user.getUsername());
+        if(partnerUser == null){
+            partnerSupplierResponse.setPartnerId(0l);
+        }else{
+            partnerSupplierResponse.setPartnerId(partnerUser.getPartnerId());
+        }
+        System.out.println("::::: Supplier response ::::" +partnerSupplierResponse);
+       return partnerSupplierResponse;
     }
 
 
