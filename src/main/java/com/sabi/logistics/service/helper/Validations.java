@@ -793,6 +793,30 @@ public class Validations {
         );
     }
 
+    public void validateDropOffInvoice (DropOffInvoiceRequestDto request){
+
+        if (request.getInvoiceId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "invoiceId cannot be empty");
+        if (!Utility.isNumeric(request.getInvoiceId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for invoiceId ");
+
+        if (request.getDropOffId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "dropOffId cannot be empty");
+        if (!Utility.isNumeric(request.getDropOffId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for dropOffId ");
+
+
+        invoiceRepository.findById(request.getInvoiceId()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " invoiceId does not Exist!")
+        );
+
+        dropOffRepository.findById(request.getDropOffId()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " dropOffId does not Exist!")
+        );
+    }
+
     public void validateBank(BankDto bankDto) {
         String valName = bankDto.getName();
         char valCharName = valName.charAt(0);
