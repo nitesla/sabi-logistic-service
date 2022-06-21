@@ -19,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Base64;
 
 @SuppressWarnings("All")
@@ -1043,6 +1045,36 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"Please provide authKey");
         if (adminAuthDto.getAuthKey().isEmpty())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"autkKey canno be empty");
+    }
+
+    public void validateInvoicePayment(InvoicePaymentRequestDto invoicePaymentRequestDto) {
+        if (invoicePaymentRequestDto.getInvoiceId() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"InvoiceId cannot be empty");
+        if (!Utility.isNumeric(String.valueOf(invoicePaymentRequestDto.getInvoiceId())))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "InvoiceId must be a number");
+        if (invoiceRepository.findInvoiceById(invoicePaymentRequestDto.getInvoiceId()) == null)
+            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The submitted invoiceId is not found!");
+        if (invoicePaymentRequestDto.getPaymentReference() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "PaymentReference cannot be empty");
+        if (invoicePaymentRequestDto.getPaymentDate() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"Please supply a paymentDate");
+        if (invoicePaymentRequestDto.getAmountCollected() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "AmountCollected  cannot be empty");
+        if (invoicePaymentRequestDto.getBalanceBefore() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "BalanceBefore cannot be empty");
+        if (invoicePaymentRequestDto.getBalanceAfter() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "BalanceAfter cannot be empty");
+        if (invoicePaymentRequestDto.getPaymentDate() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"Please provide paymentDate");
+        if (invoicePaymentRequestDto.getPaymentDate().isAfter(LocalDateTime.now()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"The paymentDate can't be a future date");
+        if (invoicePaymentRequestDto.getTotalAmount() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "TotalAmount cannot be empty");
+        if (invoicePaymentRequestDto.getAmountCollected().doubleValue() > invoicePaymentRequestDto.getTotalAmount().doubleValue() || invoicePaymentRequestDto.getBalanceBefore().doubleValue() > invoicePaymentRequestDto.getTotalAmount().doubleValue() || invoicePaymentRequestDto.getBalanceAfter().doubleValue() > invoicePaymentRequestDto.getTotalAmount().doubleValue())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"None of (balancebefore or balanceAfter or amountCollected) should be greater than totalAmount ");
+        BigDecimal totalCalculatedAmount = invoicePaymentRequestDto.getAmountCollected().add(invoicePaymentRequestDto.getBalanceBefore()).add(invoicePaymentRequestDto.getBalanceAfter());
+        if (totalCalculatedAmount.doubleValue() != invoicePaymentRequestDto.getTotalAmount().doubleValue())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"The sum of (balancebefore, balanceAfter and amountCollected) should be equal to totalAmount");
     }
 }
 
