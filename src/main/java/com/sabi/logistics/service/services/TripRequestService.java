@@ -836,7 +836,7 @@ public class TripRequestService {
     }
 
     private BigDecimal getTotalAmount(List<DropOffItem> dropOffItems) {
-        return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getAmountCollected).reduce(BigDecimal.ZERO, BigDecimal::add));
+        return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getAmountCollected).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 
     private Number getTotalItemsPickedUp(List<TripItem> tripItems) {

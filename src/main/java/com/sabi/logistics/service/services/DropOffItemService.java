@@ -12,8 +12,10 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.AuditTrailFlag;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.framework.utils.Utility;
+import com.sabi.logistics.core.dto.request.DropOffInvoiceRequestDto;
 import com.sabi.logistics.core.dto.request.DropOffItemRequestDto;
 import com.sabi.logistics.core.dto.request.TripItemRequestDto;
+import com.sabi.logistics.core.dto.response.DropOffInvoiceResponseDto;
 import com.sabi.logistics.core.dto.response.DropOffItemResponseDto;
 import com.sabi.logistics.core.enums.PaymentMode;
 import com.sabi.logistics.core.enums.PaymentStatus;
@@ -59,6 +61,12 @@ public class DropOffItemService {
 
     @Autowired
     private DropOffRepository dropOffRepository;
+
+    @Autowired
+    private DropOffInvoiceRepository dropOffInvoiceRepository;
+
+    @Autowired
+    private DropOffInvoiceService dropOffInvoiceService;
 
     @Autowired
     private TripItemService tripItemService;
@@ -128,10 +136,14 @@ public class DropOffItemService {
         List<InvoiceItem> invoiceItems = new ArrayList<>();
         TripItem tripItem = new TripItem();
         TripItemRequestDto tripItemRequestDto = new TripItemRequestDto();
+        DropOffInvoice dropOffInvoice = new DropOffInvoice();
+        DropOffInvoiceRequestDto dropOffInvoiceRequestDto = new DropOffInvoiceRequestDto();
+        DropOffInvoiceResponseDto dropOffInvoiceResponseDto = new DropOffInvoiceResponseDto();
 
         tripItem = tripItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
         dropOffItems = dropOffItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
         invoiceItems = invoiceItemRepository.findByInvoiceIdAndThirdPartyProductId(dropOff.getInvoiceId(), invoiceItem.getThirdPartyProductId());
+        dropOffInvoice = dropOffInvoiceRepository.findByDropOffIdAndInvoiceId(dropOff.getId(), invoice.getId());
 
         if(tripItem == null) {
             tripItemRequestDto.setTripRequestId(dropOff.getTripRequestId());
@@ -149,6 +161,26 @@ public class DropOffItemService {
             tripItemRequestDto.setId(tripItem.getId());
             tripItemService.updateTripItem(tripItemRequestDto);
         }
+
+        if(dropOffInvoice == null) {
+            dropOffInvoiceRequestDto.setInvoiceId(invoice.getId());
+            dropOffInvoiceRequestDto.setDropOffId(dropOff.getId());
+            dropOffInvoiceRequestDto.setAmount(getTotalAmount(dropOffItems));
+            dropOffInvoiceRequestDto.setAmountCollected(getTotalAmountCollected(dropOffItems));
+            dropOffInvoiceRequestDto.setStatus(dropOffItem.getStatus());
+            dropOffInvoiceResponseDto = dropOffInvoiceService.createDropOffInvoice(dropOffInvoiceRequestDto);
+        } else {
+            dropOffInvoiceRequestDto.setInvoiceId(invoice.getId());
+            dropOffInvoiceRequestDto.setDropOffId(dropOff.getId());
+            dropOffInvoiceRequestDto.setAmount(getTotalAmount(dropOffItems));
+            dropOffInvoiceRequestDto.setAmountCollected(getTotalAmountCollected(dropOffItems));
+            dropOffInvoiceRequestDto.setStatus(dropOffItem.getStatus());
+            dropOffInvoiceRequestDto.setId(dropOffInvoice.getId());
+            dropOffInvoiceResponseDto = dropOffInvoiceService.updateDropOffInvoice(dropOffInvoiceRequestDto);
+        }
+
+        dropOffItemResponseDto.setDropOffInvoiceId(dropOffInvoiceResponseDto.getId());
+
         auditTrailService
                 .logEvent(userCurrent.getUsername(),
                         "Create new dropOffItem  by :" + userCurrent.getUsername(),
@@ -215,10 +247,14 @@ public class DropOffItemService {
             List<InvoiceItem> invoiceItems = new ArrayList<>();
             TripItem tripItem = new TripItem();
             TripItemRequestDto tripItemRequestDto = new TripItemRequestDto();
+            DropOffInvoice dropOffInvoice = new DropOffInvoice();
+            DropOffInvoiceRequestDto dropOffInvoiceRequestDto = new DropOffInvoiceRequestDto();
+            DropOffInvoiceResponseDto dropOffInvoiceResponseDto = new DropOffInvoiceResponseDto();
 
             tripItem = tripItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
             dropOffItems = dropOffItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
             invoiceItems = invoiceItemRepository.findByInvoiceIdAndThirdPartyProductId(dropOff.getInvoiceId(), invoiceItem.getThirdPartyProductId());
+            dropOffInvoice = dropOffInvoiceRepository.findByDropOffIdAndInvoiceId(dropOff.getId(), invoice.getId());
 
             if (tripItem == null) {
                 tripItemRequestDto.setTripRequestId(dropOff.getTripRequestId());
@@ -236,6 +272,26 @@ public class DropOffItemService {
                 tripItemRequestDto.setId(tripItem.getId());
                 tripItemService.updateTripItem(tripItemRequestDto);
             }
+
+            if(dropOffInvoice == null) {
+                dropOffInvoiceRequestDto.setInvoiceId(invoice.getId());
+                dropOffInvoiceRequestDto.setDropOffId(dropOff.getId());
+                dropOffInvoiceRequestDto.setAmount(getTotalAmount(dropOffItems));
+                dropOffInvoiceRequestDto.setAmountCollected(getTotalAmountCollected(dropOffItems));
+                dropOffInvoiceRequestDto.setStatus(dropOffItem.getStatus());
+                dropOffInvoiceResponseDto = dropOffInvoiceService.createDropOffInvoice(dropOffInvoiceRequestDto);
+            } else {
+                dropOffInvoiceRequestDto.setInvoiceId(invoice.getId());
+                dropOffInvoiceRequestDto.setDropOffId(dropOff.getId());
+                dropOffInvoiceRequestDto.setAmount(getTotalAmount(dropOffItems));
+                dropOffInvoiceRequestDto.setAmountCollected(getTotalAmountCollected(dropOffItems));
+                dropOffInvoiceRequestDto.setStatus(dropOffItem.getStatus());
+                dropOffInvoiceRequestDto.setId(dropOffInvoice.getId());
+                dropOffInvoiceResponseDto = dropOffInvoiceService.updateDropOffInvoice(dropOffInvoiceRequestDto);
+            }
+
+            dropOffItemResponseDto.setDropOffInvoiceId(dropOffInvoiceResponseDto.getId());
+
 
 
 
@@ -311,10 +367,14 @@ public class DropOffItemService {
         List<InvoiceItem> invoiceItems = new ArrayList<>();
         TripItem tripItem = new TripItem();
         TripItemRequestDto tripItemRequestDto = new TripItemRequestDto();
+        DropOffInvoice dropOffInvoice = new DropOffInvoice();
+        DropOffInvoiceRequestDto dropOffInvoiceRequestDto = new DropOffInvoiceRequestDto();
+        DropOffInvoiceResponseDto dropOffInvoiceResponseDto = new DropOffInvoiceResponseDto();
 
         tripItem = tripItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
         dropOffItems = dropOffItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
         invoiceItems = invoiceItemRepository.findByInvoiceIdAndThirdPartyProductId(dropOff.getInvoiceId(), invoiceItem.getThirdPartyProductId());
+        dropOffInvoice = dropOffInvoiceRepository.findByDropOffIdAndInvoiceId(dropOff.getId(), invoice.getId());
 
         if(tripItem == null) {
             tripItemRequestDto.setTripRequestId(dropOff.getTripRequestId());
@@ -332,6 +392,26 @@ public class DropOffItemService {
             tripItemRequestDto.setId(tripItem.getId());
             tripItemService.updateTripItem(tripItemRequestDto);
         }
+
+
+        if(dropOffInvoice == null) {
+            dropOffInvoiceRequestDto.setInvoiceId(invoice.getId());
+            dropOffInvoiceRequestDto.setDropOffId(dropOff.getId());
+            dropOffInvoiceRequestDto.setAmount(getTotalAmount(dropOffItems));
+            dropOffInvoiceRequestDto.setAmountCollected(getTotalAmountCollected(dropOffItems));
+            dropOffInvoiceRequestDto.setStatus(dropOffItem.getStatus());
+            dropOffInvoiceResponseDto = dropOffInvoiceService.createDropOffInvoice(dropOffInvoiceRequestDto);
+        } else {
+            dropOffInvoiceRequestDto.setInvoiceId(invoice.getId());
+            dropOffInvoiceRequestDto.setDropOffId(dropOff.getId());
+            dropOffInvoiceRequestDto.setAmount(getTotalAmount(dropOffItems));
+            dropOffInvoiceRequestDto.setAmountCollected(getTotalAmountCollected(dropOffItems));
+            dropOffInvoiceRequestDto.setStatus(dropOffItem.getStatus());
+            dropOffInvoiceRequestDto.setId(dropOffInvoice.getId());
+            dropOffInvoiceResponseDto = dropOffInvoiceService.updateDropOffInvoice(dropOffInvoiceRequestDto);
+        }
+
+        dropOffItemResponseDto.setDropOffInvoiceId(dropOffInvoiceResponseDto.getId());
 
 
         auditTrailService
@@ -453,6 +533,8 @@ public class DropOffItemService {
         InvoiceItem invoiceItem = invoiceItemRepository.getOne(dropOffItem.getInvoiceItemId());
 
         Invoice invoice = invoiceRepository.getOne(invoiceItem.getInvoiceId());
+        DropOff dropOff = dropOffRepository.getOne(dropOffItem.getDropOffId());
+        DropOffInvoice dropOffInvoice = dropOffInvoiceRepository.findByDropOffIdAndInvoiceId(dropOff.getId(), invoice.getId());
 
         dropOffItemResponseDto.setInvoiceItemName(invoiceItem.getProductName());
         dropOffItemResponseDto.setQty(invoiceItem.getQty());
@@ -461,6 +543,10 @@ public class DropOffItemService {
         dropOffItemResponseDto.setInvoiceId(invoiceItem.getInvoiceId());
         dropOffItemResponseDto.setDropOffId(dropOffItem.getDropOffId());
         dropOffItemResponseDto.setInvoiceItemId(dropOffItem.getInvoiceItemId());
+
+        if(dropOffInvoice != null){
+            dropOffItemResponseDto.setDropOffInvoiceId(dropOffInvoice.getId());
+        }
 
         return dropOffItemResponseDto;
     }
@@ -610,5 +696,12 @@ public class DropOffItemService {
 
     private Integer getQtyPickedUp(List<DropOffItem> dropOffItems) {
         return ((Integer)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getQtyGoodsDelivered).reduce(Integer.valueOf(0), Integer::sum));
+    }
+
+    private BigDecimal getTotalAmount(List<DropOffItem> dropOffItems) {
+        return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getTotalAmount).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add));
+    }
+    private BigDecimal getTotalAmountCollected(List<DropOffItem> dropOffItems) {
+        return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getAmountCollected).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 }

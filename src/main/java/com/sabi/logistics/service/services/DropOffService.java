@@ -69,6 +69,10 @@ public class DropOffService {
     @Autowired
     private InvoiceService invoiceService;
 
+    @Autowired
+    private DropOffInvoiceRepository dropOffInvoiceRepository;
+
+
     private final NotificationService notificationService;
 
     private final WhatsAppService whatsAppService;
@@ -344,6 +348,7 @@ public class DropOffService {
         Invoice invoice = invoiceRepository.getOne(dropOff.getInvoiceId());
         dropOffResponseDto.setDropOffItem(getAllDropOffItems(id));
         dropOffResponseDto.setCustomerName(invoice.getCustomerName());
+        dropOffResponseDto.setDropOffInvoice(getAllDropOffInvoices(id));
         dropOffResponseDto.setCustomerPhone(invoice.getCustomerPhone());
         dropOffResponseDto.setDeliveryAddress(invoice.getDeliveryAddress());
 
@@ -527,5 +532,12 @@ public class DropOffService {
     }
     private BigDecimal getTotalAmountCollected(List<DropOffItem> dropOffItems) {
         return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getAmountCollected).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add));
+    }
+
+    public List<DropOffInvoice> getAllDropOffInvoices(Long dropOffId){
+        List<DropOffInvoice> dropOffInvoices = dropOffInvoiceRepository.findByDropOffId(dropOffId);
+
+        return dropOffInvoices;
+
     }
 }
