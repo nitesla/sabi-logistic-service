@@ -231,7 +231,7 @@ public class AdminUserServiceImp implements AdminUserService {
     @Override
     public void dispatchNotificationsToAdmin(User user, String message) {
 
-        generalNotificationService.dispatchNotificationsToUser(user,user.getPhone(),message);
+        generalNotificationService.dispatchNotificationsToUser(user,message);
 
     }
 

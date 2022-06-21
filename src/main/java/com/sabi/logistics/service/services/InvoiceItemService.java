@@ -69,9 +69,12 @@ public class InvoiceItemService {
         Invoice invoice = invoiceRepository.getOne(request.getInvoiceId());
         if (invoice!=null){
             invoiceItem.setCustomerPhone(invoice.getCustomerPhone());
+            invoiceItem.setCustomerName(invoice.getCustomerName());
         }
         invoiceItem.setCreatedBy(userCurrent.getId());
         invoiceItem.setIsActive(true);
+        invoiceItem.setCustomerPhone(invoice.getCustomerPhone());
+        invoiceItem.setCustomerName(invoice.getCustomerName());
         invoiceItem = invoiceItemRepository.save(invoiceItem);
         log.info("Create new invoice item - {}", invoiceItem);
         InvoiceItemResponseDto invoiceItemResponseDto = mapper.map(invoiceItem, InvoiceItemResponseDto.class);
@@ -90,15 +93,16 @@ public class InvoiceItemService {
                 throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "totalPrice MUST be equal to (unitPrice * qty)");
             }
             InvoiceItem invoiceItem = mapper.map(request,InvoiceItem.class);
-            if (invoice != null){
-                invoiceItem.setCustomerPhone(invoice.getCustomerPhone());
+            if (invoice!=null){
+                         invoiceItem.setCustomerPhone(invoice.getCustomerPhone());
+                         invoiceItem.setCustomerName(invoice.getCustomerName());
             }
             invoiceItem.setCreatedBy(userCurrent.getId());
             invoiceItem.setIsActive(true);
             invoiceItem = invoiceItemRepository.save(invoiceItem);
-            log.debug("Create new asset picture - {}"+ invoiceItem);
             responseDtos.add(mapper.map(invoiceItem, InvoiceItemResponseDto.class));
         });
+        log.debug("Created new invoice items ->{}",responseDtos);
         return responseDtos;
     }
 
@@ -134,7 +138,7 @@ public class InvoiceItemService {
         InvoiceItemResponseDto invoiceItemResponseDto = mapper.map(invoiceItem, InvoiceItemResponseDto.class);
 
         Invoice invoice = invoiceRepository.getOne(invoiceItem.getInvoiceId());
-        invoiceItemResponseDto.setCustomerName(invoice.getCustomerName());
+        //invoiceItemResponseDto.setCustomerName(invoice.getCustomerName());
         if (!invoice.getHasMultipleDeliveryAddress() && invoice.getHasMultipleDeliveryAddress() != null ){
             invoiceItemResponseDto.setDeliveryAddress(invoice.getDeliveryAddress());
         }
@@ -269,7 +273,7 @@ public class InvoiceItemService {
     private InvoiceItem setNeededParameters(InvoiceItem item) {
 
             Invoice invoice = invoiceRepository.getOne(item.getInvoiceId());
-            item.setCustomerName(invoice.getCustomerName());
+            //item.setCustomerName(invoice.getCustomerName());
             if (!invoice.getHasMultipleDeliveryAddress() && invoice.getHasMultipleDeliveryAddress() != null){
             item.setDeliveryAddress(invoice.getDeliveryAddress());
             }
