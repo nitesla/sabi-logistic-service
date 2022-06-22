@@ -1100,6 +1100,20 @@ public class Validations {
         if (totalCalculatedAmount.doubleValue() != invoicePaymentRequestDto.getTotalAmount().doubleValue())
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"The sum of (balancebefore, balanceAfter and amountCollected) should be equal to totalAmount");
     }
+
+    public void validateSLA(SLARequestDto slaRequestDto) {
+        if (slaRequestDto.getSlaDuration() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "SlaDuration cannot be empty");
+        if (slaRequestDto.getTriggerDuration() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "triggerDuration cannot be empty");
+        if (slaRequestDto.getSlaDuration() <= 0)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"Please enter a valid slaDuration");
+        if (slaRequestDto.getTriggerDuration() <= 0)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Please enter a valid triggerDuration");
+        if (slaRequestDto.getSlaDuration() <= slaRequestDto.getTriggerDuration())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "The triggerDuration annot be greater than or equal to slaDuration");
+
+    }
 }
 
 
