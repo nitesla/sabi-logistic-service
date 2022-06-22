@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @SuppressWarnings("All")
 @Repository
@@ -20,6 +21,8 @@ public interface DropOffRepository extends JpaRepository<DropOff, Long>, JpaSpec
     List<DropOff> findByIsActiveAndTripRequestId(Boolean isActive, Long tripRequestId);
 
     DropOff findByTripRequestIdAndOrderId(Long tripRequestId, Long dropOffId);
+
+    Optional<DropOff> findByIdAndDeliveryOverrideCodeHash(Long id, String deliveryOverrideCodeHash);
 
     List<DropOff> findByTripRequestId(Long tripRequestId);
 

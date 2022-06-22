@@ -6,8 +6,6 @@ import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
-import com.sabi.framework.notification.requestDto.SmsRequest;
-import com.sabi.framework.notification.requestDto.WhatsAppRequest;
 import com.sabi.framework.service.NotificationService;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.service.WhatsAppService;
@@ -25,8 +23,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -73,14 +71,16 @@ public class DropOffService {
     private final WhatsAppService whatsAppService;
 
     private final GeneralNotificationService generalNotificationService;
+    private final PasswordEncoder passwordEncoder;
 
 
-    public DropOffService(DropOffRepository dropOffRepository, ModelMapper mapper, NotificationService notificationService, WhatsAppService whatsAppService, GeneralNotificationService generalNotificationService) {
+    public DropOffService(DropOffRepository dropOffRepository, ModelMapper mapper, NotificationService notificationService, WhatsAppService whatsAppService, GeneralNotificationService generalNotificationService, PasswordEncoder passwordEncoder) {
         this.dropOffRepository = dropOffRepository;
         this.mapper = mapper;
         this.notificationService = notificationService;
         this.whatsAppService = whatsAppService;
         this.generalNotificationService = generalNotificationService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public DropOffResponseDto createDropOff(DropOffRequestDto request) {
@@ -527,5 +527,29 @@ public class DropOffService {
     }
     private BigDecimal getTotalAmountCollected(List<DropOffItem> dropOffItems) {
         return ((BigDecimal)dropOffItems.stream().filter(Objects::nonNull).map(DropOffItem::getAmountCollected).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add));
+    }
+
+    public void generateDeliveryOverrideCode(Long id) {
+        DropOff dropOff = dropOffRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Requested DropOff Id does not exist!"));
+        try {
+            String deliveryOverrideCode = validations.generateReferenceNumber(6);
+            String message = "This is the Sabi DroppOff Delivery Override Code " + deliveryOverrideCode;
+            User userCurrent = TokenService.getCurrentUserFromSecurityContext();
+            generalNotificationService.dispatchNotificationsToUser(userCurrent, message);
+            String deliveryOverrideCodeHash = passwordEncoder.encode(deliveryOverrideCode);
+            dropOff.setDeliveryOverrideCodeHash(deliveryOverrideCodeHash);
+            dropOffRepository.save(dropOff);
+        } catch (Throwable e) {
+            log.error("There was an error while generating deliveryOverrideCode: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    public void validateDeliveryOverrideCode(Long id, String deliveryOverrideCode) {
+        dropOffRepository.findByIdAndDeliveryOverrideCodeHash(id, passwordEncoder.encode(deliveryOverrideCode))
+                .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        "Incorrect Code!!!"));
     }
 }
