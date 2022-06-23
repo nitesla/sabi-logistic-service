@@ -181,31 +181,38 @@ public class PartnerService {
 
 
 
+//        public PartnerSupplierResponse getUserByEmail(String email) {
+//            System.out.println(":::::::  EMAIL REQUEST :::::::" + email);
+//            User user = userRepository.findByEmail(email);
+//            return mapper.map(user,PartnerSupplierResponse.class);
+//
+//        }
+
     public PartnerSupplierResponse getUserByEmail(String email){
-        User user  = userRepository.findByEmail(email);
-        if(user == null){
+        User user = userRepository.findByEmail(email);
+       if(user == null){
             PartnerSupplierResponse partnerSupplierResponse = PartnerSupplierResponse.builder()
                     .code("02")
                     .message("User details not found")
                     .build();
             return partnerSupplierResponse;
-        }
-        PartnerUser partnerUser = partnerUserRepository.findByUserId(user.getId());
+      }
 
-        PartnerSupplierResponse partnerSupplierResponse = new PartnerSupplierResponse();
-        partnerSupplierResponse.setId(user.getId());
-        partnerSupplierResponse.setEmail(user.getEmail());
-        partnerSupplierResponse.setFirstName(user.getFirstName());
-        partnerSupplierResponse.setLastName(user.getLastName());
-        partnerSupplierResponse.setPhone(user.getPhone());
-        partnerSupplierResponse.setUsername(user.getUsername());
-        if(partnerUser == null){
-            partnerSupplierResponse.setPartnerId(0l);
-        }else{
-            partnerSupplierResponse.setPartnerId(partnerUser.getPartnerId());
-        }
+            PartnerUser partnerUser = partnerUserRepository.findByUserId(user.getId());
 
-       return partnerSupplierResponse;
+            PartnerSupplierResponse partnerSupplierResponse = new PartnerSupplierResponse();
+            partnerSupplierResponse.setId(user.getId());
+            partnerSupplierResponse.setEmail(user.getEmail());
+            partnerSupplierResponse.setFirstName(user.getFirstName());
+            partnerSupplierResponse.setLastName(user.getLastName());
+            partnerSupplierResponse.setPhone(user.getPhone());
+            partnerSupplierResponse.setUsername(user.getUsername());
+            if (partnerUser == null) {
+                partnerSupplierResponse.setPartnerId(0l);
+            } else {
+                partnerSupplierResponse.setPartnerId(partnerUser.getPartnerId());
+            }
+            return partnerSupplierResponse;
     }
 
 
