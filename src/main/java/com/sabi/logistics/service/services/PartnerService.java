@@ -207,6 +207,7 @@ public class PartnerService {
             partnerSupplierResponse.setLastName(user.getLastName());
             partnerSupplierResponse.setPhone(user.getPhone());
             partnerSupplierResponse.setUsername(user.getUsername());
+            partnerSupplierResponse.setCode("00");
             if (partnerUser == null) {
                 partnerSupplierResponse.setPartnerId(0l);
             } else {
