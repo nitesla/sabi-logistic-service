@@ -28,9 +28,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -113,7 +116,6 @@ public class DropOffService {
         log.debug("Created new dropOff - {}"+ new Gson().toJson(dropOff));
         DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
         dropOffResponseDto.setDeliveryAddress(invoice.getDeliveryAddress());
-
         return dropOffResponseDto;
     }
 
@@ -141,7 +143,7 @@ public class DropOffService {
             }
 
             dropOff = dropOffRepository.save(dropOff);
-            log.debug("Create new trip item - {}" + new Gson().toJson(dropOff));
+            log.debug("Create new droff - {}" + dropOff);
             DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
 
             if(request.getDropOffItem() != null) {
@@ -434,8 +436,10 @@ public class DropOffService {
             totalQtyReturned+=itemDto.getQty();
             dropOffItem.setQtyGoodsReturned(itemDto.getQty());
             dropOffItem.setQtyGoodsDelivered((dropOffItem.getQty()-dropOffItem.getQtyGoodsReturned()));
+            if (itemDto.getReturnedStatus() == null)
+                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"Please provide returnedStatus field for each dropOffItem whether delvered or returned");
+            dropOffItem.setReturnedStatus(itemDto.getReturnedStatus());
             dropOffItemList.add(dropOffItem);
-
         }
         if(dropOff.getQty()==null){
             log.info("DropOff Quantity is found to be null during dropOff update::{}",dropOff);

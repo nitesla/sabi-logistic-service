@@ -32,6 +32,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -107,10 +108,10 @@ public class TripRequestService {
 
     public TripRequestService(TripRequestRepository tripRequestRepository, ModelMapper mapper, NotificationService notificationService, WhatsAppService whatsAppService, DropOffService dropOffService, GeneralNotificationService generalNotificationService) {
         this.tripRequestRepository = tripRequestRepository;
-        this.mapper = mapper;
-        this.dropOffService = dropOffService;
-        this.generalNotificationService = generalNotificationService;
-        this.tripsDueForExpiration = new ArrayList<>();
+           this.mapper = mapper;
+           this.dropOffService = dropOffService;
+           this.generalNotificationService = generalNotificationService;
+           this.tripsDueForExpiration = new ArrayList<>();
     }
 
     public TripResponseDto createTripRequest(TripRequestDto request) {
@@ -634,6 +635,7 @@ public class TripRequestService {
         }
         tripRequests.getContent().forEach(request ->{
 
+            request.setCurrentSystemTime(LocalDateTime.now());
             if (request.getPartnerId() != null && !request.getPartnerId().equals(0)) {
                 Partner partner = partnerRepository.findPartnerById(request.getPartnerId());
                 if (partner == null) {
@@ -698,6 +700,7 @@ public class TripRequestService {
     public List<TripRequest> getAll(Boolean isActive){
         List<TripRequest> tripRequests = tripRequestRepository.findByIsActive(isActive);
         tripRequests.forEach(request -> {
+            request.setCurrentSystemTime(LocalDateTime.now());
             Partner partner = partnerRepository.findPartnerById(request.getPartnerId());
             if (partner != null) {
                 request.setPartnerName(partner.getName());

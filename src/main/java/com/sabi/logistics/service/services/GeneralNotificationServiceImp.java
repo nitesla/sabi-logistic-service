@@ -30,7 +30,7 @@ public class GeneralNotificationServiceImp implements GeneralNotificationService
 
     @Async
     @Override
-    public  void dispatchNotificationsToUser(User user, String message) {
+    public  void dispatchNotificationsToUser(User user,  String message) {
         log.info("Notification Initiated... ");
         if (user != null){
             NotificationRequestDto notificationRequestDto = new NotificationRequestDto();

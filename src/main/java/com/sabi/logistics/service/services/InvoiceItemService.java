@@ -269,7 +269,6 @@ public class InvoiceItemService {
      * @Date 14/04/2022
      * @param item
      */
-
     private InvoiceItem setNeededParameters(InvoiceItem item) {
 
             Invoice invoice = invoiceRepository.getOne(item.getInvoiceId());
