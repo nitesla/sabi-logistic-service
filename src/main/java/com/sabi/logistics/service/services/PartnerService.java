@@ -183,6 +183,13 @@ public class PartnerService {
 
     public PartnerSupplierResponse getUserByEmail(String email){
         User user  = userRepository.findByEmail(email);
+        if(user == null){
+            PartnerSupplierResponse partnerSupplierResponse = PartnerSupplierResponse.builder()
+                    .code("02")
+                    .message("User details not found")
+                    .build();
+            return partnerSupplierResponse;
+        }
         PartnerUser partnerUser = partnerUserRepository.findByUserId(user.getId());
 
         PartnerSupplierResponse partnerSupplierResponse = new PartnerSupplierResponse();
@@ -197,7 +204,7 @@ public class PartnerService {
         }else{
             partnerSupplierResponse.setPartnerId(partnerUser.getPartnerId());
         }
-        System.out.println("::::: Supplier response ::::" +partnerSupplierResponse);
+
        return partnerSupplierResponse;
     }
 
