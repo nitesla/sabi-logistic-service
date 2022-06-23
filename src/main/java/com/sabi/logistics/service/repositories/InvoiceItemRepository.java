@@ -1,6 +1,7 @@
 package com.sabi.logistics.service.repositories;
 
 
+import com.sabi.logistics.core.models.InvoiceItem;
 import com.sabi.logistics.core.models.OrderItem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,20 +15,20 @@ import java.util.List;
 
 
 @Repository
-public interface OrderItemRepository extends JpaRepository<OrderItem, Long>, JpaSpecificationExecutor<OrderItem> {
+public interface InvoiceItemRepository extends JpaRepository<InvoiceItem, Long>, JpaSpecificationExecutor<InvoiceItem> {
 
 
-    OrderItem findByThirdPartyProductId(String thirdPartyProductId);
+    InvoiceItem findByThirdPartyProductId(String thirdPartyProductId);
 
-    List<OrderItem> findByIsActive(Boolean isActive);
+    List<InvoiceItem> findByIsActive(Boolean isActive);
 
-    List<OrderItem> findByOrderId(Long orderId);
+    List<InvoiceItem> findByInvoiceId(Long invoiceId);
 
-    OrderItem findOrderItemById(Long Id);
+    InvoiceItem findInvoiceItemById(Long Id);
 
-    List<OrderItem> findByOrderIdAndThirdPartyProductId(Long orderId, String thirdPartyProductId);
+    List<InvoiceItem> findByInvoiceIdAndThirdPartyProductId(Long invoiceId, String thirdPartyProductId);
 
-    @Query("SELECT oi FROM OrderItem oi INNER JOIN Order o ON o.id = oi.orderId " +
+    @Query("SELECT oi FROM InvoiceItem oi INNER JOIN Invoice o ON o.id = oi.invoiceId " +
             "WHERE (((:wareHouseId IS NULL ) OR (:wareHouseId IS NOT NULL AND oi.wareHouseId = :wareHouseId))" +
             "AND ((:deliveryStatus IS NULL ) OR (:deliveryStatus IS NOT NULL AND oi.deliveryStatus = :deliveryStatus))" +
             "AND ((:hasInventory IS NULL ) OR (:hasInventory IS NOT NULL AND oi.inventoryId >= 0))" +
@@ -36,9 +37,9 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long>, Jpa
             "AND ((:startDate IS NULL ) OR (:startDate IS NOT NULL AND oi.createdDate >= :startDate))" +
             "AND ((:endDate IS NULL ) OR (:endDate IS NOT NULL AND oi.createdDate <= :endDate))" +
             "AND ((:customerName IS NULL ) OR (:customerName IS NOT NULL AND o.customerName LIKE %:customerName%))) order by oi.id desc ")
-    public Page<OrderItem> searchOrderItems(Long wareHouseId, String deliveryStatus, Boolean hasInventory,
+    public Page<InvoiceItem> searchInvoiceItems(Long wareHouseId, String deliveryStatus, Boolean hasInventory,
                                             String productName, Integer qty, LocalDateTime startDate, LocalDateTime endDate, String customerName, Pageable pageable);
 
-    OrderItem findByPaymentReference(String paymentReference);
+    InvoiceItem findByPaymentReference(String paymentReference);
 
 }

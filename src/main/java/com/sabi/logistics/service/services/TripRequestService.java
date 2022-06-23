@@ -30,8 +30,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -79,10 +79,10 @@ public class TripRequestService {
     private UserRepository userRepository;
 
     @Autowired
-    private OrderItemRepository orderItemRepository;
+    private InvoiceItemRepository invoiceItemRepository;
 
     @Autowired
-    private OrderRepository orderRepository;
+    private InvoiceRepository invoiceRepository;
 
     @Autowired
     private TripRequestResponseService tripRequestResponseService;
@@ -96,7 +96,7 @@ public class TripRequestService {
     private DropOffItemService dropOffItemService;
 
     @Autowired
-    private OrderItemService orderItemService;
+    private InvoiceItemService invoiceItemService;
 
     @Autowired
     private DashboardSummaryRepository dashboardSummaryRepository;
@@ -106,7 +106,7 @@ public class TripRequestService {
     private final GeneralNotificationService generalNotificationService;
 
     public TripRequestService(TripRequestRepository tripRequestRepository, ModelMapper mapper, NotificationService notificationService, WhatsAppService whatsAppService, DropOffService dropOffService, GeneralNotificationService generalNotificationService) {
-           this.tripRequestRepository = tripRequestRepository;
+        this.tripRequestRepository = tripRequestRepository;
            this.mapper = mapper;
            this.dropOffService = dropOffService;
            this.generalNotificationService = generalNotificationService;
@@ -739,10 +739,10 @@ public class TripRequestService {
 
         for (DropOff dropOff : dropOffs) {
 
-            Order order = orderRepository.getOne(dropOff.getOrderId());
-            dropOff.setCustomerName(order.getCustomerName());
-            dropOff.setDeliveryAddress(order.getDeliveryAddress());
-            dropOff.setCustomerPhone(order.getCustomerPhone());
+            Invoice invoice = invoiceRepository.getOne(dropOff.getInvoiceId());
+            dropOff.setCustomerName(invoice.getCustomerName());
+            dropOff.setDeliveryAddress(invoice.getDeliveryAddress());
+            dropOff.setCustomerPhone(invoice.getCustomerPhone());
 
 
             if (dropOff.getPaymentStatus() != null && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery) {
@@ -777,14 +777,14 @@ public class TripRequestService {
 
         for (DropOffItem dropOffItem : dropOffItems) {
 
-            OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
-            Order order = orderRepository.getOne(orderItem.getOrderId());
-            dropOffItem.setCustomerName(order.getCustomerName());
-            dropOffItem.setCustomerPhone(order.getCustomerPhone());
-            dropOffItem.setOrderItemName(orderItem.getProductName());
-            dropOffItem.setThirdPartyProductId(orderItem.getThirdPartyProductId());
-            dropOffItem.setQty(orderItem.getQty());
-            dropOffItem.setOrderId(orderItem.getOrderId());
+            InvoiceItem invoiceItem = invoiceItemRepository.getOne(dropOffItem.getInvoiceItemId());
+            Invoice invoice = invoiceRepository.getOne(invoiceItem.getInvoiceId());
+            dropOffItem.setCustomerName(invoice.getCustomerName());
+            dropOffItem.setCustomerPhone(invoice.getCustomerPhone());
+            dropOffItem.setInvoiceItemName(invoiceItem.getProductName());
+            dropOffItem.setThirdPartyProductId(invoiceItem.getThirdPartyProductId());
+            dropOffItem.setQty(invoiceItem.getQty());
+            dropOffItem.setInvoiceId(invoiceItem.getInvoiceId());
         }
 
 
@@ -875,16 +875,16 @@ public class TripRequestService {
 
     }
 
-    public List<OrderItem> updateVerificationStatus(OrderItemVerificationDto request) {
-        validations.validateOrderItemVerificationStatus(request);
-        Order order = orderRepository.findByReferenceNo(request.getOrderReference());
-        List<OrderItem> orderItems = orderItemRepository.findByOrderId(order.getId());
-        log.info("Current size of orderItems=={}",orderItems.size());
-        for (OrderItem orderItem: orderItems){
-            orderItem.setVerificationStatus(request.getVerificationStatus());
-            orderItemRepository.save(orderItem);
+    public List<InvoiceItem> updateVerificationStatus(InvoiceItemVerificationDto request) {
+        validations.validateInvoiceItemVerificationStatus(request);
+        Invoice invoice = invoiceRepository.findByReferenceNo(request.getInvoiceReference());
+        List<InvoiceItem> invoiceItems = invoiceItemRepository.findByInvoiceId(invoice.getId());
+        log.info("Current size of invoiceItems=={}",invoiceItems.size());
+        for (InvoiceItem invoiceItem: invoiceItems){
+            invoiceItem.setVerificationStatus(request.getVerificationStatus());
+            invoiceItemRepository.save(invoiceItem);
         }
-        return orderItems;
+        return invoiceItems;
     }
 
 }
