@@ -6,6 +6,8 @@ import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
+import com.sabi.framework.notification.requestDto.SmsRequest;
+import com.sabi.framework.notification.requestDto.WhatsAppRequest;
 import com.sabi.framework.service.NotificationService;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.service.WhatsAppService;
@@ -23,8 +25,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -46,13 +48,13 @@ public class DropOffService {
     private Validations validations;
 
     @Autowired
-    private OrderItemRepository orderItemRepository;
+    private InvoiceItemRepository invoiceItemRepository;
 
     @Autowired
     private DriverRepository driverRepository;
 
     @Autowired
-    private OrderRepository orderRepository;
+    private InvoiceRepository invoiceRepository;
 
     @Autowired
     private DropOffItemRepository dropOffItemRepository;
@@ -64,7 +66,11 @@ public class DropOffService {
     private DropOffItemService dropOffItemService;
 
     @Autowired
-    private OrderService orderService;
+    private InvoiceService invoiceService;
+
+    @Autowired
+    private DropOffInvoiceRepository dropOffInvoiceRepository;
+
 
     private final NotificationService notificationService;
 
@@ -86,28 +92,28 @@ public class DropOffService {
     public DropOffResponseDto createDropOff(DropOffRequestDto request) {
         validations.validateDropOff(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-        DropOff dropOffExists = dropOffRepository.findByTripRequestIdAndOrderId(request.getTripRequestId(), request.getOrderId());
+        DropOff dropOffExists = dropOffRepository.findByTripRequestIdAndInvoiceId(request.getTripRequestId(), request.getInvoiceId());
         if(dropOffExists !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " DropOff already exist");
         }
-        Order order = orderRepository.getOne(request.getOrderId());
+        Invoice invoice = invoiceRepository.getOne(request.getInvoiceId());
         DropOff dropOff = mapper.map(request,DropOff.class);
         dropOff.setDeliveryCode(validations.generateReferenceNumber(6));
         dropOff.setCreatedBy(userCurrent.getId());
         dropOff.setIsActive(true);
         dropOff.setFinalDropOff(false);
-        dropOff.setReturnStatus("none");
-        dropOff.setDeliveryAddress(order.getDeliveryAddress());
-        dropOff.setPaymentStatus(order.getPaymentStatus());
+        dropOff.setReturnStatus(ReturnStatus.none);
+        dropOff.setDeliveryAddress(invoice.getDeliveryAddress());
+        dropOff.setPaymentStatus(invoice.getPaymentStatus());
 
-        if (order.getPaymentStatus() == PaymentStatus.paid){
+        if (invoice.getPaymentStatus() == PaymentStatus.paid){
             dropOff.setPaymentMode(PaymentMode.ONLINE);
         }
 
         dropOff = dropOffRepository.save(dropOff);
-        log.debug("Create new trip item - {}"+ new Gson().toJson(dropOff));
+        log.debug("Created new dropOff - {}"+ new Gson().toJson(dropOff));
         DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
-        dropOffResponseDto.setDeliveryAddress(order.getDeliveryAddress());
+        dropOffResponseDto.setDeliveryAddress(invoice.getDeliveryAddress());
         return dropOffResponseDto;
     }
 
@@ -120,17 +126,17 @@ public class DropOffService {
             request.setTripRequestId(tripRequestId);
             validations.validateDropOffs(request);
 
-            Order order = orderRepository.getOne(request.getOrderId());
+            Invoice invoice = invoiceRepository.getOne(request.getInvoiceId());
             DropOff dropOff = mapper.map(request, DropOff.class);
             dropOff.setDeliveryCode(validations.generateReferenceNumber(6));
             dropOff.setCreatedBy(userCurrent.getId());
             dropOff.setIsActive(true);
             dropOff.setFinalDropOff(false);
-            dropOff.setReturnStatus("none");
-            dropOff.setDeliveryAddress(order.getDeliveryAddress());
-            dropOff.setPaymentStatus(order.getPaymentStatus());
+            dropOff.setReturnStatus(ReturnStatus.none);
+            dropOff.setDeliveryAddress(invoice.getDeliveryAddress());
+            dropOff.setPaymentStatus(invoice.getPaymentStatus());
 
-            if (order.getPaymentStatus() == PaymentStatus.paid){
+            if (invoice.getPaymentStatus() == PaymentStatus.paid){
                 dropOff.setPaymentMode(PaymentMode.ONLINE);
             }
 
@@ -155,11 +161,11 @@ public class DropOffService {
             dropOff.setDeliveryCode(validations.generateReferenceNumber(6));
             dropOff = dropOffRepository.save(dropOff);
             log.debug("Updated  Droff with DeliveryCode - {}" + dropOff);
-            Order order = orderRepository.getOne(dropOff.getOrderId());
+            Invoice invoice = invoiceRepository.getOne(dropOff.getInvoiceId());
             //send notifications of the deliveryCode
             String message = "This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode();
             User customerUser = new User();
-            customerUser.setPhone(order.getCustomerPhone());
+            customerUser.setPhone(invoice.getCustomerPhone());
             customerUser.setEmail(dropOff.getEmail());
             customerUser.setFirstName(dropOff.getCustomerName());
             generalNotificationService.dispatchNotificationsToUser(customerUser,message);
@@ -176,24 +182,24 @@ public class DropOffService {
         DropOff dropOff = dropOffRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested DropOff Id does not exist!"));
-        Order order = orderRepository.getOne(request.getOrderId());
+        Invoice invoice = invoiceRepository.getOne(request.getInvoiceId());
         mapper.map(request, dropOff);
         if (dropOff.getDeliveryStatus().equalsIgnoreCase("completed")){
-            dropOff.setReturnStatus("none");
+            dropOff.setReturnStatus(ReturnStatus.none);
         } else if (dropOff.getDeliveryStatus().equalsIgnoreCase("PartiallyCompleted") || dropOff.getDeliveryStatus().equalsIgnoreCase("failed")){
-            dropOff.setReturnStatus("pending");
+            dropOff.setReturnStatus(ReturnStatus.pending);
         } else if (dropOff.getDeliveryStatus().equalsIgnoreCase("returned")) {
-            dropOff.setReturnStatus("returned");
+            dropOff.setReturnStatus(ReturnStatus.returned);
         }else {
-            dropOff.setReturnStatus("none");
+            dropOff.setReturnStatus(ReturnStatus.none);
         }
 
         if (dropOff.getPaymentStatus() != null) {
             if (dropOff.getPaymentStatus() == PaymentStatus.paid) {
-                dropOff.setPaidStatus("paid");
+                dropOff.setPaidStatus(PaidStatus.paid);
             }
             if (dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery) {
-                dropOff.setPaidStatus("pending");
+                dropOff.setPaidStatus(PaidStatus.pending);
             }
         }
 
@@ -202,19 +208,19 @@ public class DropOffService {
 
             List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
             for (DropOffItem dropOffItem : dropOffItems) {
-                OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
-                dropOffItem.setTransactionReference(orderItem.getPaymentReference());
+                InvoiceItem invoiceItem = invoiceItemRepository.getOne(dropOffItem.getInvoiceItemId());
+                dropOffItem.setTransactionReference(invoiceItem.getPaymentReference());
                 dropOffItemRepository.save(dropOffItem);
             }
         }
 
         dropOff.setUpdatedBy(userCurrent.getId());
-        dropOff.setDeliveryAddress(order.getDeliveryAddress());
-        dropOff.setPaymentStatus(order.getPaymentStatus());
+        dropOff.setDeliveryAddress(invoice.getDeliveryAddress());
+        dropOff.setPaymentStatus(invoice.getPaymentStatus());
         dropOffRepository.save(dropOff);
         log.debug("record updated - {}"+ new Gson().toJson(dropOff));
         DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
-        dropOffResponseDto.setDeliveryAddress(order.getDeliveryAddress());
+        dropOffResponseDto.setDeliveryAddress(invoice.getDeliveryAddress());
         return dropOffResponseDto;
     }
 
@@ -256,27 +262,27 @@ public class DropOffService {
         }
 
         DropOffItemRequestDto dropOffItemRequestDto = new DropOffItemRequestDto();
-        Order order = new Order();
-        OrderRequestDto orderRequestDto = new OrderRequestDto();
-        OrderItemRequestDto orderItemRequestDto = new OrderItemRequestDto();
+        Invoice invoice = new Invoice();
+        InvoiceRequestDto invoiceRequestDto = new InvoiceRequestDto();
+        InvoiceItemRequestDto invoiceItemRequestDto = new InvoiceItemRequestDto();
 
         mapper.map(request, dropOff);
         if (dropOff.getDeliveryStatus().equalsIgnoreCase("completed")){
-            dropOff.setReturnStatus("none");
+            dropOff.setReturnStatus(ReturnStatus.none);
         } else if (dropOff.getDeliveryStatus().equalsIgnoreCase("PartiallyCompleted") || dropOff.getDeliveryStatus().equalsIgnoreCase("failed")){
-            dropOff.setReturnStatus("pending");
+            dropOff.setReturnStatus(ReturnStatus.pending);
         } else if (dropOff.getDeliveryStatus().equalsIgnoreCase("returned")) {
-            dropOff.setReturnStatus("returned");
+            dropOff.setReturnStatus(ReturnStatus.returned);
         }else {
-            dropOff.setReturnStatus("none");
+            dropOff.setReturnStatus(ReturnStatus.none);
         }
 
         if (dropOff.getPaymentStatus() != null) {
             if (dropOff.getPaymentStatus() == PaymentStatus.paid) {
-                dropOff.setPaidStatus("paid");
+                dropOff.setPaidStatus(PaidStatus.paid);
             }
             if (dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery ) {
-                dropOff.setPaidStatus("pending");
+                dropOff.setPaidStatus(PaidStatus.pending);
             }
         }
 
@@ -285,8 +291,8 @@ public class DropOffService {
 
             List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
             for (DropOffItem dropOffItem : dropOffItems) {
-                OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
-                dropOffItem.setTransactionReference(orderItem.getPaymentReference());
+                InvoiceItem invoiceItem = invoiceItemRepository.getOne(dropOffItem.getInvoiceItemId());
+                dropOffItem.setTransactionReference(invoiceItem.getPaymentReference());
                 dropOffItemRepository.save(dropOffItem);
             }
         }
@@ -322,11 +328,11 @@ public class DropOffService {
             dropOff.setDropOffItem(dropOffItemRepository.findByDropOffId(dropOff.getId()));
         }
 
-        order = orderRepository.findOrderById(dropOff.getOrderId());
-        if (order != null) {
-            orderRequestDto.setDeliveryStatus(dropOff.getDeliveryStatus());
-            orderRequestDto.setId(dropOff.getOrderId());
-            orderService.updateOrderStatus(orderRequestDto);
+        invoice = invoiceRepository.findInvoiceById(dropOff.getInvoiceId());
+        if (invoice != null) {
+            invoiceRequestDto.setDeliveryStatus(dropOff.getDeliveryStatus());
+            invoiceRequestDto.setId(dropOff.getInvoiceId());
+            invoiceService.updateInvoiceStatus(invoiceRequestDto);
         }
 
         log.debug("record updated - {}"+ new Gson().toJson(dropOff));
@@ -339,11 +345,12 @@ public class DropOffService {
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested DropOff Id does not exist!"));
         DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
-        Order order = orderRepository.getOne(dropOff.getOrderId());
+        Invoice invoice = invoiceRepository.getOne(dropOff.getInvoiceId());
         dropOffResponseDto.setDropOffItem(getAllDropOffItems(id));
-        dropOffResponseDto.setCustomerName(order.getCustomerName());
-        dropOffResponseDto.setCustomerPhone(order.getCustomerPhone());
-        dropOffResponseDto.setDeliveryAddress(order.getDeliveryAddress());
+        dropOffResponseDto.setCustomerName(invoice.getCustomerName());
+        dropOffResponseDto.setDropOffInvoice(getAllDropOffInvoices(id));
+        dropOffResponseDto.setCustomerPhone(invoice.getCustomerPhone());
+        dropOffResponseDto.setDeliveryAddress(invoice.getDeliveryAddress());
 
         if (dropOff.getPaymentStatus() != null && dropOffResponseDto.getPaymentStatus() == PaymentStatus.PayOnDelivery ) {
             List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(id);
@@ -354,9 +361,9 @@ public class DropOffService {
     }
 
 
-    public Page<DropOff> findAll(Long orderId, Long tripRequestId, PageRequest pageRequest ){
+    public Page<DropOff> findAll(Long invoiceId, Long tripRequestId, PageRequest pageRequest ){
 
-        Page<DropOff> dropOffs = dropOffRepository.findDropOff(orderId, tripRequestId,pageRequest);
+        Page<DropOff> dropOffs = dropOffRepository.findDropOff(invoiceId, tripRequestId,pageRequest);
         if(dropOffs == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
@@ -467,10 +474,10 @@ public class DropOffService {
         }
         for (DropOff dropOff : dropOffList) {
 
-            Order order = orderRepository.getOne(dropOff.getOrderId());
-            dropOff.setCustomerName(order.getCustomerName());
-            dropOff.setDeliveryAddress(order.getDeliveryAddress());
-            dropOff.setCustomerPhone(order.getCustomerPhone());
+            Invoice invoice = invoiceRepository.getOne(dropOff.getInvoiceId());
+            dropOff.setCustomerName(invoice.getCustomerName());
+            dropOff.setDeliveryAddress(invoice.getDeliveryAddress());
+            dropOff.setCustomerPhone(invoice.getCustomerPhone());
 
 
             if (dropOff.getPaymentStatus() != null && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery ) {
@@ -510,14 +517,14 @@ public class DropOffService {
         List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOffId);
 
         for (DropOffItem dropOffItem : dropOffItems) {
-            OrderItem orderItem = orderItemRepository.getOne(dropOffItem.getOrderItemId());
-            Order order = orderRepository.getOne(orderItem.getOrderId());
-            dropOffItem.setCustomerName(order.getCustomerName());
-            dropOffItem.setCustomerPhone(order.getCustomerPhone());
-            dropOffItem.setOrderItemName(orderItem.getProductName());
-            dropOffItem.setThirdPartyProductId(orderItem.getThirdPartyProductId());
-            dropOffItem.setQty(orderItem.getQty());
-            dropOffItem.setOrderId(orderItem.getOrderId());
+            InvoiceItem invoiceItem = invoiceItemRepository.getOne(dropOffItem.getInvoiceItemId());
+            Invoice invoice = invoiceRepository.getOne(invoiceItem.getInvoiceId());
+            dropOffItem.setCustomerName(invoice.getCustomerName());
+            dropOffItem.setCustomerPhone(invoice.getCustomerPhone());
+            dropOffItem.setInvoiceItemName(invoiceItem.getProductName());
+            dropOffItem.setThirdPartyProductId(invoiceItem.getThirdPartyProductId());
+            dropOffItem.setQty(invoiceItem.getQty());
+            dropOffItem.setInvoiceId(invoiceItem.getInvoiceId());
         }
         return dropOffItems;
     }
@@ -551,5 +558,12 @@ public class DropOffService {
         dropOffRepository.findByIdAndDeliveryOverrideCodeHash(id, passwordEncoder.encode(deliveryOverrideCode))
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Incorrect Code!!!"));
+    }
+
+    public List<DropOffInvoice> getAllDropOffInvoices(Long dropOffId){
+        List<DropOffInvoice> dropOffInvoices = dropOffInvoiceRepository.findByDropOffId(dropOffId);
+
+        return dropOffInvoices;
+
     }
 }

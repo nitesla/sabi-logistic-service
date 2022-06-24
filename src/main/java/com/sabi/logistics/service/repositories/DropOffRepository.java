@@ -20,7 +20,7 @@ public interface DropOffRepository extends JpaRepository<DropOff, Long>, JpaSpec
 
     List<DropOff> findByIsActiveAndTripRequestId(Boolean isActive, Long tripRequestId);
 
-    DropOff findByTripRequestIdAndOrderId(Long tripRequestId, Long dropOffId);
+    DropOff findByTripRequestIdAndInvoiceId(Long tripRequestId, Long dropOffId);
 
     Optional<DropOff> findByIdAndDeliveryOverrideCodeHash(Long id, String deliveryOverrideCodeHash);
 
@@ -28,9 +28,9 @@ public interface DropOffRepository extends JpaRepository<DropOff, Long>, JpaSpec
 
     Integer countByTripRequestId(Long ID);
 
-    @Query("SELECT d FROM DropOff d WHERE ((:orderId IS NULL) OR (:orderId IS NOT NULL AND d.orderId = :orderId))" +
+    @Query("SELECT d FROM DropOff d WHERE ((:invoiceId IS NULL) OR (:invoiceId IS NOT NULL AND d.invoiceId = :invoiceId))" +
             " AND ((:tripRequestId IS NULL) OR (:tripRequestId IS NOT NULL AND d.tripRequestId = :tripRequestId)) order by d.id desc")
-    Page<DropOff> findDropOff(@Param("orderId") Long orderId,
+    Page<DropOff> findDropOff(@Param("invoiceId") Long invoiceId,
                               @Param("tripRequestId") Long tripRequestId,
                               Pageable pageable);
 

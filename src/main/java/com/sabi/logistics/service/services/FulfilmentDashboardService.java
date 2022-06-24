@@ -3,7 +3,6 @@ package com.sabi.logistics.service.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.utils.CustomResponseCode;
-import com.sabi.logistics.core.dto.response.FulfilmentDashBoardResponseDto;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.*;
@@ -12,12 +11,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 @SuppressWarnings("ALL")
@@ -32,7 +27,7 @@ public class FulfilmentDashboardService {
     @Autowired
     private  Validations validations;
     @Autowired
-    private OrderRepository orderRepository;
+    private InvoiceRepository invoiceRepository;
 
     @Autowired
     private FulfilmentDashboardRepository repository;
