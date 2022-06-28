@@ -42,6 +42,7 @@ public class Validations {
     private final DriverRepository driverRepository;
     private final BrandRepository brandRepository;
     private final PartnerUserRepository partnerUserRepository;
+    private final SLARepository slaRepository;
 
     @Autowired
     private WarehouseRepository warehouseRepository;
@@ -86,11 +87,11 @@ public class Validations {
 
 
 
-    public Validations(RoleRepository roleRepository,UserRepository userRepository,
+    public Validations(RoleRepository roleRepository, UserRepository userRepository,
                        PartnerRepository partnerRepository, CategoryRepository categoryRepository,
                        AssetTypePropertiesRepository assetTypePropertiesRepository, PartnerAssetRepository partnerAssetRepository,
                        PartnerAssetTypeRepository partnerAssetTypeRepository, DriverRepository driverRepository,
-                       BrandRepository brandRepository, PartnerUserRepository partnerUserRepository) {
+                       BrandRepository brandRepository, PartnerUserRepository partnerUserRepository, SLARepository slaRepository) {
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.partnerRepository = partnerRepository;
@@ -101,6 +102,7 @@ public class Validations {
         this.driverRepository = driverRepository;
         this.brandRepository = brandRepository;
         this.partnerUserRepository = partnerUserRepository;
+        this.slaRepository = slaRepository;
     }
 
     public void validateState(StateDto stateDto) {
@@ -1237,6 +1239,19 @@ public class Validations {
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " Warehouse Id does not Exist!")
         );
+    }
+
+    public void validateSLANotifier(SLANotifierRequestDto slaNotifierRequestDto) {
+        if (slaNotifierRequestDto.getSlaId() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"SLA Id-for sla notifier- cannot be null ");
+        if (slaRepository.getOne(slaNotifierRequestDto.getId()) == null)
+            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The requested SLA Id-for sla notifier- does not exist");
+        if (slaNotifierRequestDto.getName() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "The Sla Notifier name field cannot be empty");
+        if (slaNotifierRequestDto.getEmail() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"The SLA Notifier email field cannot be empty");
+        if (!Utility.validEmail(slaNotifierRequestDto.getEmail()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"The SLA Notifier email address is invalid");
     }
 }
 

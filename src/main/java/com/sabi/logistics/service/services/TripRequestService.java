@@ -11,11 +11,9 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.service.WhatsAppService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.*;
-import com.sabi.logistics.core.dto.response.DropOffResponseDto;
-import com.sabi.logistics.core.dto.response.TripMasterResponseDto;
-import com.sabi.logistics.core.dto.response.TripRequestStatusCountResponse;
-import com.sabi.logistics.core.dto.response.TripResponseDto;
+import com.sabi.logistics.core.dto.response.*;
 import com.sabi.logistics.core.enums.PaymentStatus;
+import com.sabi.logistics.core.enums.SlaName;
 import com.sabi.logistics.core.models.*;
 import com.sabi.logistics.service.helper.GenericSpecification;
 import com.sabi.logistics.service.helper.SearchCriteria;
@@ -34,10 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @SuppressWarnings("All")
 @Service
@@ -47,6 +42,9 @@ public class TripRequestService {
 
     @Value("${trip-request-due-for-expiry-db-load-time}")
     private String tripRequestDueForExpireTimeInMiliseconds;
+    private Long SLA_TIME_ACCEPT_TRIP_REQUEST;
+    private Long SLA_TIME_START_TRIP;
+    private Long SLA_TIME_ASSIGN_TRIP_TO_DRIVER;
     private final TripRequestRepository tripRequestRepository;
     private final ModelMapper mapper;
     @Autowired
@@ -105,12 +103,24 @@ public class TripRequestService {
 
     private final GeneralNotificationService generalNotificationService;
 
-    public TripRequestService(TripRequestRepository tripRequestRepository, ModelMapper mapper, NotificationService notificationService, WhatsAppService whatsAppService, DropOffService dropOffService, GeneralNotificationService generalNotificationService) {
+    private final SLAService slaService;
+
+    private final   SLANotifierRepository slaNotifierRepository;
+    private  SLAResponseDto ACCEPT_TRIP_REQUEST_SLA;
+    private  SLAResponseDto START_TRIP_SLA;
+    private  SLAResponseDto ASSIGN_TRIP_TO_DRIVER_SLA;
+    private List<String> driverPartnerStatuses;
+
+
+    public TripRequestService(TripRequestRepository tripRequestRepository, ModelMapper mapper, NotificationService notificationService, WhatsAppService whatsAppService, DropOffService dropOffService, GeneralNotificationService generalNotificationService, SLAService slaService, SLANotifierRepository slaNotifierRepository) {
         this.tripRequestRepository = tripRequestRepository;
-           this.mapper = mapper;
-           this.dropOffService = dropOffService;
-           this.generalNotificationService = generalNotificationService;
-           this.tripsDueForExpiration = new ArrayList<>();
+        this.mapper = mapper;
+        this.dropOffService = dropOffService;
+        this.generalNotificationService = generalNotificationService;
+        this.slaService = slaService;
+        this.slaNotifierRepository = slaNotifierRepository;
+        this.tripsDueForExpiration = new ArrayList<>();
+        this.driverPartnerStatuses = Arrays.asList("pending","accepted");
     }
 
     public TripResponseDto createTripRequest(TripRequestDto request) {
@@ -180,7 +190,9 @@ public class TripRequestService {
                 throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Partner Id");
             }
             log.info("setting expired Time");
-            tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(Long.parseLong(tripRequestDueForExpireTimeInMiliseconds)/(60*1000)));
+            this.ACCEPT_TRIP_REQUEST_SLA = slaService.findSLAByName(SlaName.ACCEPT_TRIP_REQUEST);
+            tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(ACCEPT_TRIP_REQUEST_SLA.getSlaDuration())); // sets the time SLA for accepting trips after creation
+            tripRequest.setSLAId(ACCEPT_TRIP_REQUEST_SLA.getId());
             tripRequest.setAssignedDate(LocalDateTime.now());
             tripResponseDto.setPartnerName(partner.getName());
             tripRequest.setDriverStatus("pending");
@@ -277,7 +289,9 @@ public class TripRequestService {
                 throw new ConflictException(CustomResponseCode.NOT_FOUND_EXCEPTION, " Invalid Partner Id");
             }
             log.info("setting expired Time");
-            tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(Long.parseLong(tripRequestDueForExpireTimeInMiliseconds)/(60*1000)));
+            this.ACCEPT_TRIP_REQUEST_SLA = slaService.findSLAByName(SlaName.ACCEPT_TRIP_REQUEST);
+            tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(ACCEPT_TRIP_REQUEST_SLA.getSlaDuration()));
+            tripRequest.setSLAId(ACCEPT_TRIP_REQUEST_SLA.getId());
             tripRequest.setAssignedDate(LocalDateTime.now());
             tripRequest=tripRequestRepository.save(tripRequest);
             tripResponseDto.setExpiredTime(tripRequest.getExpiredTime());
@@ -366,6 +380,11 @@ public class TripRequestService {
             }
             if(request.getStatus().equalsIgnoreCase("accepted")) {
                 tripRequestResponse = tripRequestResponseRepository.findTripRequestResponseByTripRequestId(tripRequest.getId());
+                //Sets up a timer for assigning trips to a driver
+                this.ASSIGN_TRIP_TO_DRIVER_SLA = slaService.findSLAByName(SlaName.ASSIGN_TRIP_TO_DRIVER);
+                tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(ASSIGN_TRIP_TO_DRIVER_SLA.getSlaDuration()));
+                tripRequest.setSLAId(ASSIGN_TRIP_TO_DRIVER_SLA.getId());
+                tripRequest.setAssignedDate(LocalDateTime.now());
                 if (tripRequestResponse != null) {
                     tripRequestResponseReqDto.setTripRequestId(tripRequest.getId());
                     tripRequestResponseReqDto.setPartnerId(tripRequest.getPartnerId());
@@ -389,7 +408,9 @@ public class TripRequestService {
         //Explicitly confirm it has been assigned to a partner and the partner is yet to accept it.
         if (tripRequest.getPartnerId()!=null && tripRequest.getStatus().equalsIgnoreCase("pending")){
             //Trigger timer to start counting once a partner is assigned.
-            tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(Long.parseLong(tripRequestDueForExpireTimeInMiliseconds)/(60*1000)));
+            this.ACCEPT_TRIP_REQUEST_SLA = slaService.findSLAByName(SlaName.ACCEPT_TRIP_REQUEST);
+            tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(ACCEPT_TRIP_REQUEST_SLA.getSlaDuration())); // sets the time SLA for accepting trips after creation
+            tripRequest.setSLAId(ACCEPT_TRIP_REQUEST_SLA.getId());
             tripRequest.setUpdatedDate(LocalDateTime.now());// update the time to be used for tracking during expiration
             tripRequest.setAssignedDate(LocalDateTime.now());
         }
@@ -405,14 +426,25 @@ public class TripRequestService {
             if (request.getDriverStatus()!=null && request.getDriverStatus().equalsIgnoreCase("accepted")){
                 //Then update the driver's status accordingly
                 tripRequest.setDriverStatus(tripRequest.getStatus());
+                //Sets driver SLA time to start a trip
+                this.START_TRIP_SLA = slaService.findSLAByName(SlaName.START_TRIP);
+                tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(START_TRIP_SLA.getSlaDuration()));
+                tripRequest.setSLAId(START_TRIP_SLA.getId());
+                tripRequest.setAssignedDate(LocalDateTime.now());
                 //get DropOffs of a Driver, generate DeliveryCode & send deliveryCode and update
                 List<DropOff> driversDropOffs = dropOffService.getDropOffsByTripRequestId(tripRequest.getId());
                 dropOffService.generateDeliveryCodeUpdateDropOffAndSend(driversDropOffs);
             }
-            // sets up timer for this driver and update the date for tracking during expiration
-            tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(Long.parseLong(tripRequestDueForExpireTimeInMiliseconds)/(60*1000)));
-            tripRequest.setUpdatedDate(LocalDateTime.now());
-            tripRequest.setAssignedDate(LocalDateTime.now());
+            if (request.getDriverStatus()!=null && request.getDriverStatus().equalsIgnoreCase("pending")){
+
+                // sets up timer for this driver when the status is 'pending' - that's yet to accept the assigned trip
+                this.ACCEPT_TRIP_REQUEST_SLA = slaService.findSLAByName(SlaName.ACCEPT_TRIP_REQUEST);
+                tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(ACCEPT_TRIP_REQUEST_SLA.getSlaDuration())); // sets the time SLA for accepting trips after creation
+                tripRequest.setSLAId(ACCEPT_TRIP_REQUEST_SLA.getId());
+                tripRequest.setUpdatedDate(LocalDateTime.now());
+                tripRequest.setAssignedDate(LocalDateTime.now());
+            }
+
         }
         if (request.getDriverAssistantUserId() != null) {
 
@@ -426,15 +458,25 @@ public class TripRequestService {
             if (!Objects.isNull(request.getDriverStatus()) && request.getDriverStatus().equalsIgnoreCase("accepted")){
                 //Then update the driver's status accordingly
                 tripRequest.setDriverStatus(tripRequest.getStatus());
+                //Sets driver SLA time to start a trip
+                this.START_TRIP_SLA = slaService.findSLAByName(SlaName.START_TRIP);
+                tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(START_TRIP_SLA.getSlaDuration()));
+                tripRequest.setSLAId(START_TRIP_SLA.getId());
+                tripRequest.setAssignedDate(LocalDateTime.now());
                 //get DropOffs of a Driver, generate DeliveryCode & send deliveryCode and update
                 List<DropOff> driversDropOffs = dropOffService.getDropOffsByTripRequestId(tripRequest.getId());
                 dropOffService.generateDeliveryCodeUpdateDropOffAndSend(driversDropOffs);
             }
-            // sets up timer for this assistant driver and update the date for tracking during expiration
-            tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(Long.parseLong(tripRequestDueForExpireTimeInMiliseconds)/(60*1000)));
-            tripRequest.setUpdatedDate(LocalDateTime.now());
-            tripRequest.setAssignedDate(LocalDateTime.now());
+            if (request.getDriverStatus()!=null && request.getDriverStatus().equalsIgnoreCase("pending")) {
+                // sets up timer for this driver when the status is 'pending' - that's yet to accept the assigned trip
+                this.ACCEPT_TRIP_REQUEST_SLA = slaService.findSLAByName(SlaName.ACCEPT_TRIP_REQUEST);
+                tripRequest.setExpiredTime(LocalDateTime.now().plusMinutes(ACCEPT_TRIP_REQUEST_SLA.getSlaDuration())); // sets the time SLA for accepting trips after creation
+                tripRequest.setSLAId(ACCEPT_TRIP_REQUEST_SLA.getId());
+                tripRequest.setAssignedDate(LocalDateTime.now());
+                tripRequest.setUpdatedDate(LocalDateTime.now());
+            }
         }
+
         tripRequest.setUpdatedBy(userCurrent.getId());
         tripRequestRepository.save(tripRequest);
         log.debug("tripRequest record updated - {}"+ tripRequest);
@@ -460,24 +502,25 @@ public class TripRequestService {
     }
 
     public void loadTripsQualifiedForExpiration() {
-        this.tripsDueForExpiration = tripRequestRepository.findByPartnerIdNotNullAndExpiredTimeNotNullAndStatus("pending");
-        tripsDueForExpiration.addAll(tripRequestRepository.findAllTripsNotYetAcceptedByADriver("accepted","pending"));
+        this.tripsDueForExpiration = tripRequestRepository.findByPartnerIdNotNullAndExpiredTimeNotNullAndStatus(driverPartnerStatuses);
+        tripsDueForExpiration.addAll(tripRequestRepository.findAllTripsNotYetAcceptedByADriver("accepted",driverPartnerStatuses));
     }
     public List<TripRequest> getTripsDueForExpiration(){
         return  this.tripsDueForExpiration;
     }
 
     /**
-     *  @Description: A background job that expires trips not yet accepted by eithe driver or partner.
+     *  @Description: A background job that expires PARTNER/DRIVER ACCEPTED TRIPS not yet accepted by eithe driver or partner.
      *  @Date: 26/04/2022
      * @Author: Okonkwo Afam
      */
-    public void expireUnAcceptedTrips() {
+    public void expireUnAcceptedPartnersDriversTrips() {
         List<TripRequest> expiredTripsList = this.getTripsDueForExpiration();
                 //tripRequestRepository.findByPartnerIdNotNullAndExpiredTimeNotNullAndStatus("pending");
-        log.info("Current partner expired trips={}",expiredTripsList);
-        Long configExpirationTimeInMinutes = Long.parseLong(tripRequestDueForExpireTimeInMiliseconds)/(60*1000); // get the time config time for expiration
-        configExpirationTimeInMinutes+=1; // Add one to explicitly ensure that the result is before the assignedTime
+        log.info("Current partner's unaccepted trips to be expired={}",expiredTripsList);
+        this.ACCEPT_TRIP_REQUEST_SLA = slaService.findSLAByName(SlaName.ACCEPT_TRIP_REQUEST);
+        Long SLA_TIME_ACCEPT_TRIP_REQUEST = ACCEPT_TRIP_REQUEST_SLA.getSlaDuration(); // get the time config time for expiration
+        SLA_TIME_ACCEPT_TRIP_REQUEST+=1; // Add one to explicitly ensure that the result is before the assignedTime
         for (Iterator<TripRequest> tripRequestIterator = expiredTripsList.iterator(); tripRequestIterator.hasNext();){
             TripRequest tripRequest = tripRequestIterator.next();
             TripRequestResponse tripRequestResponse = tripRequestResponseRepository.findByTripRequestIdAndPartnerId(tripRequest.getId(),tripRequest.getPartnerId());
@@ -485,8 +528,9 @@ public class TripRequestService {
                     log.info("This trip with id "+tripRequest.getId()+" doesn't have any response yet on the TripRequestResponse table. Hence the expiration scheduler will be throwing error");
             }
             //Is it up to atleast the expired minutes since the trip was assigned?
-            if (tripRequest.getExpiredTime().minusMinutes(configExpirationTimeInMinutes).isBefore(tripRequest.getAssignedDate())){
+            if (tripRequest.getExpiredTime().isBefore(LocalDateTime.now())){
                 if (tripRequest.getPartnerId() !=null && tripRequest.getStatus().equalsIgnoreCase("pending")){
+                    User partnerUser = userRepository.getOne(partnerRepository.findPartnerById(tripRequest.getPartnerId()).getUserId());
                     tripRequestResponse.setStatus("expired");
                     tripRequestResponseRepository.save(tripRequestResponse);
                     tripRequest.setStatus("pending");
@@ -498,13 +542,14 @@ public class TripRequestService {
                     log.info("Successfully expired UnAccepted trips assigned to partner with id {}",tripRequest.getPartnerId());
                     //remove from the pool while avoiding ConcurrentModification exception
                     tripRequestIterator.remove(); // Remove the expired trip from the pool of trips due for expiration.
+                    if (partnerUser!=null)
+                        pushExpiredTripNotificationsToPartnerAndDriver(tripRequest, partnerUser,null, "Your Accepted Trip with  reference number: "+tripRequest.getReferenceNo()+" has expired since you failed to accept the assigned trip  within the agreed time", SlaName.ACCEPT_TRIP_REQUEST,null);
                 }
             }
         }
-        //Retrieve and get all those trips accepted by a partner but not yet accepted by a driver
+        //Retrieve and get all those trips accepted by a partner and assigned to a driver but not yet accepted by a driver
         expiredTripsList = this.getTripsDueForExpiration();
-                //tripRequestRepository.findAllTripsNotYetAcceptedByADriver("accepted","pending");
-        log.info("Current driver expired trips={}",expiredTripsList);
+        log.info("Current driver's unaccepted trips to be expired={}",expiredTripsList);
         for (Iterator<TripRequest> tripRequestIterator = expiredTripsList.iterator(); tripRequestIterator.hasNext();) {
             TripRequest tripRequest = tripRequestIterator.next();
             TripRequestResponse tripRequestResponse = tripRequestResponseRepository.findByTripRequestIdAndPartnerId(tripRequest.getId(),tripRequest.getPartnerId());
@@ -512,11 +557,13 @@ public class TripRequestService {
                 log.info("This trip with id "+tripRequest.getId()+" doesn't have any response yet on the TripRequestResponse table. Hence the expiration scheduler will be throwing error");
             }
             //Is this trip due for expiration?
-            if(tripRequest.getExpiredTime().minusMinutes(configExpirationTimeInMinutes).isBefore(tripRequest.getAssignedDate())){
+            if(tripRequest.getExpiredTime().isBefore(LocalDateTime.now())){
                 if (tripRequest.getPartnerId() != null && tripRequest.getStatus().equalsIgnoreCase("accepted") && (tripRequest.getDriverId() !=null || tripRequest.getDriverAssistantId()!=null) && tripRequest.getDriverStatus().equalsIgnoreCase("pending")){
                     //get the driver instance to be used later for emails and other communications
                     Driver driver = null;
                     Driver driverAssitant = null;
+                    Partner partner = partnerRepository.findPartnerById(tripRequest.getPartnerId());
+                    User partnerUser = userRepository.getOne(partner.getUserId());
                     User  driverUser = null;
                     if (tripRequest.getDriverId()!=null){
 
@@ -535,33 +582,248 @@ public class TripRequestService {
                     tripRequestRepository.save(tripRequest);
                     //remove from the pool while avoiding ConcurrentModification exception
                     tripRequestIterator.remove();
-                    if (driverUser!=null)
-                        this.dispatchTripExpiryNotificationsToPartner(tripRequest.getPartnerId(),"Your Driver "+driverUser.getFirstName()+" failed to accept the assigned trip with reference number "+tripRequest.getReferenceNo()+" before it expired");
+                    if (driverUser!=null) {
+                        pushExpiredTripNotificationsToPartnerAndDriver(tripRequest, partnerUser, driverUser,null, SlaName.ACCEPT_TRIP_REQUEST,"Your Driver ");
+                    }
                     if (driverAssitant!=null){
                         User driverAssitantUser = userRepository.findById(driverAssitant.getUserId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"Assitant DriverUserId not found"));
-                        this.dispatchTripExpiryNotificationsToPartner(tripRequest.getPartnerId(),"Your Assitant Driver "+driverAssitantUser.getFirstName()+" failed to accept the assigned trip with reference number "+tripRequest.getReferenceNo()+" before it expired");
+                        pushExpiredTripNotificationsToPartnerAndDriver(tripRequest, partnerUser, driverAssitantUser,null, SlaName.ACCEPT_TRIP_REQUEST, "Your Assitant Driver ");
                     }
                 }
             }
         }
     }
 
-    private void dispatchTripExpiryNotificationsToPartner(long partnerId, String message){
 
-        Partner partner = partnerRepository.findPartnerById(partnerId);
-        if(partner != null){
-            User user = userRepository.findById(partner.getUserId())
-                    .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The userId of this driver is not found!"));
-
-            generalNotificationService.dispatchNotificationsToUser(user, message);
-
+    /**
+     *  @Description: A background job that expires PARTNER UNASSIGNED  TRIPS not yet accepted by eithe driver or partner.
+     *  @Date: 24/06/2022
+     * @Author: Okonkwo Afam
+     */
+    public void expireUnAssignedPartnerTrips() {
+        List<TripRequest> expiredTripsList = this.getTripsDueForExpiration();
+        log.info("Current partner's unassigned trips to be expired={}",expiredTripsList);
+        this.ASSIGN_TRIP_TO_DRIVER_SLA = slaService.findSLAByName(SlaName.ASSIGN_TRIP_TO_DRIVER);
+        Long SLA_TIME_ASSIGN_TRIP_TO_DRIVER = ASSIGN_TRIP_TO_DRIVER_SLA.getSlaDuration();
+        //get the time config time for expiration and add 1
+        SLA_TIME_ASSIGN_TRIP_TO_DRIVER+=1; // Add one to explicitly ensure that the result is before the assignedTime
+        for (Iterator<TripRequest> tripRequestIterator = expiredTripsList.iterator(); tripRequestIterator.hasNext();){
+            TripRequest tripRequest = tripRequestIterator.next();
+            TripRequestResponse tripRequestResponse = tripRequestResponseRepository.findByTripRequestIdAndPartnerId(tripRequest.getId(),tripRequest.getPartnerId());
+            if (tripRequestResponse==null){
+                log.info("This trip with id "+tripRequest.getId()+" doesn't have any response yet on the TripRequestResponse table. Hence the expiration scheduler will be throwing error");
+            }
+            //Has the trip expired?
+            if (tripRequest.getExpiredTime().isBefore(LocalDateTime.now())){
+                if (tripRequest.getPartnerId() !=null && tripRequest.getStatus().equalsIgnoreCase("accepted") && tripRequest.getDriverStatus().equalsIgnoreCase("pending")){
+                    User partnerUser = userRepository.getOne(partnerRepository.findPartnerById(tripRequest.getPartnerId()).getUserId());
+                    tripRequestResponse.setStatus("expired");
+                    tripRequestResponseRepository.save(tripRequestResponse);
+                    tripRequest.setStatus("pending");
+                    tripRequest.setExpiredTime(null);
+                    tripRequest.setPartnerId(null);
+                    tripRequest.setPartnerAssetId(null);
+                    tripRequestRepository.save(tripRequest);
+                    log.info("Successfully expired Driver-UnAssigned trips assigned to partner with UserId {}",partnerUser.getId());
+                    //remove from the pool while avoiding ConcurrentModification exception
+                    tripRequestIterator.remove(); // Remove the expired trip from the pool of trips due for expiration.
+                    if (partnerUser!=null)
+                        pushExpiredTripNotificationsToPartnerAndDriver(tripRequest, partnerUser, null,"Your Accepted Trip with reference number "+tripRequest.getReferenceNo()+" has expired since you failed to assign the trip to any of your driver  within the agreed time", SlaName.ASSIGN_TRIP_TO_DRIVER,null);
+                }
+            }
         }
-        else
-            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The partnerId needed to send trip expiry notification doesn't exist");
-        log.info("Trip Expiry notification successfully sent to partner {} ",partner.getName());
+
     }
 
+    /**
+     *  @Description: A background job that expires DRIVER'S NON-STARTED TRIPS not yet accepted by eithe driver or partner.
+     *  @Date: 24/06/2022
+     * @Author: Okonkwo Afam
+     */
+    public void expireNonStartedDriverTrips() {
+        List<TripRequest> expiredTripsList = this.getTripsDueForExpiration();
+        //tripRequestRepository.findByPartnerIdNotNullAndExpiredTimeNotNullAndStatus("pending");
+        log.info("Current driver's non-started trips to be expired={}",expiredTripsList);
+        //get the time config time for expiration and add 1
+        this.START_TRIP_SLA = slaService.findSLAByName(SlaName.START_TRIP);
+        Long SLA_TIME_START_TRIP = START_TRIP_SLA.getSlaDuration();
+        for (Iterator<TripRequest> tripRequestIterator = expiredTripsList.iterator(); tripRequestIterator.hasNext();) {
+            TripRequest tripRequest = tripRequestIterator.next();
+            TripRequestResponse tripRequestResponse = tripRequestResponseRepository.findByTripRequestIdAndPartnerId(tripRequest.getId(),tripRequest.getPartnerId());
+            if (tripRequestResponse==null){
+                log.info("This trip with id "+tripRequest.getId()+" doesn't have any response yet on the TripRequestResponse table. Hence the expiration scheduler will be throwing error");
+            }
+            //Is this trip due for expiration?
+            if(tripRequest.getExpiredTime().isBefore(LocalDateTime.now())){
+                if (tripRequest.getPartnerId() != null && tripRequest.getStatus().equalsIgnoreCase("accepted") && (tripRequest.getDriverId() !=null || tripRequest.getDriverAssistantId()!=null) && tripRequest.getDriverStatus().equalsIgnoreCase("accepted")){
+                    //get the driver instance to be used later for emails and other communications
+                    Driver driver = null;
+                    Driver driverAssitant = null;
+                    Partner partner = partnerRepository.findPartnerById(tripRequest.getPartnerId());
+                    User partnerUser = userRepository.getOne(partner.getUserId());
+                    User  driverUser = null;
+                    if (tripRequest.getDriverId()!=null){
 
+                        driver = driverRepository.findDriverById(tripRequest.getDriverId());
+                        if (tripRequest.getDriverId() != null){
+                            tripRequest.setDriverId(null);
+                            tripRequest.setDriverStatus("pending");
+                            driverUser = userRepository.findById(driver.getUserId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"Driver userId not found!"));
+                        }
+                    }
+                    if (tripRequest.getDriverAssistantId()!=null){
+                        tripRequest.setDriverAssistantId(null);
+                        driverAssitant = driverRepository.findDriverById(tripRequest.getDriverAssistantId());
+                    }
+                    log.info("Successfully expired Non-Started trips assigned to a driver with id {}",(tripRequest.getDriverId()!=null ? tripRequest.getDriverId() : tripRequest.getDriverAssistantId()));
+                    tripRequestRepository.save(tripRequest);
+                    //remove from the pool while avoiding ConcurrentModification exception
+                    tripRequestIterator.remove();
+                    if (driverUser!=null) {
+                        pushExpiredTripNotificationsToPartnerAndDriver(tripRequest, partnerUser,null,"Your driver "+driverUser.getFirstName()+"  failed to start the trip with reference no "+tripRequest.getReferenceNo()+" before it expired", SlaName.START_TRIP,"Your Driver ");
+                        pushExpiredTripNotificationsToPartnerAndDriver(tripRequest, null, driverUser,null, SlaName.START_TRIP,"Your Driver ");
+                    }
+                    if (driverAssitant!=null){
+                        User driverAssitantUser = userRepository.findById(driverAssitant.getUserId()).orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"Assitant DriverUserId not found"));
+                        pushExpiredTripNotificationsToPartnerAndDriver(tripRequest, partnerUser,null,"Your assitant driver "+driverAssitantUser.getFirstName()+"  failed to start the trip with reference no "+tripRequest.getReferenceNo()+" before it expired", SlaName.START_TRIP,"Your Driver ");
+                        pushExpiredTripNotificationsToPartnerAndDriver(tripRequest, null, driverAssitantUser,null, SlaName.START_TRIP, "Your Assitant Driver ");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     *  @Description: A background job that triggers NOTIFICATIONS TO PARTNERS FOR TRIPS about to expire.
+     *  @Date: 24/06/2022
+     * @Author: Okonkwo Afam
+     */
+    public void triggerNotificationsWarningOfNearBreachesTrips() {
+        List<TripRequest> expiredTripsList = tripRequestRepository.findByPartnerIdNotNullAndExpiredTimeNotNullAndStatus(driverPartnerStatuses);
+        expiredTripsList.addAll(tripRequestRepository.findAllTripsNotYetAcceptedByADriver("accepted",driverPartnerStatuses));
+
+        log.info("Current trips to trigger notifications for near breaches={}",expiredTripsList);
+        for (Iterator<TripRequest> tripRequestIterator = expiredTripsList.iterator(); tripRequestIterator.hasNext();){
+            TripRequest tripRequest = tripRequestIterator.next();
+            //Is this trip nearing the expiration-time- before it is breached?
+            if (tripRequest.getSLAId() == null)
+                continue;
+                //throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "Can't send notifications for a trip that doesn't have an SLA id. TripRequestId ="+tripRequest.getId());
+            SLAResponseDto sla = slaService.findSingleSLA(tripRequest.getSLAId());
+            if (sla.getTriggerDuration() !=null && tripRequest.getExpiredTime().isAfter(LocalDateTime.now()) && ((tripRequest.getExpiredTime().getMinute()-LocalDateTime.now().getMinute())<=sla.getTriggerDuration())){
+                    log.info("Preparing to send near breaches notifications trigger...");
+                    Partner partner = partnerRepository.findById(tripRequest.getPartnerId())
+                            .orElseThrow(()->new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"PartnerId of the triRequest doesn't exist and thus can't be found"));
+                    User partnerUser = userRepository.findById(tripRequest.getPartnerId())
+                            .orElseThrow(()-> new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"The UserId of the partner that accepted the tripRequest- with reference no: "+tripRequest.getReferenceNo()+"- does not exist"));
+                    //remove from the pool while avoiding ConcurrentModification exception
+                    String breachWarningMessageToSend = "";
+                    switch (sla.getSlaName()){
+                        case START_TRIP:
+                            breachWarningMessageToSend = "Your trip with reference number "+tripRequest.getReferenceNo()+" which was assigned to you and you accepted will soon expire in "+(tripRequest.getExpiredTime().getMinute()-LocalDateTime.now().getMinute())+" mins . You must START IT within the agreed time";
+                            break;
+                        case ACCEPT_TRIP_REQUEST:
+                            breachWarningMessageToSend = "Your trip with reference number "+tripRequest.getReferenceNo()+" which was assigned to you will soon expire in "+(tripRequest.getExpiredTime().getMinute()-LocalDateTime.now().getMinute())+" mins . You must ACCEPT IT within the agreed time";
+                            break;
+                        case ASSIGN_TRIP_TO_DRIVER:
+                            breachWarningMessageToSend = "Your trip with reference number "+tripRequest.getReferenceNo()+" which you accepted will soon expire in "+(tripRequest.getExpiredTime().getMinute()-LocalDateTime.now().getMinute())+" mins .You must ASSIGN IT to one of your drivers within the agreed time";
+                            
+                    }
+                    //tripRequestIterator.remove(); // Remove the expired trip from the pool of trips due for expiration.
+                    User driverUser = null;
+                    User assistantDriverUser = null;
+                    if (tripRequest.getDriverId() !=null)
+                    {
+                        Driver driver = driverRepository.findById(tripRequest.getDriverId())
+                                .orElseThrow(()-> new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"The driverId assigend to a tripRequest-that's expiration is due to breached- doesn't exist"));
+                        driverUser = userRepository.findById(driver.getUserId())
+                                .orElseThrow(()-> new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"The corresponding userId for a driver -whose trips's expiration is due to breached-doesn't exist"));
+                    }
+                    if (tripRequest.getDriverAssistantId() !=null)
+                    {
+                        Driver assitantDriver = driverRepository.findById(tripRequest.getDriverAssistantId())
+                                .orElseThrow(()-> new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"The assitantDriverId assigend to a tripRequest-whose expiration is due to breached- doesn't exist"));
+                        assistantDriverUser = userRepository.findById(assitantDriver.getUserId())
+                                .orElseThrow(()-> new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"The corresponding userId for an assitant driver -whose trips's expiration is due to breached-doesn't exist"));
+                    }
+                    if (partnerUser!=null && driverUser == null && assistantDriverUser ==null)
+                    {
+                        pushExpiredTripNotificationsToPartnerAndDriver(tripRequest, partnerUser, null,breachWarningMessageToSend , sla.getSlaName(),null);
+                    }
+                    if (driverUser != null)
+                    {
+                        pushExpiredTripNotificationsToPartnerAndDriver(tripRequest, partnerUser, driverUser,breachWarningMessageToSend,sla.getSlaName(),null);
+                    }
+                    if (assistantDriverUser != null)
+                    {
+                        pushExpiredTripNotificationsToPartnerAndDriver(tripRequest, partnerUser, assistantDriverUser,breachWarningMessageToSend,sla.getSlaName(),null);
+                    }
+                }
+        }
+    }
+
+    private void pushExpiredTripNotificationsToPartnerAndDriver(TripRequest tripRequest, User partnerUser, User driverUser, String message, SlaName slaName, String driverType) {
+
+        if(partnerUser!=null){
+            if (driverUser== null)
+            {
+                SLANotifier slaNotifierRequestDto = SLANotifier.builder().slaId(slaService.findSLAByName(slaName).getId())
+                        .email(partnerUser.getEmail()).name(partnerUser.getFirstName() + " " + partnerUser.getLastName()).build();
+                slaNotifierRequestDto.setIsActive(true);
+                log.info("The SLA NotifierRequestDto to create ->{}",slaNotifierRequestDto);
+
+                generalNotificationService.dispatchNotificationsToUser(partnerUser, message);
+                SLANotifier slaNotifier = slaNotifierRepository.save(slaNotifierRequestDto);
+                log.info("Successfully created  "+slaName+" SLA  Notifier to a partner ->{}", slaNotifier);
+            }
+            else {
+                SLANotifier slaNotifierRequestDto = SLANotifier.builder().slaId(slaService.findSLAByName(slaName).getId())
+                        .email(driverUser.getEmail()).name(driverUser.getFirstName() + " " + driverUser.getLastName()).build();
+                slaNotifierRequestDto.setIsActive(true);
+                log.info("The SLA NotifierRequestDto to create ->{}",slaNotifierRequestDto);
+
+                String msg = "";
+                if (slaName.equals(slaName.ACCEPT_TRIP_REQUEST)){
+                    msg = "Hello "+ driverUser.getFirstName() + ",you MUST ACCEPT the assigned trip with reference number " + tripRequest.getReferenceNo() + " within "+(tripRequest.getExpiredTime().getMinute()-LocalDateTime.now().getMinute())+" mins before it expires.";
+                    generalNotificationService.dispatchNotificationsToUser(driverUser, msg);
+                }
+                else if (slaName.equals(slaName.START_TRIP)){
+                    msg = "Hello "+ driverUser.getFirstName() + ",you MUST START the assigned trip with reference number " + tripRequest.getReferenceNo() + " within "+(tripRequest.getExpiredTime().getMinute()-LocalDateTime.now().getMinute())+" mins before it expires.";
+                    generalNotificationService.dispatchNotificationsToUser(driverUser, msg);
+                }
+                else
+                {
+                    slaNotifierRequestDto = SLANotifier.builder().slaId(slaService.findSLAByName(slaName).getId())
+                            .email(partnerUser.getEmail()).name(partnerUser.getFirstName() + " " + partnerUser.getLastName()).build();
+                    slaNotifierRequestDto.setIsActive(true);
+                    log.info("The SLA NotifierRequestDto to create ->{}",slaNotifierRequestDto);
+
+                    msg = driverType + driverUser.getFirstName() + " failed to accept the assigned trip with reference number " + tripRequest.getReferenceNo() + " before it expired";
+                    generalNotificationService.dispatchNotificationsToUser(partnerUser, msg);
+                }
+                SLANotifier slaNotifier = slaNotifierRepository.save(slaNotifierRequestDto);
+                log.info("Successfully created  "+slaName+" SLA  Notifier to a partner/driver ->{}", slaNotifier);
+            }
+        }
+
+        if (driverUser!= null){
+            SLANotifier slaNotifierRequestDto = SLANotifier.builder().slaId(slaService.findSLAByName(slaName).getId())
+                    .email(driverUser.getEmail()).name(driverUser.getFirstName() + " " + driverUser.getLastName()).build();
+            slaNotifierRequestDto.setIsActive(true);
+            log.info("The SLA NotifierRequestDto to create ->{}",slaNotifierRequestDto);
+
+            generalNotificationService.dispatchNotificationsToUser(driverUser, "Hello " + driverUser.getFirstName() + " since you failed to accept the assigned trip with reference number " + tripRequest.getReferenceNo() + ", it has thus expired.");
+            SLANotifier slaNotifier = slaNotifierRepository.save(slaNotifierRequestDto);
+            log.info("Successfully created  "+slaName+" SLA  Notifier(after trip expired) to a partner ->{}", slaNotifier);
+        }
+    }
+
+    public void expireTripsOrPushNotifications(){
+        this.triggerNotificationsWarningOfNearBreachesTrips();
+        this.expireUnAcceptedPartnersDriversTrips();
+        this.expireUnAssignedPartnerTrips();
+        this.expireNonStartedDriverTrips();
+    }
     public TripResponseDto findTripRequest(Long id){
         TripRequest tripRequest  = tripRequestRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,

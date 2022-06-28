@@ -84,6 +84,13 @@ public class SLAService {
         return mapper.map(sla, SLAResponseDto.class);
     }
 
+    public SLAResponseDto findSLAByName(SlaName slaName) {
+        SLA sla = slaRepository.findBySlaName(slaName);
+        if (sla == null)
+            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The requested SLA name does not exist");
+        return mapper.map(sla, SLAResponseDto.class);
+    }
+
     public List<SLA> findAllSLAByIsActive(Boolean isActive) {
         return slaRepository.findByIsActive(isActive);
     }

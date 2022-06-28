@@ -1,4 +1,4 @@
-/**
+//**
 package com.sabi.logistics.service.integrations;
 
 import com.sabi.logistics.core.dto.request.SabiOrder;
@@ -6,8 +6,8 @@ import com.sabi.logistics.core.dto.response.ExternalWebServiceResponse;
 import com.sabi.logistics.core.integrations.order.OrderItem;
 import com.sabi.logistics.core.integrations.response.SingleOrderResponse;
 import com.sabi.logistics.core.models.Order;
-import com.sabi.logistics.service.repositories.InvoiceItemRepository;
-import com.sabi.logistics.service.repositories.InvoiceRepository;
+import com.sabi.logistics.service.repositories.OrderItemRepository;
+import com.sabi.logistics.service.repositories.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,17 +24,17 @@ import java.util.List;
 public class SyncOrderService {
 
     private final ExternalWebService externalWebService;
-    private final InvoiceRepository invoiceRepository;
-    private final InvoiceItemRepository invoiceItemRepository;
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
 
 
 
     public void syncAndPullExternalOrders(String requestUrl) throws IOException {
-        log.info("LastOrder ID::{}", invoiceRepository.getLastOrder());
-        Long lastOrderId = invoiceRepository.getLastOrder();
+        log.info("LastOrder ID::{}", orderRepository.getLastOrder());
+        Long lastOrderId = orderRepository.getLastOrder();
         if(lastOrderId!=null)
         {
-            Order lastOrder = invoiceRepository.findOrderById(lastOrderId);
+            Order lastOrder = orderRepository.findOrderById(lastOrderId);
             if (lastOrder.getUpdatedDate().getDayOfYear() != LocalDateTime.now().getDayOfYear())
             {
                 ExternalWebServiceResponse webServiceResponse = externalWebService.getExternalOrders(requestUrl, lastOrder.getUpdatedDate());
@@ -53,7 +53,7 @@ public class SyncOrderService {
                         order.setTotalQuantity(sabiOrder.getNoOfItems());
                         order.setThirdPartyOrderId(sabiOrder.getId());
                         order.setIsActive(true);
-                        order = (Order) invoiceRepository.save(order);
+                        order = (Order) orderRepository.save(order);
                         log.info("Synced Order successfully saved!",order);
                         SingleOrderResponse singleOrderResponse = externalWebService.orderDetail(sabiOrder.getId());
                         if (singleOrderResponse!=null && singleOrderResponse.isStatus() && singleOrderResponse.getData()!=null){
@@ -78,13 +78,13 @@ public class SyncOrderService {
                                     logisticsOrderItem.setThirdPartyOrderId(orderItem.getOrderItemId());
                                     logisticsOrderItem.setIsActive(true);
                                     //We still need to set weight,height and length properties
-                                    invoiceItemRepository.save(logisticsOrderItem);
+                                    orderItemRepository.save(logisticsOrderItem);
                                     log.info("Synced OrderItems successfully saved!{}",logisticsOrderItem);
 
                                 }
                             }
                             order.setTotalAmount(totalOrderAmount.doubleValue());
-                            order=(Order) invoiceRepository.save(order);
+                            order=(Order) orderRepository.save(order);
                         }
 
                     }
@@ -101,4 +101,4 @@ public class SyncOrderService {
 
     }
 }
-*/
+//*/
