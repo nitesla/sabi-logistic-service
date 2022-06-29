@@ -29,11 +29,14 @@ public interface TripRequestRepository extends JpaRepository<TripRequest, Long>,
 
     List<TripRequest> findByDriverId(Long driverId);
 
-    @Query("SELECT trip FROM TripRequest trip WHERE trip.partnerId IS NOT NULL AND  trip.expiredTime IS NOT NULL  AND  trip.status IN :tripPartnerStatuses order by trip.id desc ")
-    List<TripRequest> findByPartnerIdNotNullAndExpiredTimeNotNullAndStatus(List tripPartnerStatuses);
-
-    @Query("SELECT trip FROM TripRequest trip WHERE (trip.driverId IS NOT NULL OR trip.driverAssistantId IS NOT NULL ) AND  trip.expiredTime IS NOT NULL AND  trip.status=:partnerStatus AND trip.driverStatus IN :driverStatuses order by trip.id desc ")
-    List<TripRequest> findAllTripsNotYetAcceptedByADriver(String partnerStatus, List driverStatuses);
+    @Query("SELECT trip FROM TripRequest trip WHERE " +
+            "trip.partnerId IS NOT NULL " +
+            "AND trip.expiredTime IS NOT NULL " +
+            "AND trip.SLAId IS NOT NULL " +
+            "AND (((trip.driverId IS NOT NULL OR trip.driverAssistantId IS NOT NULL ) OR ((trip.driverId IS NULL OR trip.driverAssistantId IS  NULL ))) )" +
+            "AND trip.driverStatus IN :tripStatuses " +
+            "AND trip.status IN :tripStatuses order by trip.id desc ")
+    List<TripRequest> findAllTripsDueForExpirations(List tripStatuses);
 
 
     Integer countByPartnerIdAndPartnerAssetId(Long partnerId, Long partnerAssetId);
