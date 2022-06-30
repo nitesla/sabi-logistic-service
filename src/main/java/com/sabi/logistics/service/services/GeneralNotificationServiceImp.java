@@ -31,7 +31,7 @@ public class GeneralNotificationServiceImp implements GeneralNotificationService
     @Async
     @Override
     public  void dispatchNotificationsToUser(User user,  String message) {
-        log.info("Notification Initiated... ");
+        log.info("Notifications Initiated... ");
         if (user != null){
             NotificationRequestDto notificationRequestDto = new NotificationRequestDto();
             notificationRequestDto.setEmail(true);
@@ -52,9 +52,8 @@ public class GeneralNotificationServiceImp implements GeneralNotificationService
         whatsAppRequest.setMessage(message);
         whatsAppRequest.setPhoneNumber(user.getPhone());
         whatsAppService.whatsAppNotification(whatsAppRequest);
-        log.info("Notifications Initiated and successfully initiated and sent to User {} ",user.getFirstName());
 
-        log.info("Notification successfully sent to User {} ",user.getFirstName());
-        log.info("Notification Ended... ");
+        log.info("Notifications successfully sent to User {} ",user.getFirstName());
+        log.info("Notifications Ended... ");
     }
 }

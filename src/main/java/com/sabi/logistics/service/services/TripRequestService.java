@@ -645,9 +645,7 @@ public class TripRequestService {
         List<TripRequest> expiredTripsList = this.getTripsDueForExpiration();
         //tripRequestRepository.findByPartnerIdNotNullAndExpiredTimeNotNullAndStatus("pending");
         log.info("Current driver's non-started trips to be expired={}",expiredTripsList);
-        //get the time config time for expiration and add 1
         this.START_TRIP_SLA = slaService.findSLAByName(SlaName.START_TRIP);
-        Long SLA_TIME_START_TRIP = START_TRIP_SLA.getSlaDuration();
         for (Iterator<TripRequest> tripRequestIterator = expiredTripsList.iterator(); tripRequestIterator.hasNext();) {
             TripRequest tripRequest = tripRequestIterator.next();
             TripRequestResponse tripRequestResponse = tripRequestResponseRepository.findByTripRequestIdAndPartnerId(tripRequest.getId(),tripRequest.getPartnerId());
