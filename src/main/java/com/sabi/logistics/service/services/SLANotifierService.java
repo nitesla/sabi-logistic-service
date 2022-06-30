@@ -1,5 +1,6 @@
 package com.sabi.logistics.service.services;
 
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
@@ -11,6 +12,8 @@ import com.sabi.logistics.core.models.SLANotifier;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.SLANotifierRepository;
 import com.sabi.logistics.service.repositories.SLARepository;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -51,7 +54,7 @@ public class SLANotifierService {
     public SLANotifierResponseDto findSingleSLANotifier(Long id){
         SLANotifier slaNotifier = slaNotifierRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The requested SLA Notifier id doesn't exist"));
-        return mapper.map(slaNotifier, SLANotifierResponseDto.class);
+        return mapper.map(this.getSingleSLA(slaNotifier), SLANotifierResponseDto.class);
     }
 
     public List<SLANotifier> getAllByIsActive(Boolean isActive) {
@@ -61,7 +64,7 @@ public class SLANotifierService {
     }
 
     public SLANotifier getSingleSLA(SLANotifier slaNotifier) {
-        slaNotifier.setSla(slaRepository.getOne(slaNotifier.getSlaId()));
+        slaNotifier.setSlaName(slaRepository.getOne(slaNotifier.getSlaId()).getSlaName().name());
         return slaNotifier;
     }
 

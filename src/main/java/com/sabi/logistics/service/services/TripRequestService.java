@@ -541,6 +541,7 @@ public class TripRequestService {
                     log.info("Successfully expired UnAccepted trips assigned to partner with id {}",tripRequest.getPartnerId());
                     //remove from the pool while avoiding ConcurrentModification exception
                     tripRequestIterator.remove(); // Remove the expired trip from the pool of trips due for expiration.
+                    log.info("Preparing to send email to a partner. Email::"+partnerUser.getEmail());
                     if (partnerUser!=null)
                         pushExpiredTripNotificationsToPartnerAndDriver(tripRequest, partnerUser,null, "Your Accepted Trip with  reference number: "+tripRequest.getReferenceNo()+" has expired since you failed to accept the trip  within the agreed time", SlaName.ACCEPT_TRIP_REQUEST,null);
                 }
@@ -626,6 +627,7 @@ public class TripRequestService {
                     log.info("Successfully expired Driver-UnAssigned trips assigned to partner with UserId {}",partnerUser.getId());
                     //remove from the pool while avoiding ConcurrentModification exception
                     tripRequestIterator.remove(); // Remove the expired trip from the pool of trips due for expiration.
+                    log.info("Preparing to send email to a partner. Email::"+partnerUser.getEmail());
                     if (partnerUser!=null)
                         pushExpiredTripNotificationsToPartnerAndDriver(tripRequest, partnerUser, null,"Your Accepted Trip with reference number "+tripRequest.getReferenceNo()+" has expired since you failed to assign the trip to any of your driver  within the agreed time", SlaName.ASSIGN_TRIP_TO_DRIVER,null);
                 }
@@ -717,7 +719,7 @@ public class TripRequestService {
                     log.info("Preparing to send near breaches notifications trigger...");
                     Partner partner = partnerRepository.findById(tripRequest.getPartnerId())
                             .orElseThrow(()->new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"PartnerId of the triRequest doesn't exist and thus can't be found"));
-                    User partnerUser = userRepository.findById(tripRequest.getPartnerId())
+                    User partnerUser = userRepository.findById(partner.getUserId())
                             .orElseThrow(()-> new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION,"The UserId of the partner that accepted the tripRequest- with reference no: "+tripRequest.getReferenceNo()+"- does not exist"));
                     //remove from the pool while avoiding ConcurrentModification exception
                     String breachWarningMessageToSend = "";
