@@ -958,7 +958,7 @@ public class TripRequestService {
         TripRequest tripRequest  = tripRequestRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Trip Request Id does not exist!"));
-        tripRequest.setIsActive(request.isActive());
+        tripRequest.setIsActive(request.getIsActive());
         tripRequest.setUpdatedBy(userCurrent.getId());
         tripRequestRepository.save(tripRequest);
 

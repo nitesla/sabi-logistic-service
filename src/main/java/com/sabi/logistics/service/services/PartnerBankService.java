@@ -164,7 +164,7 @@ public class PartnerBankService {
         PartnerBank partnerBank  = partnerBankRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partnerBank Id does not exist!"));
-        partnerBank.setIsActive(request.isActive());
+        partnerBank.setIsActive(request.getIsActive());
         partnerBank.setUpdatedBy(userCurrent.getId());
         partnerBankRepository.save(partnerBank);
 

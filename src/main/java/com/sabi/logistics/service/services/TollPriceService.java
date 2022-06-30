@@ -8,15 +8,8 @@ import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
-import com.sabi.logistics.core.dto.request.ProductRequestDto;
-import com.sabi.logistics.core.dto.request.StateDto;
 import com.sabi.logistics.core.dto.request.TollPricesDto;
-import com.sabi.logistics.core.dto.response.ProductResponseDto;
-import com.sabi.logistics.core.dto.response.StateResponseDto;
 import com.sabi.logistics.core.dto.response.TollPricesResponseDto;
-import com.sabi.logistics.core.models.Country;
-import com.sabi.logistics.core.models.Product;
-import com.sabi.logistics.core.models.State;
 import com.sabi.logistics.core.models.TollPrices;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.TollPricesRepository;
@@ -150,7 +143,7 @@ public class TollPriceService {
         TollPrices state = tollPricesRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Toll price Id does not exist!"));
-        state.setIsActive(request.isActive());
+        state.setIsActive(request.getIsActive());
         state.setUpdatedBy(userCurrent.getId());
         tollPricesRepository.save(state);
 

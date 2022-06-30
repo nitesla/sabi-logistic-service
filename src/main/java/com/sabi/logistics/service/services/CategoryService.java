@@ -113,7 +113,7 @@ public class CategoryService {
         Category category  = categoryRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Category Id does not exist!"));
-        category.setIsActive(request.isActive());
+        category.setIsActive(request.getIsActive());
         category.setUpdatedBy(userCurrent.getId());
 
         auditTrailService

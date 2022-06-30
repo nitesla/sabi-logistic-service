@@ -124,7 +124,7 @@ public class WarehouseProductService {
         WarehouseProduct warehouseProduct = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested warehouse product Id does not exist!"));
-        warehouseProduct.setIsActive(request.isActive());
+        warehouseProduct.setIsActive(request.getIsActive());
         warehouseProduct.setUpdatedBy(userCurrent.getId());
         repository.save(warehouseProduct);
 

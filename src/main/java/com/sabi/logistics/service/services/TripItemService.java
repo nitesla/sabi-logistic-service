@@ -11,9 +11,6 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.TripItemRequestDto;
 import com.sabi.logistics.core.dto.response.TripItemResponseDto;
 import com.sabi.logistics.core.models.TripItem;
-import com.sabi.logistics.service.helper.GenericSpecification;
-import com.sabi.logistics.service.helper.SearchCriteria;
-import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.TripItemRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -97,7 +94,7 @@ public class TripItemService {
         TripItem tripItem  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Trip Item id does not exist!"));
-        tripItem.setIsActive(request.isActive());
+        tripItem.setIsActive(request.getIsActive());
         tripItem.setUpdatedBy(userCurrent.getId());
         repository.save(tripItem);
 

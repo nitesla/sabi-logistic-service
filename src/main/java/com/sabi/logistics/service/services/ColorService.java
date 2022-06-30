@@ -110,7 +110,7 @@ public class ColorService {
         Color Color  = colorRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Color Id does not exist!"));
-        Color.setIsActive(request.isActive());
+        Color.setIsActive(request.getIsActive());
         Color.setUpdatedBy(userCurrent.getId());
 
         auditTrailService

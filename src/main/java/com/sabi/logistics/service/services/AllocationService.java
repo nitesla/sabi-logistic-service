@@ -140,7 +140,7 @@ public class AllocationService {
         Allocations allocations  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested asset type Id does not exist!"));
-        allocations.setIsActive(request.isActive());
+        allocations.setIsActive(request.getIsActive());
         allocations.setUpdatedBy(userCurrent.getId());
 
 

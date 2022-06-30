@@ -139,7 +139,7 @@ public class AllocationHistoryService {
         AllocationHistory assetTypeProperties  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested asset type Id does not exist!"));
-        assetTypeProperties.setIsActive(request.isActive());
+        assetTypeProperties.setIsActive(request.getIsActive());
         assetTypeProperties.setUpdatedBy(userCurrent.getId());
         repository.save(assetTypeProperties);
 

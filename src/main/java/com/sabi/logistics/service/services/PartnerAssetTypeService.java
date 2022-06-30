@@ -10,7 +10,9 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.PartnerAssetTypeRequestDto;
 import com.sabi.logistics.core.dto.response.PartnerAssetTypeResponseDto;
-import com.sabi.logistics.core.models.*;
+import com.sabi.logistics.core.models.AssetTypeProperties;
+import com.sabi.logistics.core.models.Partner;
+import com.sabi.logistics.core.models.PartnerAssetType;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.AssetTypePropertiesRepository;
 import com.sabi.logistics.service.repositories.PartnerAssetTypeRepository;
@@ -139,7 +141,7 @@ public class PartnerAssetTypeService {
         PartnerAssetType partnerAssetType  = partnerAssetTypeRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested PartnerAssetType Id does not exist!"));
-        partnerAssetType.setIsActive(request.isActive());
+        partnerAssetType.setIsActive(request.getIsActive());
         partnerAssetType.setUpdatedBy(userCurrent.getId());
         partnerAssetTypeRepository.save(partnerAssetType);
 

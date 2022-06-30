@@ -193,7 +193,7 @@ public class DriverAssetService {
         DriverAsset driverAsset  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested driver asset id does not exist!"));
-        driverAsset.setIsActive(request.isActive());
+        driverAsset.setIsActive(request.getIsActive());
         driverAsset.setUpdatedBy(userCurrent.getId());
         repository.save(driverAsset);
 

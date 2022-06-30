@@ -113,7 +113,7 @@ public class BlockTypeService {
         BlockType savedBlockType  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested block type id does not exist!"));
-        savedBlockType.setIsActive(request.isActive());
+        savedBlockType.setIsActive(request.getIsActive());
         savedBlockType.setUpdatedBy(userCurrent.getId());
 
         auditTrailService

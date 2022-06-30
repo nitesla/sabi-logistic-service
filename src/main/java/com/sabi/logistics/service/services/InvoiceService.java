@@ -175,7 +175,7 @@ public class InvoiceService {
         Invoice invoice  = invoiceRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Invoice Id does not exist!"));
-        invoice.setIsActive(request.isActive());
+        invoice.setIsActive(request.getIsActive());
         invoice.setUpdatedBy(userCurrent.getId());
         invoiceRepository.save(invoice);
 

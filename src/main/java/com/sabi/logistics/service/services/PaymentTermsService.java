@@ -11,7 +11,6 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.PaymentTermsDto;
 import com.sabi.logistics.core.dto.response.PartnerAssetTypeResponseDto;
 import com.sabi.logistics.core.dto.response.PaymentTermsResponseDto;
-import com.sabi.logistics.core.models.AssetTypeProperties;
 import com.sabi.logistics.core.models.PartnerAssetType;
 import com.sabi.logistics.core.models.PaymentTerms;
 import com.sabi.logistics.service.helper.Validations;
@@ -185,7 +184,7 @@ public class PaymentTermsService {
         PaymentTerms paymentTerms  = paymentTermsRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested paymentTerms Id does not exist!"));
-        paymentTerms.setIsActive(request.isActive());
+        paymentTerms.setIsActive(request.getIsActive());
         paymentTerms.setUpdatedBy(userCurrent.getId());
         paymentTermsRepository.save(paymentTerms);
 

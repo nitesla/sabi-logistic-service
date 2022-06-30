@@ -10,7 +10,6 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.StateDto;
 import com.sabi.logistics.core.dto.response.StateResponseDto;
-import com.sabi.logistics.core.models.Color;
 import com.sabi.logistics.core.models.Country;
 import com.sabi.logistics.core.models.State;
 import com.sabi.logistics.service.helper.Validations;
@@ -137,7 +136,7 @@ public class StateService {
         State state = stateRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested State Id does not exist!"));
-        state.setIsActive(request.isActive());
+        state.setIsActive(request.getIsActive());
         state.setUpdatedBy(userCurrent.getId());
         stateRepository.save(state);
 

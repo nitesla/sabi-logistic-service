@@ -412,7 +412,7 @@ public class PartnerService {
         Partner partnerProperties = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner properties Id does not exist!"));
-        partnerProperties.setIsActive(request.isActive());
+        partnerProperties.setIsActive(request.getIsActive());
         partnerProperties.setUpdatedBy(userCurrent.getId());
 
         auditTrailService

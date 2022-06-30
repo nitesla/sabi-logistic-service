@@ -121,7 +121,7 @@ public class ProductService {
         Product product  = productRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Product Id does not exist!"));
-        product.setIsActive(request.isActive());
+        product.setIsActive(request.getIsActive());
         product.setUpdatedBy(userCurrent.getId());
         productRepository.save(product);
 

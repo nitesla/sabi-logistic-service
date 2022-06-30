@@ -153,7 +153,7 @@ public class LGAService {
         LGA lga = lgaRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested LGA Id does not exist!"));
-        lga.setIsActive(request.isActive());
+        lga.setIsActive(request.getIsActive());
         lga.setUpdatedBy(userCurrent.getId());
         lgaRepository.save(lga);
 

@@ -6,7 +6,6 @@ import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
 import com.sabi.framework.repositories.UserRepository;
 import com.sabi.framework.service.TokenService;
-import com.sabi.framework.service.UserService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.SLARequestDto;
 import com.sabi.logistics.core.dto.response.SLAResponseDto;
@@ -103,7 +102,7 @@ public class SLAService {
     public void enableDisable(EnableDisEnableDto enableDisEnableDto) {
         SLA sla = slaRepository.findById(enableDisEnableDto.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, "The SLA with the given Id cannot be found"));
-        sla.setIsActive(enableDisEnableDto.isActive());
+        sla.setIsActive(enableDisEnableDto.getIsActive());
         sla = slaRepository.save(sla);
     }
 }
