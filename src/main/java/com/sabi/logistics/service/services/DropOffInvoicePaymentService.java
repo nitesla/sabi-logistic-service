@@ -52,7 +52,7 @@ public class DropOffInvoicePaymentService {
 
         DropOffInvoicePayment dropOffInvoicePayment = dropOffInvoicePaymentRepository.findByDropOffInvoiceIdAndInvoicePaymentId(dropOffInvoicePaymentRequestDto.getDropOffInvoiceId(),dropOffInvoicePaymentRequestDto.getInvoicePaymentId());
         if (dropOffInvoicePayment != null)
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"Ooops!, this DropOffInvoicePayment already exists");
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"Ooops!, this DropOffInvoicePayment already exists.");
 
         User currentUser = TokenService.getCurrentUserFromSecurityContext();
 
