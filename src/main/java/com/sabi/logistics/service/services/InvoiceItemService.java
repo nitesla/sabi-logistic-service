@@ -244,7 +244,7 @@ public class InvoiceItemService {
         InvoiceItem invoiceItem  = invoiceItemRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Invoice item Id does not exist!"));
-        invoiceItem.setIsActive(request.isActive());
+        invoiceItem.setIsActive(request.getIsActive());
         invoiceItem.setUpdatedBy(userCurrent.getId());
         invoiceItemRepository.save(invoiceItem);
 

@@ -334,7 +334,7 @@ public class PricingConfigurationService {
         PricingConfiguration pricingConfiguration = pricingConfigurationRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested pricingConfiguration Id does not exist!"));
-        pricingConfiguration.setIsActive(request.isActive());
+        pricingConfiguration.setIsActive(request.getIsActive());
         pricingConfiguration.setUpdatedBy(userCurrent.getId());
         pricingConfigurationRepository.save(pricingConfiguration);
 

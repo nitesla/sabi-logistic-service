@@ -374,7 +374,7 @@ public class PartnerAssetService {
         PartnerAsset partnerAsset  = partnerAssetRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested PartnerAsset Id does not exist!"));
-        partnerAsset.setIsActive(request.isActive());
+        partnerAsset.setIsActive(request.getIsActive());
         partnerAsset.setUpdatedBy(userCurrent.getId());
         partnerAssetRepository.save(partnerAsset);
 

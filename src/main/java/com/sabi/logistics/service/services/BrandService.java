@@ -105,7 +105,7 @@ public class BrandService {
         Brand brand  = brandRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested brand Id does not exist!"));
-        brand.setIsActive(request.isActive());
+        brand.setIsActive(request.getIsActive());
         brand.setUpdatedBy(userCurrent.getId());
 
         auditTrailService

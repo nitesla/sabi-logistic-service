@@ -205,7 +205,7 @@ public class RouteLocationService {
         RouteLocation routeLocation = routeLocationRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested routeLocation Id does not exist!"));
-        routeLocation.setIsActive(request.isActive());
+        routeLocation.setIsActive(request.getIsActive());
         routeLocation.setUpdatedBy(userCurrent.getId());
         routeLocationRepository.save(routeLocation);
 

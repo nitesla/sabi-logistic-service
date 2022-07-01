@@ -104,7 +104,7 @@ public class ClientService {
         Client savedClient  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested client id does not exist!"));
-        savedClient.setIsActive(request.isActive());
+        savedClient.setIsActive(request.getIsActive());
         savedClient.setUpdatedBy(0l);
 
         auditTrailService

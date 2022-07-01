@@ -628,7 +628,7 @@ public class DropOffItemService {
         DropOffItem dropOffItem  = dropOffItemRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Trip item Id does not exist!"));
-        dropOffItem.setIsActive(request.isActive());
+        dropOffItem.setIsActive(request.getIsActive());
         dropOffItem.setUpdatedBy(userCurrent.getId());
 
         auditTrailService

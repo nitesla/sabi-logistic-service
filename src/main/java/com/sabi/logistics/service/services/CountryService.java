@@ -125,7 +125,7 @@ public class CountryService {
         Country country = countryRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Country Id does not exist!"));
-        country.setIsActive(request.isActive());
+        country.setIsActive(request.getIsActive());
         country.setUpdatedBy(userCurrent.getId());
         countryRepository.save(country);
 

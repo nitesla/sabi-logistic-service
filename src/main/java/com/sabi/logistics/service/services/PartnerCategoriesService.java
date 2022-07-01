@@ -102,7 +102,7 @@ public class PartnerCategoriesService {
         PartnerCategories savedPartnerCategories  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested partner category id does not exist!"));
-        savedPartnerCategories.setIsActive(request.isActive());
+        savedPartnerCategories.setIsActive(request.getIsActive());
         savedPartnerCategories.setUpdatedBy(userCurrent.getId());
         repository.save(savedPartnerCategories);
 

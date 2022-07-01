@@ -94,7 +94,7 @@ public class DropOffInvoiceService {
         DropOffInvoice dropOffInvoice  = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested DropOff Invoice id does not exist!"));
-        dropOffInvoice.setIsActive(request.isActive());
+        dropOffInvoice.setIsActive(request.getIsActive());
         dropOffInvoice.setUpdatedBy(userCurrent.getId());
         repository.save(dropOffInvoice);
 

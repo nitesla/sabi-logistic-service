@@ -8,7 +8,6 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.InvoicePaymentRequestDto;
 import com.sabi.logistics.core.dto.response.InvoicePaymentResponseDto;
-import com.sabi.logistics.core.enums.PaymentChannel;
 import com.sabi.logistics.core.models.InvoicePayment;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.InvoicePaymentRepository;
@@ -110,7 +109,7 @@ public class InvoicePaymentService {
     public void enableDisable(EnableDisEnableDto enableDisEnableDto) {
         InvoicePayment invoicePayment = invoicePaymentRepository.findById(enableDisEnableDto.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, "The id of the invoicePayment does not exist"));
-        invoicePayment.setIsActive(enableDisEnableDto.isActive());
+        invoicePayment.setIsActive(enableDisEnableDto.getIsActive());
         invoicePayment = invoicePaymentRepository.save(invoicePayment);
     }
 }

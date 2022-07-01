@@ -204,7 +204,7 @@ public class PricingItemsService {
         PricingItems pricingItems = pricingItemsRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested pricingItems Id does not exist!"));
-        pricingItems.setIsActive(request.isActive());
+        pricingItems.setIsActive(request.getIsActive());
         pricingItems.setUpdatedBy(userCurrent.getId());
         pricingItemsRepository.save(pricingItems);
 

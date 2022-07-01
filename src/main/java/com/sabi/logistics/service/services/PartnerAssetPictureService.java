@@ -4,19 +4,14 @@ package com.sabi.logistics.service.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
-import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
-import com.sabi.logistics.core.dto.request.DriverAssetDto;
 import com.sabi.logistics.core.dto.request.PartnerAssetPictureDto;
-import com.sabi.logistics.core.dto.response.DriverAssetResponseDto;
 import com.sabi.logistics.core.dto.response.PartnerAssetPictureResponseDto;
-import com.sabi.logistics.core.models.DriverAsset;
 import com.sabi.logistics.core.models.PartnerAssetPicture;
 import com.sabi.logistics.service.helper.Validations;
-import com.sabi.logistics.service.repositories.DriverAssetRepository;
 import com.sabi.logistics.service.repositories.PartnerAssetPictureRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -119,7 +114,7 @@ public class PartnerAssetPictureService {
         PartnerAssetPicture assetPicture = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "asset picture id does not exist!"));
-        assetPicture.setIsActive(request.isActive());
+        assetPicture.setIsActive(request.getIsActive());
         assetPicture.setUpdatedBy(userCurrent.getId());
         repository.save(assetPicture);
 

@@ -242,7 +242,7 @@ public class OrderItemService {
         OrderItem orderItem  = orderItemRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Order item Id does not exist!"));
-        orderItem.setIsActive(request.isActive());
+        orderItem.setIsActive(request.getIsActive());
         orderItem.setUpdatedBy(userCurrent.getId());
         orderItemRepository.save(orderItem);
 

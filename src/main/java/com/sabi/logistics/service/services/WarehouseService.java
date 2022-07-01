@@ -146,7 +146,7 @@ public class WarehouseService {
         Warehouse Warehouse = warehouseRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Warehouse Id does not exist!"));
-        Warehouse.setIsActive(request.isActive());
+        Warehouse.setIsActive(request.getIsActive());
         Warehouse.setUpdatedBy(userCurrent.getId());
         warehouseRepository.save(Warehouse);
     }

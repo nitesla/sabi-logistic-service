@@ -11,9 +11,6 @@ import com.sabi.logistics.core.dto.request.TripRequestResponseReqDto;
 import com.sabi.logistics.core.dto.response.TripRequestResponseDto;
 import com.sabi.logistics.core.models.Partner;
 import com.sabi.logistics.core.models.TripRequestResponse;
-import com.sabi.logistics.service.helper.GenericSpecification;
-import com.sabi.logistics.service.helper.SearchCriteria;
-import com.sabi.logistics.service.helper.SearchOperation;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.PartnerRepository;
 import com.sabi.logistics.service.repositories.TripRequestResponseRepository;
@@ -114,7 +111,7 @@ public class TripRequestResponseService {
         TripRequestResponse requestResponse  = tripRequestResponseRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested TripRequestResponse Id does not exist!"));
-        requestResponse.setIsActive(request.isActive());
+        requestResponse.setIsActive(request.getIsActive());
         requestResponse.setUpdatedBy(userCurrent.getId());
         tripRequestResponseRepository.save(requestResponse);
 

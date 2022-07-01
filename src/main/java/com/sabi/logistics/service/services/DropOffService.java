@@ -6,8 +6,6 @@ import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
 import com.sabi.framework.models.User;
-import com.sabi.framework.notification.requestDto.SmsRequest;
-import com.sabi.framework.notification.requestDto.WhatsAppRequest;
 import com.sabi.framework.service.NotificationService;
 import com.sabi.framework.service.TokenService;
 import com.sabi.framework.service.WhatsAppService;
@@ -27,7 +25,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -392,7 +389,7 @@ public class DropOffService {
         DropOff dropOff  = dropOffRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested DropOff Id does not exist!"));
-        dropOff.setIsActive(request.isActive());
+        dropOff.setIsActive(request.getIsActive());
         dropOff.setUpdatedBy(userCurrent.getId());
         dropOffRepository.save(dropOff);
 

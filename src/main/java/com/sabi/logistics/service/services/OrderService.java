@@ -211,7 +211,7 @@ public class OrderService {
         Order order  = orderRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested Order Id does not exist!"));
-        order.setIsActive(request.isActive());
+        order.setIsActive(request.getIsActive());
         order.setUpdatedBy(userCurrent.getId());
         orderRepository.save(order);
 

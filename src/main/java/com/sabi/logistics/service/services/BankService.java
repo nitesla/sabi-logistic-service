@@ -131,7 +131,7 @@ public class BankService {
         Bank bank  = bankRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested bank Id does not exist!"));
-        bank.setIsActive(request.isActive());
+        bank.setIsActive(request.getIsActive());
         bank.setUpdatedBy(userCurrent.getId());
         bankRepository.save(bank);
 
