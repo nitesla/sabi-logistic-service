@@ -43,6 +43,8 @@ public class Validations {
     private final BrandRepository brandRepository;
     private final PartnerUserRepository partnerUserRepository;
     private final SLARepository slaRepository;
+    private final InvoicePaymentRepository invoicePaymentRepository;
+    private final DropOffInvoiceRepository dropOffInvoiceRepository;
 
     @Autowired
     private WarehouseRepository warehouseRepository;
@@ -91,7 +93,7 @@ public class Validations {
                        PartnerRepository partnerRepository, CategoryRepository categoryRepository,
                        AssetTypePropertiesRepository assetTypePropertiesRepository, PartnerAssetRepository partnerAssetRepository,
                        PartnerAssetTypeRepository partnerAssetTypeRepository, DriverRepository driverRepository,
-                       BrandRepository brandRepository, PartnerUserRepository partnerUserRepository, SLARepository slaRepository) {
+                       BrandRepository brandRepository, PartnerUserRepository partnerUserRepository, SLARepository slaRepository, InvoicePaymentRepository invoicePaymentRepository, DropOffInvoiceRepository dropOffInvoiceRepository) {
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.partnerRepository = partnerRepository;
@@ -103,6 +105,8 @@ public class Validations {
         this.brandRepository = brandRepository;
         this.partnerUserRepository = partnerUserRepository;
         this.slaRepository = slaRepository;
+        this.invoicePaymentRepository = invoicePaymentRepository;
+        this.dropOffInvoiceRepository = dropOffInvoiceRepository;
     }
 
     public void validateState(StateDto stateDto) {
@@ -1252,6 +1256,18 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"The SLA Notifier email field cannot be empty");
         if (!Utility.validEmail(slaNotifierRequestDto.getEmail()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"The SLA Notifier email address is invalid");
+    }
+
+    public void validateDropOffInvoicePayment(DropOffInvoicePaymentRequestDto dropOffInvoicePaymentRequestDto) {
+        if (dropOffInvoicePaymentRequestDto.getDropOffInvoiceId() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"dropOffInvoiceId can't be empty");
+        if (dropOffInvoicePaymentRequestDto.getInvoicePaymentId() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"invoicePaymentId cannot be empty");
+        dropOffInvoiceRepository.findById(dropOffInvoicePaymentRequestDto.getDropOffInvoiceId())
+                .orElseThrow(()->new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The dropOffInvoiceId does not exist"));
+        invoicePaymentRepository.findById(dropOffInvoicePaymentRequestDto.getInvoicePaymentId())
+                .orElseThrow(()->new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The invoicePaymentId does not exist "));
+
     }
 }
 
