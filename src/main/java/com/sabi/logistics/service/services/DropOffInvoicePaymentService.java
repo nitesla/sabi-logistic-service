@@ -117,7 +117,7 @@ public class DropOffInvoicePaymentService {
     public void enableDisable(EnableDisEnableDto enableDisEnableDto) {
         DropOffInvoicePayment dropOffInvoicePayment = dropOffInvoicePaymentRepository.findById(enableDisEnableDto.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, "The DropOffInvoicePayment with the given Id cannot be found"));
-        dropOffInvoicePayment.setIsActive(enableDisEnableDto.isActive());
+        dropOffInvoicePayment.setIsActive(enableDisEnableDto.getIsActive());
         dropOffInvoicePayment = dropOffInvoicePaymentRepository.save(dropOffInvoicePayment);
     }
 }
