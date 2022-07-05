@@ -83,6 +83,11 @@ public class Validations {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private DropOffInvoiceRepository dropOffInvoiceRepository;
+
+    @Autowired
+    private InvoicePaymentRepository invoicePaymentRepository;
 
 
 
@@ -1252,6 +1257,31 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"The SLA Notifier email field cannot be empty");
         if (!Utility.validEmail(slaNotifierRequestDto.getEmail()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"The SLA Notifier email address is invalid");
+    }
+
+    public void validateDropOffPaymentInvoice (DropOffInvoicePaymentRequestDto request){
+
+        if(request.getDropOffInvoiceId() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " dropOffInvoiceId can not be null");
+        if (!Utility.isNumeric(request.getDropOffInvoiceId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for dropOffInvoiceId ");
+
+        if (request.getInvoicePaymentId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "invoicePaymentId cannot be empty");
+        if (!Utility.isNumeric(request.getInvoicePaymentId().toString()))
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for invoicePaymentId ");
+
+
+
+        dropOffInvoiceRepository.findById(request.getDropOffInvoiceId()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " dropOffInvoiceId does not Exist!")
+        );
+
+        invoicePaymentRepository.findById(request.getInvoicePaymentId()).orElseThrow(() ->
+                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                        " invoicePaymentId does not Exist!")
+        );
     }
 }
 

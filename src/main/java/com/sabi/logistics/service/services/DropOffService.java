@@ -13,6 +13,7 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.*;
 import com.sabi.logistics.core.dto.response.DropOffItemResponseDto;
 import com.sabi.logistics.core.dto.response.DropOffResponseDto;
+import com.sabi.logistics.core.dto.response.InvoicePaymentResponseDto;
 import com.sabi.logistics.core.enums.PaidStatus;
 import com.sabi.logistics.core.enums.PaymentMode;
 import com.sabi.logistics.core.enums.PaymentStatus;
@@ -60,10 +61,23 @@ public class DropOffService {
     private DropOffItemRepository dropOffItemRepository;
 
     @Autowired
+    private InvoicePaymentRepository invoicePaymentRepository;
+
+    @Autowired
+    private DropOffInvoicePaymentRepository dropOffInvoicePaymentRepository;
+
+
+    @Autowired
     private TripRequestRepository tripRequestRepository;
 
     @Autowired
     private DropOffItemService dropOffItemService;
+
+    @Autowired
+    private InvoicePaymentService invoicePaymentService;
+
+    @Autowired
+    private DropOffInvoicePaymentService dropOffInvoicePaymentService;
 
     @Autowired
     private InvoiceService invoiceService;
@@ -328,7 +342,32 @@ public class DropOffService {
             dropOff.setDropOffItem(dropOffItemRepository.findByDropOffId(dropOff.getId()));
         }
 
+        InvoicePaymentResponseDto invoicePaymentResponseDto = new InvoicePaymentResponseDto();
+        DropOffInvoice dropOffInvoice = new DropOffInvoice();
         invoice = invoiceRepository.findInvoiceById(dropOff.getInvoiceId());
+        dropOffInvoice = dropOffInvoiceRepository.findByDropOffIdAndInvoiceId(dropOff.getId(), invoice.getId());
+
+
+        if(request.getInvoicePayment() != null) {
+            List<InvoicePaymentRequestDto> invoicePayments = request.getInvoicePayment();
+            for (InvoicePaymentRequestDto invoicePaymentRequestDto : invoicePayments) {
+                 invoicePaymentResponseDto = invoicePaymentService.createInvoicePayment(invoicePaymentRequestDto);
+                dropOff.setInvoicePayment(invoicePaymentRepository.findByInvoiceId(dropOff.getInvoiceId()));
+            }
+        }
+
+        DropOffInvoicePayment dropOffInvoicePayment = new DropOffInvoicePayment();
+        DropOffInvoicePaymentRequestDto dropOffInvoicePaymentRequestDto = new DropOffInvoicePaymentRequestDto();
+
+        dropOffInvoicePayment = dropOffInvoicePaymentRepository.findByDropOffInvoiceIdAndInvoicePaymentId(dropOffInvoice.getId(), invoicePaymentResponseDto.getId());
+
+        if (dropOffInvoicePayment == null) {
+            dropOffInvoicePaymentRequestDto.setDropOffInvoiceId(dropOffInvoice.getId());
+            dropOffInvoicePaymentRequestDto.setInvoicePaymentId(invoicePaymentResponseDto.getId());
+            dropOffInvoicePaymentService.createDropOffInvoicePayment(dropOffInvoicePaymentRequestDto);
+        }
+
+
         if (invoice != null) {
             invoiceRequestDto.setDeliveryStatus(dropOff.getDeliveryStatus());
             invoiceRequestDto.setId(dropOff.getInvoiceId());
