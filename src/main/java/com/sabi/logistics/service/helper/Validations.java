@@ -85,14 +85,6 @@ public class Validations {
     @Autowired
     private OrderRepository orderRepository;
 
-    @Autowired
-    private DropOffInvoiceRepository dropOffInvoiceRepository;
-
-    @Autowired
-    private InvoicePaymentRepository invoicePaymentRepository;
-
-
-
 
     public Validations(RoleRepository roleRepository, UserRepository userRepository,
                        PartnerRepository partnerRepository, CategoryRepository categoryRepository,
