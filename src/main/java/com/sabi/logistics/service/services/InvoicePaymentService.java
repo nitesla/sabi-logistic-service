@@ -96,7 +96,7 @@ public class InvoicePaymentService {
     public InvoicePaymentResponseDto findByPaymentReference(String paymentReference) {
         InvoicePayment invoicePayment = invoicePaymentRepository.findByPaymentReference(paymentReference);
         if (invoicePayment == null)
-            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, "This paymentReference is not found");
+            throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, "This paymentReference is  not found");
         invoicePayment = this.setInvoiceInformation(invoicePayment);
         return modelMapper.map(invoicePayment,InvoicePaymentResponseDto.class);
     }

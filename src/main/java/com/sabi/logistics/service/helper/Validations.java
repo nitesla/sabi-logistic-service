@@ -43,6 +43,8 @@ public class Validations {
     private final BrandRepository brandRepository;
     private final PartnerUserRepository partnerUserRepository;
     private final SLARepository slaRepository;
+    private final InvoicePaymentRepository invoicePaymentRepository;
+    private final DropOffInvoiceRepository dropOffInvoiceRepository;
 
     @Autowired
     private WarehouseRepository warehouseRepository;
@@ -96,7 +98,7 @@ public class Validations {
                        PartnerRepository partnerRepository, CategoryRepository categoryRepository,
                        AssetTypePropertiesRepository assetTypePropertiesRepository, PartnerAssetRepository partnerAssetRepository,
                        PartnerAssetTypeRepository partnerAssetTypeRepository, DriverRepository driverRepository,
-                       BrandRepository brandRepository, PartnerUserRepository partnerUserRepository, SLARepository slaRepository) {
+                       BrandRepository brandRepository, PartnerUserRepository partnerUserRepository, SLARepository slaRepository, InvoicePaymentRepository invoicePaymentRepository, DropOffInvoiceRepository dropOffInvoiceRepository) {
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.partnerRepository = partnerRepository;
@@ -108,6 +110,8 @@ public class Validations {
         this.brandRepository = brandRepository;
         this.partnerUserRepository = partnerUserRepository;
         this.slaRepository = slaRepository;
+        this.invoicePaymentRepository = invoicePaymentRepository;
+        this.dropOffInvoiceRepository = dropOffInvoiceRepository;
     }
 
     public void validateState(StateDto stateDto) {
@@ -1259,29 +1263,16 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"The SLA Notifier email address is invalid");
     }
 
-    public void validateDropOffPaymentInvoice (DropOffInvoicePaymentRequestDto request){
+    public void validateDropOffInvoicePayment(DropOffInvoicePaymentRequestDto dropOffInvoicePaymentRequestDto) {
+        if (dropOffInvoicePaymentRequestDto.getDropOffInvoiceId() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"dropOffInvoiceId can't be empty");
+        if (dropOffInvoicePaymentRequestDto.getInvoicePaymentId() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"invoicePaymentId cannot be empty");
+        dropOffInvoiceRepository.findById(dropOffInvoicePaymentRequestDto.getDropOffInvoiceId())
+                .orElseThrow(()->new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The dropOffInvoiceId does not exist"));
+        invoicePaymentRepository.findById(dropOffInvoicePaymentRequestDto.getInvoicePaymentId())
+                .orElseThrow(()->new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,"The invoicePaymentId does not exist "));
 
-        if(request.getDropOffInvoiceId() == null)
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " dropOffInvoiceId can not be null");
-        if (!Utility.isNumeric(request.getDropOffInvoiceId().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for dropOffInvoiceId ");
-
-        if (request.getInvoicePaymentId() == null )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "invoicePaymentId cannot be empty");
-        if (!Utility.isNumeric(request.getInvoicePaymentId().toString()))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for invoicePaymentId ");
-
-
-
-        dropOffInvoiceRepository.findById(request.getDropOffInvoiceId()).orElseThrow(() ->
-                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " dropOffInvoiceId does not Exist!")
-        );
-
-        invoicePaymentRepository.findById(request.getInvoicePaymentId()).orElseThrow(() ->
-                new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
-                        " invoicePaymentId does not Exist!")
-        );
     }
 }
 

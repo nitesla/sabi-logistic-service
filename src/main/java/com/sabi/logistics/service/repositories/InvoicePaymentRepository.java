@@ -34,6 +34,6 @@ public interface InvoicePaymentRepository extends JpaRepository<InvoicePayment,L
             "AND ((:balanceBefore IS NULL ) OR (:balanceBefore IS NOT NULL AND (ip.balanceBefore = :balanceBefore)))" +
             "AND ((:paymentReference IS NULL ) OR (:paymentReference IS NOT NULL AND (ip.paymentReference = :paymentReference)))" +
             "AND ((:isActive IS NULL ) OR (:isActive IS NOT NULL AND (ip.isActive = :isActive)))) ORDER BY ip.id DESC ")
-    public Page<InvoicePayment> searchInvoicePayments(String paymentChannel, BigDecimal totalAmount, BigDecimal amountCollected, BigDecimal balanceBefore, BigDecimal balanceAfter,
+    public Page<InvoicePayment> searchInvoicePayments(String paymentChannel,BigDecimal totalAmount, BigDecimal amountCollected, BigDecimal balanceBefore, BigDecimal balanceAfter,
                                                       Long invoiceId, String paymentReference, Boolean isActive, Pageable pageable);
 }
