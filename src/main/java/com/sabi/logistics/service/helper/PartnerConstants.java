@@ -13,6 +13,7 @@ public class PartnerConstants {
 
     public static final String AVAILABLE = "Available";
     public static final String INTRANSIT = "Intransit";
+    public static final String PARTNER_ADMIN_PERMISSION = "ROLE_PARTNER_ADMIN";
 
 
 

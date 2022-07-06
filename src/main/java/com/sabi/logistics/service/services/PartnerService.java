@@ -7,11 +7,10 @@ import com.sabi.framework.dto.requestDto.EnableDisEnableDto;
 import com.sabi.framework.exceptions.BadRequestException;
 import com.sabi.framework.exceptions.ConflictException;
 import com.sabi.framework.exceptions.NotFoundException;
-import com.sabi.framework.models.PreviousPasswords;
-import com.sabi.framework.models.User;
-import com.sabi.framework.repositories.PreviousPasswordRepository;
-import com.sabi.framework.repositories.UserRepository;
-import com.sabi.framework.repositories.UserRoleRepository;
+import com.sabi.framework.globaladminintegration.GlobalService;
+import com.sabi.framework.globaladminintegration.response.PermissionResponseDto;
+import com.sabi.framework.models.*;
+import com.sabi.framework.repositories.*;
 import com.sabi.framework.service.AuditTrailService;
 import com.sabi.framework.service.NotificationService;
 import com.sabi.framework.service.TokenService;
@@ -24,6 +23,7 @@ import com.sabi.logistics.core.dto.request.PartnerDto;
 import com.sabi.logistics.core.dto.request.PartnerSignUpDto;
 import com.sabi.logistics.core.dto.response.*;
 import com.sabi.logistics.core.models.*;
+import com.sabi.logistics.service.helper.PartnerConstants;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.*;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +63,9 @@ public class PartnerService {
     private final AuditTrailService auditTrailService;
     private final StateRepository stateRepository;
     private final UserRoleRepository userRoleRepository;
+    private final RoleRepository roleRepository;
+    private final RolePermissionRepository rolePermissionRepository;
+    private final GlobalService globalService;
 
 
     public PartnerService(PartnerRepository repository,PartnerAssetTypeRepository partnerAssetTypeRepository,
@@ -71,7 +74,8 @@ public class PartnerService {
                           ModelMapper mapper, ObjectMapper objectMapper,
                           Validations validations,NotificationService notificationService,
                           PartnerUserRepository partnerUserRepository,LGARepository lgaRepository,AuditTrailService auditTrailService,
-                          StateRepository stateRepository,UserRoleRepository userRoleRepository) {
+                          StateRepository stateRepository,UserRoleRepository userRoleRepository,RoleRepository roleRepository,
+                          RolePermissionRepository rolePermissionRepository,GlobalService globalService) {
         this.repository = repository;
         this.partnerAssetTypeRepository = partnerAssetTypeRepository;
         this.partnerCategoriesRepository = partnerCategoriesRepository;
@@ -87,6 +91,9 @@ public class PartnerService {
         this.auditTrailService = auditTrailService;
         this.stateRepository = stateRepository;
         this.userRoleRepository = userRoleRepository;
+        this.roleRepository = roleRepository;
+        this.rolePermissionRepository = rolePermissionRepository;
+        this.globalService = globalService;
     }
 
 
@@ -118,6 +125,7 @@ public class PartnerService {
         }else if(exist !=null && exist.getPasswordChangedOn() !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Partner user already exist");
         }
+        Role fetchrole = roleRepository.findByName(Constants.PARTNER_ADMIN_ROLE);
         String password = request.getPassword();
         user.setPassword(passwordEncoder.encode(password));
         user.setUserCategory(Constants.OTHER_USER);
@@ -125,14 +133,27 @@ public class PartnerService {
         user.setLoginAttempts(0);
         user.setCreatedBy(0l);
         user.setIsActive(false);
+        user.setRoleId(fetchrole.getId());
         user = userRepository.save(user);
         log.debug("Create new agent user - {}"+ new Gson().toJson(user));
 
-//        UserRole userRole = UserRole.builder()
-//                .userId(user.getId())
-//                .roleId(user.getRoleId())
-//                .build();
-//        userRoleRepository.save(userRole);
+
+        PermissionResponseDto fetchPerm = globalService.getPermissionByName(PartnerConstants.PARTNER_ADMIN_PERMISSION);
+        RolePermission rolePermission = new RolePermission();
+        rolePermission.setPermissionId(fetchPerm.getId());
+        rolePermission.setPermissionName(fetchPerm.getName());
+        rolePermission.setRoleId(user.getRoleId());
+        rolePermission.setCreatedDate(LocalDateTime.now());
+        RolePermission fetchRolePerm = rolePermissionRepository.findByRoleIdAndPermissionId(rolePermission.getRoleId(),rolePermission.getPermissionId());
+        if (fetchRolePerm == null) {
+            rolePermissionRepository.saveAndFlush(rolePermission);
+        }
+
+        UserRole userRole = UserRole.builder()
+                .userId(user.getId())
+                .roleId(user.getRoleId())
+                .build();
+        userRoleRepository.save(userRole);
 
         PreviousPasswords previousPasswords = PreviousPasswords.builder()
                 .userId(user.getId())
@@ -275,6 +296,7 @@ public class PartnerService {
           });
         User user = userRepository.getOne(partner.getUserId());
         user.setIsActive(true);
+        user.setClientId(partner.getId());
         user.setUpdatedBy(partner.getUserId());
         user.setPasswordChangedOn(LocalDateTime.now());
         userRepository.save(user);
