@@ -25,6 +25,11 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpec
 
     List<Invoice> findByIsActive(Boolean isActive);
 
+    List<Invoice> findByCustomerPhoneAndDeliveryStatus(String customerPhone, String deliveryStatus);
+
+    List<Invoice> findByCustomerPhone(String customerPhone);
+
+
     @Query("SELECT MAX(o.id) FROM Invoice o ")
     Long getLastInvoice();
 

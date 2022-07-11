@@ -188,6 +188,12 @@ public class InvoiceService {
 
     }
 
+
+    public List<Invoice> findInvoiceByCustomerPhone(String customerPhone, String deliveryStatus){
+        return deliveryStatus != null || !deliveryStatus.isEmpty() ? invoiceRepository.findByCustomerPhoneAndDeliveryStatus(customerPhone, deliveryStatus) : invoiceRepository.findByCustomerPhone(customerPhone);
+
+    }
+
     public List<InvoiceItem> getAllInvoiceItems(Long invoiceId){
         List<InvoiceItem> invoiceItems = invoiceItemRepository.findByInvoiceId(invoiceId);
         return invoiceItems;
