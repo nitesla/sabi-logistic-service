@@ -190,7 +190,7 @@ public class InvoiceService {
 
 
     public List<Invoice> findInvoiceByCustomerPhone(String customerPhone, String deliveryStatus){
-        return deliveryStatus != null || !deliveryStatus.isEmpty() ? invoiceRepository.findByCustomerPhoneAndDeliveryStatus(customerPhone, deliveryStatus) : invoiceRepository.findByCustomerPhone(customerPhone);
+        return deliveryStatus != null ? invoiceRepository.findByCustomerPhoneAndDeliveryStatus(customerPhone, deliveryStatus) : invoiceRepository.findByCustomerPhone(customerPhone);
 
     }
 
