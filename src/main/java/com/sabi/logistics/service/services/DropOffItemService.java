@@ -17,7 +17,7 @@ import com.sabi.logistics.core.dto.request.DropOffItemRequestDto;
 import com.sabi.logistics.core.dto.request.TripItemRequestDto;
 import com.sabi.logistics.core.dto.response.DropOffInvoiceResponseDto;
 import com.sabi.logistics.core.dto.response.DropOffItemResponseDto;
-import com.sabi.logistics.core.enums.PaymentMode;
+import com.sabi.logistics.core.enums.PaymentChannel;
 import com.sabi.logistics.core.enums.PaymentStatus;
 import com.sabi.logistics.core.enums.VerificationStatus;
 import com.sabi.logistics.core.models.*;
@@ -321,11 +321,11 @@ public class DropOffItemService {
             invoiceItem.setVerificationStatus(VerificationStatus.pending);
         }
 
-        if (dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (dropOff.getPaymentMode() == PaymentMode.CASH || dropOff.getPaymentMode() == PaymentMode.POS)) {
+        if (dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (dropOff.getPaymentChannel() == PaymentChannel.CASH || dropOff.getPaymentChannel() == PaymentChannel.POS)) {
             invoiceItem.setVerificationStatus(VerificationStatus.verified);
         }
 
-        if (dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (dropOff.getPaymentMode() == PaymentMode.BANK_TRANSFER)) {
+        if (dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (dropOff.getPaymentChannel() == PaymentChannel.BANK_TRANSFER)) {
             invoiceItem.setVerificationStatus(VerificationStatus.AwaitingVerification);
         }
 
@@ -505,11 +505,11 @@ public class DropOffItemService {
                 invoiceItem.setVerificationStatus(VerificationStatus.pending);
             }
 
-            if (dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (dropOff.getPaymentMode() == PaymentMode.CASH || dropOff.getPaymentMode() == PaymentMode.POS)) {
+            if (dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (dropOff.getPaymentChannel() == PaymentChannel.CASH || dropOff.getPaymentChannel() == PaymentChannel.POS)) {
                 invoiceItem.setVerificationStatus(VerificationStatus.verified);
             }
 
-            if (dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (dropOff.getPaymentMode() == PaymentMode.BANK_TRANSFER)) {
+            if (dropOffItem.getStatus() == "completed" && dropOff.getPaymentStatus() == PaymentStatus.PayOnDelivery && (dropOff.getPaymentChannel() == PaymentChannel.BANK_TRANSFER)) {
                 invoiceItem.setVerificationStatus(VerificationStatus.AwaitingVerification);
             }
 
