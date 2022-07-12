@@ -15,7 +15,7 @@ import com.sabi.logistics.core.dto.response.DropOffItemResponseDto;
 import com.sabi.logistics.core.dto.response.DropOffResponseDto;
 import com.sabi.logistics.core.dto.response.InvoicePaymentResponseDto;
 import com.sabi.logistics.core.enums.PaidStatus;
-import com.sabi.logistics.core.enums.PaymentMode;
+import com.sabi.logistics.core.enums.PaymentChannel;
 import com.sabi.logistics.core.enums.PaymentStatus;
 import com.sabi.logistics.core.enums.ReturnStatus;
 import com.sabi.logistics.core.models.*;
@@ -121,7 +121,7 @@ public class DropOffService {
         dropOff.setPaymentStatus(invoice.getPaymentStatus());
 
         if (invoice.getPaymentStatus() == PaymentStatus.paid){
-            dropOff.setPaymentMode(PaymentMode.ONLINE);
+            dropOff.setPaymentChannel(PaymentChannel.ONLINE);
         }
 
         dropOff = dropOffRepository.save(dropOff);
@@ -151,7 +151,7 @@ public class DropOffService {
             dropOff.setPaymentStatus(invoice.getPaymentStatus());
 
             if (invoice.getPaymentStatus() == PaymentStatus.paid){
-                dropOff.setPaymentMode(PaymentMode.ONLINE);
+                dropOff.setPaymentChannel(PaymentChannel.ONLINE);
             }
 
             dropOff = dropOffRepository.save(dropOff);
@@ -218,7 +218,7 @@ public class DropOffService {
         }
 
         if (dropOff.getPaymentStatus() == PaymentStatus.paid){
-            dropOff.setPaymentMode(PaymentMode.ONLINE);
+            dropOff.setPaymentChannel(PaymentChannel.ONLINE);
 
             List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
             for (DropOffItem dropOffItem : dropOffItems) {
@@ -301,7 +301,7 @@ public class DropOffService {
         }
 
         if (dropOff.getPaymentStatus() == PaymentStatus.paid){
-            dropOff.setPaymentMode(PaymentMode.ONLINE);
+            dropOff.setPaymentChannel(PaymentChannel.ONLINE);
 
             List<DropOffItem> dropOffItems = dropOffItemRepository.findByDropOffId(dropOff.getId());
             for (DropOffItem dropOffItem : dropOffItems) {
