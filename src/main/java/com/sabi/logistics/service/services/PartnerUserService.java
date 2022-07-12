@@ -175,7 +175,7 @@ public class PartnerUserService {
 
 
 
-         public  void activatePartnerUser (PartnerUserActivation request) {
+         public void activatePartnerUser (PartnerUserActivation request) {
               validations.validatePartnerUserActivation(request);
             User user = userRepository.findByEmail(request.getEmail());
             if (user == null) {
