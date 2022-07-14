@@ -504,6 +504,11 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Qty cannot be empty");
         if (!Utility.isNumeric(request.getTotalQuantity().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Qty");
+        if (request.getInvoiceItemRequestDto() == null)
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"InvoiceItem List cannot be empty");
+        for (InvoiceItemRequestDto invoiceItemRequestDto: request.getInvoiceItemRequestDto())
+            this.validateInvoiceItem(invoiceItemRequestDto);
+
 
 
 
@@ -512,14 +517,14 @@ public class Validations {
     public void validateInvoiceItem (InvoiceItemRequestDto request){
 
         if(request.getWareHouseId() == null)
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, " wareHouseId can not be null");
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "wareHouseId can not be null");
         if (!Utility.isNumeric(request.getWareHouseId().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for wareHouseId ");
 
         if (request.getDeliveryStatus() == null || request.getDeliveryStatus().isEmpty() )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Delivery Status cannot be empty");
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "InvoiceItem's Delivery Status cannot be empty");
         if (!("pending".equalsIgnoreCase(request.getDeliveryStatus())  || "AwaitingDelivery".equalsIgnoreCase(request.getDeliveryStatus())  || "InTransit".equalsIgnoreCase(request.getDeliveryStatus()) || "Returned".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus())))
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct Delivery Status");
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct InvoiceItem's Delivery Status");
 
 //        if (request.getInvoiceId() == null )
 //            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "InvoiceId cannot be empty");
@@ -528,7 +533,7 @@ public class Validations {
 
 
         if (request.getProductName() == null || request.getProductName().isEmpty() )
-            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Name cannot be empty");
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "InvoiceItem's productName cannot be empty");
 
         if (request.getQty() == null )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Qty cannot be empty");

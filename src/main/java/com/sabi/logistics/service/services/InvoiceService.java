@@ -157,10 +157,10 @@ public class InvoiceService {
 
     public Page<Invoice> findAll( String referenceNo, String deliveryStatus,
                                String customerName, String customerPhone, String deliveryAddress,
-                               String barCode, String qrCode, PageRequest pageRequest ){
+                                  Long wareHouseId,String barCode, String qrCode, PageRequest pageRequest ){
 
         Page<Invoice> invoices = invoiceRepository.findInvoice(referenceNo, deliveryStatus, customerName, customerPhone,
-                                                        deliveryAddress, barCode, qrCode, pageRequest);
+                                                        deliveryAddress, wareHouseId, barCode, qrCode, pageRequest);
         if(invoices == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
