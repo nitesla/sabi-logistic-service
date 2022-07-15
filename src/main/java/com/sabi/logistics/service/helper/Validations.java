@@ -506,11 +506,29 @@ public class Validations {
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for Qty");
         if (request.getInvoiceItemRequestDto() == null)
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST,"InvoiceItem List cannot be empty");
+        BigDecimal overallInvoiceTotalPrice = new BigDecimal(0);
+        int overallQty = 0;
         for (InvoiceItemRequestDto invoiceItemRequestDto: request.getInvoiceItemRequestDto())
-            this.validateInvoiceItem(invoiceItemRequestDto);
-
-
-
+        {
+            if(invoiceItemRequestDto.getWareHouseId() == null)
+                throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "wareHouseId can not be null");
+            if (!Utility.isNumeric(invoiceItemRequestDto.getWareHouseId().toString()))
+                throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for wareHouseId ");
+            warehouseRepository.findById(invoiceItemRequestDto.getWareHouseId()).orElseThrow(() ->
+                    new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
+                            "Warehouse Id does not Exist!")
+            );
+            BigDecimal calculatedTotalPrice = invoiceItemRequestDto.getUnitPrice().multiply(new BigDecimal(invoiceItemRequestDto.getQty()));
+            if (!invoiceItemRequestDto.getTotalPrice().equals(calculatedTotalPrice)) {
+                throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "InvoiceItem totalPrice MUST be equal to (unitPrice * qty)");
+            }
+            overallInvoiceTotalPrice = overallInvoiceTotalPrice.add(calculatedTotalPrice);
+            overallQty+=invoiceItemRequestDto.getQty();
+        }
+        if (overallQty!= request.getTotalQuantity())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "TotalQuantity for the invoice MUST BE EQUAL to the sum of the Qty of the invoiceItems");
+        if (overallInvoiceTotalPrice.doubleValue() != request.getTotalAmount())
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "TotalAmount for the invoice MUST BE EQUAL to the sum of the totalPrices of all the invoiceItems");
 
     }
 
@@ -526,8 +544,8 @@ public class Validations {
         if (!("pending".equalsIgnoreCase(request.getDeliveryStatus())  || "AwaitingDelivery".equalsIgnoreCase(request.getDeliveryStatus())  || "InTransit".equalsIgnoreCase(request.getDeliveryStatus()) || "Returned".equalsIgnoreCase(request.getDeliveryStatus()) || "Completed".equalsIgnoreCase(request.getDeliveryStatus())))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Enter the correct InvoiceItem's Delivery Status");
 
-//        if (request.getInvoiceId() == null )
-//            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "InvoiceId cannot be empty");
+        if (request.getInvoiceId() == null )
+            throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "InvoiceId cannot be empty");
         if (!Utility.isNumeric(request.getInvoiceId().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for InvoiceId ");
 

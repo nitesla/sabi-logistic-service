@@ -69,8 +69,16 @@ public class InvoiceService {
         if(invoiceExists != null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Invoice already exist");
         }
-        if(invoiceNumberExists != null){
-            throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Invoice Number already exist");
+        if(invoiceNumberExists != null){ //If the invoice already exists, then find out if the invoiceItems were created successfully  the last attempt
+            List<InvoiceItem> invoiceItemList = invoiceItemRepository.findByInvoiceId(invoiceNumberExists.getId());
+            if (invoiceItemList.size()>0)
+                throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " Invoice Number already exist"); //they were successfully created. Throw an error that this invoice already exists;
+            else
+            {
+                // Then create the invoice Items ONLY and returns the result to the customer
+                createInvoiceItemsAndReturnInoviceAsResponse(request,request1,userCurrent,invoice);
+
+            }
         }
 
         invoice.setBarCode(validations.generateCode(invoice.getReferenceNo()));
@@ -80,15 +88,19 @@ public class InvoiceService {
         invoice.setIsActive(true);
         invoice = invoiceRepository.save(invoice);
         log.debug("Create new invoice - {}"+ new Gson().toJson(invoice));
+        return createInvoiceItemsAndReturnInoviceAsResponse(request, request1, userCurrent, invoice);
+    }
+
+    private InvoiceInvoiceItemResponseDto createInvoiceItemsAndReturnInoviceAsResponse(InvoiceInvoiceItemDto request, HttpServletRequest request1, User userCurrent, Invoice invoice) {
+        List<InvoiceItemResponseDto> responseDtos;
         InvoiceInvoiceItemResponseDto invoiceResponseDto = mapper.map(invoice, InvoiceInvoiceItemResponseDto.class);
-        log.info("request sent ::::::::::::::::::::::::::::::::: " + request.getInvoiceItemRequestDto());
         request.getInvoiceItemRequestDto().forEach(invoiceItems ->{
             invoiceItems.setInvoiceId(invoiceResponseDto.getId());
         });
-        responseDtos = invoiceItemService.createInvoiceItems(request.getInvoiceItemRequestDto(),invoice);
+        responseDtos = invoiceItemService.createInvoiceItems(request.getInvoiceItemRequestDto(), invoice);
         //List<InvoiceItemResponseDto> finalResponseDtos = responseDtos;
 //        responseDtos.forEach(invoiceItemResponseDto -> {
-            invoiceResponseDto.setInvoiceItem(responseDtos);
+        invoiceResponseDto.setInvoiceItem(responseDtos);
 //        });
 
         auditTrailService
