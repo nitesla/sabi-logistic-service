@@ -20,7 +20,7 @@ public interface DropOffRepository extends JpaRepository<DropOff, Long>, JpaSpec
 
     List<DropOff> findByIsActiveAndTripRequestId(Boolean isActive, Long tripRequestId);
 
-    DropOff findByTripRequestIdAndInvoiceId(Long tripRequestId, Long dropOffId);
+//    DropOff findByTripRequestIdAndInvoiceId(Long tripRequestId, Long dropOffId);
 
     DropOff findDropOffByTripRequestId(Long tripRequestId);
 
@@ -30,10 +30,8 @@ public interface DropOffRepository extends JpaRepository<DropOff, Long>, JpaSpec
 
     Integer countByTripRequestId(Long ID);
 
-    @Query("SELECT d FROM DropOff d WHERE ((:invoiceId IS NULL) OR (:invoiceId IS NOT NULL AND d.invoiceId = :invoiceId))" +
-            " AND ((:tripRequestId IS NULL) OR (:tripRequestId IS NOT NULL AND d.tripRequestId = :tripRequestId)) order by d.id desc")
-    Page<DropOff> findDropOff(@Param("invoiceId") Long invoiceId,
-                              @Param("tripRequestId") Long tripRequestId,
+    @Query("SELECT d FROM DropOff d WHERE ((:tripRequestId IS NULL) OR (:tripRequestId IS NOT NULL AND d.tripRequestId = :tripRequestId)) order by d.id desc")
+    Page<DropOff> findDropOff(@Param("tripRequestId") Long tripRequestId,
                               Pageable pageable);
 
     List<DropOff> findByTripRequestIdAndPaidStatus(Long tripRequestId, String paidStatus);

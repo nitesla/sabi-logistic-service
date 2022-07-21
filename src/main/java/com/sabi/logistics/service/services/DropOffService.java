@@ -405,9 +405,9 @@ public class DropOffService {
     }
 
 
-    public Page<DropOff> findAll(Long invoiceId, Long tripRequestId, PageRequest pageRequest ){
+    public Page<DropOff> findAll( Long tripRequestId, PageRequest pageRequest ){
 
-        Page<DropOff> dropOffs = dropOffRepository.findDropOff(invoiceId, tripRequestId,pageRequest);
+        Page<DropOff> dropOffs = dropOffRepository.findDropOff(tripRequestId,pageRequest);
         if(dropOffs == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
