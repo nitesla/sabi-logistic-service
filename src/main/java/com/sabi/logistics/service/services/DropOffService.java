@@ -106,11 +106,16 @@ public class DropOffService {
     public DropOffResponseDto createDropOff(DropOffRequestDto request) {
         validations.validateDropOff(request);
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
-        DropOff dropOffExists = dropOffRepository.findByTripRequestIdAndInvoiceId(request.getTripRequestId(), request.getInvoiceId());
+        DropOff dropOffExists = dropOffRepository.findDropOffByTripRequestId(request.getTripRequestId());
         if(dropOffExists !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, " DropOff already exist");
         }
-        Invoice invoice = invoiceRepository.getOne(request.getInvoiceId());
+//        Invoice invoice = new Invoice();
+//        for (DropOffInvoice dropOffInvoice : request.getDropOffInvoice()) {
+//            invoice = invoiceRepository.findInvoiceById(dropOffInvoice.getInvoiceId());
+//        }
+        Invoice invoice = invoiceRepository.getOne(request.getDropOffInvoice().get(0).getInvoiceId());
+
         DropOff dropOff = mapper.map(request,DropOff.class);
         dropOff.setDeliveryCode(validations.generateReferenceNumber(6));
         dropOff.setCreatedBy(userCurrent.getId());
@@ -140,7 +145,7 @@ public class DropOffService {
             request.setTripRequestId(tripRequestId);
             validations.validateDropOffs(request);
 
-            Invoice invoice = invoiceRepository.getOne(request.getInvoiceId());
+            Invoice invoice = invoiceRepository.getOne(request.getDropOffInvoice().get(0).getInvoiceId());
             DropOff dropOff = mapper.map(request, DropOff.class);
             dropOff.setDeliveryCode(validations.generateReferenceNumber(6));
             dropOff.setCreatedBy(userCurrent.getId());
@@ -175,7 +180,7 @@ public class DropOffService {
             dropOff.setDeliveryCode(validations.generateReferenceNumber(6));
             dropOff = dropOffRepository.save(dropOff);
             log.debug("Updated  Droff with DeliveryCode - {}" + dropOff);
-            Invoice invoice = invoiceRepository.getOne(dropOff.getInvoiceId());
+            Invoice invoice = invoiceRepository.getOne(dropOff.getDropOffInvoice().get(0).getInvoiceId());
             //send notifications of the deliveryCode
             String message = "This is your Sabi DroppOff Delivery Code "+dropOff.getDeliveryCode();
             User customerUser = new User();
@@ -196,7 +201,7 @@ public class DropOffService {
         DropOff dropOff = dropOffRepository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested DropOff Id does not exist!"));
-        Invoice invoice = invoiceRepository.getOne(request.getInvoiceId());
+        Invoice invoice = invoiceRepository.getOne(request.getDropOffInvoice().get(0).getInvoiceId());
         mapper.map(request, dropOff);
         if (dropOff.getDeliveryStatus().equalsIgnoreCase("completed")){
             dropOff.setReturnStatus(ReturnStatus.none);
@@ -344,7 +349,7 @@ public class DropOffService {
 
         InvoicePaymentResponseDto invoicePaymentResponseDto = new InvoicePaymentResponseDto();
         DropOffInvoice dropOffInvoice = new DropOffInvoice();
-        invoice = invoiceRepository.findInvoiceById(dropOff.getInvoiceId());
+        invoice = invoiceRepository.findInvoiceById(dropOff.getDropOffInvoice().get(0).getInvoiceId());
         dropOffInvoice = dropOffInvoiceRepository.findByDropOffIdAndInvoiceId(dropOff.getId(), invoice.getId());
 
 
@@ -352,7 +357,7 @@ public class DropOffService {
             List<InvoicePaymentRequestDto> invoicePayments = request.getInvoicePayment();
             for (InvoicePaymentRequestDto invoicePaymentRequestDto : invoicePayments) {
                  invoicePaymentResponseDto = invoicePaymentService.createInvoicePayment(invoicePaymentRequestDto);
-                dropOff.setInvoicePayment(invoicePaymentRepository.findByInvoiceId(dropOff.getInvoiceId()));
+                dropOff.setInvoicePayment(invoicePaymentRepository.findByInvoiceId(dropOff.getDropOffInvoice().get(0).getInvoiceId()));
             }
         }
 
@@ -370,7 +375,7 @@ public class DropOffService {
 
         if (invoice != null) {
             invoiceRequestDto.setDeliveryStatus(dropOff.getDeliveryStatus());
-            invoiceRequestDto.setId(dropOff.getInvoiceId());
+            invoiceRequestDto.setId(dropOff.getDropOffInvoice().get(0).getInvoiceId());
             invoiceService.updateInvoiceStatus(invoiceRequestDto);
         }
 
@@ -384,7 +389,7 @@ public class DropOffService {
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested DropOff Id does not exist!"));
         DropOffResponseDto dropOffResponseDto = mapper.map(dropOff, DropOffResponseDto.class);
-        Invoice invoice = invoiceRepository.getOne(dropOff.getInvoiceId());
+        Invoice invoice = invoiceRepository.getOne(dropOff.getDropOffInvoice().get(0).getInvoiceId());
         dropOffResponseDto.setDropOffItem(getAllDropOffItems(id));
         dropOffResponseDto.setCustomerName(invoice.getCustomerName());
         dropOffResponseDto.setDropOffInvoice(getAllDropOffInvoices(id));
@@ -513,7 +518,8 @@ public class DropOffService {
         }
         for (DropOff dropOff : dropOffList) {
 
-            Invoice invoice = invoiceRepository.getOne(dropOff.getInvoiceId());
+
+            Invoice invoice = invoiceRepository.getOne(dropOff.getDropOffInvoice().get(0).getInvoiceId());
             dropOff.setCustomerName(invoice.getCustomerName());
             dropOff.setDeliveryAddress(invoice.getDeliveryAddress());
             dropOff.setCustomerPhone(invoice.getCustomerPhone());

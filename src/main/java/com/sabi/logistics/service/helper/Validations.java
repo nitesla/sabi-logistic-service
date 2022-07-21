@@ -637,9 +637,9 @@ public class Validations {
         if (!Utility.validEmail(request.getEmail().trim()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid Email Address");
 
-        if (request.getInvoiceId() == null )
+        if (request.getDropOffInvoice().get(0).getInvoiceId() == null )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "InvoiceId cannot be empty");
-        if (!Utility.isNumeric(request.getInvoiceId().toString()))
+        if (!Utility.isNumeric(request.getDropOffInvoice().get(0).getInvoiceId().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for InvoiceId ");
 
 
@@ -648,7 +648,7 @@ public class Validations {
                         " tripRequestId does not Exist!")
         );
 
-        invoiceRepository.findById(request.getInvoiceId()).orElseThrow(() ->
+        invoiceRepository.findById(request.getDropOffInvoice().get(0).getInvoiceId()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " InvoiceId does not Exist!")
         );
@@ -674,9 +674,9 @@ public class Validations {
         if (!Utility.validEmail(request.getEmail().trim()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid Email Address");
 
-        if (request.getInvoiceId() == null )
+        if (request.getDropOffInvoice().get(0).getInvoiceId() == null )
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "InvoiceId cannot be empty");
-        if (!Utility.isNumeric(request.getInvoiceId().toString()))
+        if (!Utility.isNumeric(request.getDropOffInvoice().get(0).getInvoiceId().toString()))
             throw new BadRequestException(CustomResponseCode.BAD_REQUEST, "Invalid data type for InvoiceId ");
 
 
@@ -685,7 +685,7 @@ public class Validations {
                         " tripRequestId does not Exist!")
         );
 
-        invoiceRepository.findById(request.getInvoiceId()).orElseThrow(() ->
+        invoiceRepository.findById(request.getDropOffInvoice().get(0).getInvoiceId()).orElseThrow(() ->
                 new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         " InvoiceId does not Exist!")
         );

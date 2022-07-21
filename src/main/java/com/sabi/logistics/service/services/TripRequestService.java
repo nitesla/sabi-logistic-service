@@ -1006,7 +1006,7 @@ public class TripRequestService {
 
         for (DropOff dropOff : dropOffs) {
 
-            Invoice invoice = invoiceRepository.getOne(dropOff.getInvoiceId());
+            Invoice invoice = invoiceRepository.getOne(dropOff.getDropOffInvoice().get(0).getInvoiceId());
             dropOff.setCustomerName(invoice.getCustomerName());
             dropOff.setDeliveryAddress(invoice.getDeliveryAddress());
             dropOff.setCustomerPhone(invoice.getCustomerPhone());

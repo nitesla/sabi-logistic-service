@@ -22,6 +22,8 @@ public interface DropOffRepository extends JpaRepository<DropOff, Long>, JpaSpec
 
     DropOff findByTripRequestIdAndInvoiceId(Long tripRequestId, Long dropOffId);
 
+    DropOff findDropOffByTripRequestId(Long tripRequestId);
+
     Optional<DropOff> findByIdAndDeliveryOverrideCodeHash(Long id, String deliveryOverrideCodeHash);
 
     List<DropOff> findByTripRequestId(Long tripRequestId);

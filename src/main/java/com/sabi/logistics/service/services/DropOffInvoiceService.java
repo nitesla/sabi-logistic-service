@@ -10,11 +10,16 @@ import com.sabi.framework.service.TokenService;
 import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.logistics.core.dto.request.DropOffInvoiceRequestDto;
 import com.sabi.logistics.core.dto.response.DropOffInvoiceResponseDto;
+import com.sabi.logistics.core.enums.PaymentChannel;
+import com.sabi.logistics.core.enums.PaymentStatus;
 import com.sabi.logistics.core.models.DropOffInvoice;
+import com.sabi.logistics.core.models.Invoice;
 import com.sabi.logistics.service.helper.Validations;
 import com.sabi.logistics.service.repositories.DropOffInvoiceRepository;
+import com.sabi.logistics.service.repositories.InvoiceRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -30,6 +35,9 @@ public class DropOffInvoiceService {
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
     private final Validations validations;
+
+    @Autowired
+    private InvoiceRepository invoiceRepository;
 
     public DropOffInvoiceService(DropOffInvoiceRepository repository, ModelMapper mapper, ObjectMapper objectMapper, Validations validations) {
         this.repository = repository;
@@ -47,7 +55,14 @@ public class DropOffInvoiceService {
         if(exist !=null){
             throw new ConflictException(CustomResponseCode.CONFLICT_EXCEPTION, "DropOff Invoice already exist");
         }
+        Invoice invoice = invoiceRepository.getOne(request.getInvoiceId());
 
+        if (invoice.getPaymentStatus() == PaymentStatus.paid){
+            dropOffInvoice.setPaymentChannel(PaymentChannel.ONLINE);
+        }
+
+        dropOffInvoice.setDeliveryAddress(invoice.getDeliveryAddress());
+        dropOffInvoice.setPaymentStatus(invoice.getPaymentStatus());
         dropOffInvoice.setCreatedBy(userCurrent.getId());
         dropOffInvoice.setIsActive(true);
         dropOffInvoice = repository.save(dropOffInvoice);
@@ -62,9 +77,12 @@ public class DropOffInvoiceService {
         DropOffInvoice dropOffInvoice = repository.findById(request.getId())
                 .orElseThrow(() -> new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION,
                         "Requested DropOff Invoice id does not exist!"));
+        Invoice invoice = invoiceRepository.getOne(request.getInvoiceId());
         mapper.map(request, dropOffInvoice);
 
         dropOffInvoice.setUpdatedBy(userCurrent.getId());
+        dropOffInvoice.setDeliveryAddress(invoice.getDeliveryAddress());
+        dropOffInvoice.setPaymentStatus(invoice.getPaymentStatus());
         repository.save(dropOffInvoice);
         log.debug("DropOff Invoice record updated - {}"+ new Gson().toJson(dropOffInvoice));
         return mapper.map(dropOffInvoice, DropOffInvoiceResponseDto.class);

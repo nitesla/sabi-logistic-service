@@ -142,7 +142,7 @@ public class DropOffItemService {
 
         tripItem = tripItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
         dropOffItems = dropOffItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
-        invoiceItems = invoiceItemRepository.findByInvoiceIdAndThirdPartyProductId(dropOff.getInvoiceId(), invoiceItem.getThirdPartyProductId());
+        invoiceItems = invoiceItemRepository.findByInvoiceIdAndThirdPartyProductId(dropOff.getDropOffInvoice().get(0).getInvoiceId(), invoiceItem.getThirdPartyProductId());
         dropOffInvoice = dropOffInvoiceRepository.findByDropOffIdAndInvoiceId(dropOff.getId(), invoice.getId());
 
         if(tripItem == null) {
@@ -253,7 +253,7 @@ public class DropOffItemService {
 
             tripItem = tripItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
             dropOffItems = dropOffItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
-            invoiceItems = invoiceItemRepository.findByInvoiceIdAndThirdPartyProductId(dropOff.getInvoiceId(), invoiceItem.getThirdPartyProductId());
+            invoiceItems = invoiceItemRepository.findByInvoiceIdAndThirdPartyProductId(dropOff.getDropOffInvoice().get(0).getInvoiceId(), invoiceItem.getThirdPartyProductId());
             dropOffInvoice = dropOffInvoiceRepository.findByDropOffIdAndInvoiceId(dropOff.getId(), invoice.getId());
 
             if (tripItem == null) {
@@ -373,7 +373,7 @@ public class DropOffItemService {
 
         tripItem = tripItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
         dropOffItems = dropOffItemRepository.findByTripRequestIdAndThirdPartyProductId(dropOff.getTripRequestId(), invoiceItem.getThirdPartyProductId());
-        invoiceItems = invoiceItemRepository.findByInvoiceIdAndThirdPartyProductId(dropOff.getInvoiceId(), invoiceItem.getThirdPartyProductId());
+        invoiceItems = invoiceItemRepository.findByInvoiceIdAndThirdPartyProductId(dropOff.getDropOffInvoice().get(0).getInvoiceId(), invoiceItem.getThirdPartyProductId());
         dropOffInvoice = dropOffInvoiceRepository.findByDropOffIdAndInvoiceId(dropOff.getId(), invoice.getId());
 
         if(tripItem == null) {
