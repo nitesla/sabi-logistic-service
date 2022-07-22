@@ -17,6 +17,7 @@ import com.sabi.framework.utils.CustomResponseCode;
 import com.sabi.framework.utils.Utility;
 import com.sabi.logistics.core.dto.request.AdminAuthDto;
 import com.sabi.logistics.core.dto.response.admin.AccessTokenWithUserDetails;
+import com.sabi.logistics.core.dto.response.admin.AdminPermission;
 import com.sabi.logistics.core.dto.response.admin.UserInfoResponse;
 import com.sabi.logistics.core.integrations.response.admin.UserResponseGlobalAdmin;
 import com.sabi.logistics.service.helper.Validations;
@@ -33,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -96,6 +98,7 @@ public class AdminUserServiceImp implements AdminUserService {
             user.setLastLogin(LocalDateTime.now());
             AccessTokenWithUserDetails accessTokenWithUserDetails = this.modelMapper.map(userInfoResponse, AccessTokenWithUserDetails.class);
             accessTokenWithUserDetails.setGlobalAdminToken(userInfoResponse.getToken());
+            accessTokenWithUserDetails.setPermissions(userInfoResponse.getPermissions());
             accessTokenWithUserDetails.setLastLogin(LocalDateTime.now());
             accessTokenWithUserDetails.setGlobalAdminUserId(userInfoResponse.getUserId());
             //User successfully logged in and known
@@ -125,29 +128,15 @@ public class AdminUserServiceImp implements AdminUserService {
     }
 
     private ResponseEntity<AccessTokenWithUserDetails> getPermissionsAccessListAndSetToken(User user, String newToken, AccessTokenWithUserDetails accessTokenWithUserDetails) {
-        /**
-         * Disables this fetching and setting of permissions for admin since he can do anything in logistics.
-         */
-        /**
-        SingleRequest singleRequest = new SingleRequest();
-        Long userPermissionId = 1l; // for now
-        singleRequest.setId(userPermissionId);
-        SingleResponse singlePermission = globalService.getSinglePermission(singleRequest);
-        if (singlePermission!=null &&(singlePermission.getCode().equalsIgnoreCase("200")|| singlePermission.getCode().equals("201"))){
-            SingleResponseData singleResponseData = singlePermission.getData();
-            String permissionAccssList = singleResponseData.getName();
-            log.info("The singleResponseData =={}",singleResponseData);
-            log.info("The permission AccessList =={}",permissionAccssList);
-        **/
-        String permissionAccssList = "ROLE_ADMIN"; // Here is an admin though this permission is strictly not necessarly since admin can do anything.
-        //in logistics
-            AuthenticationWithToken authenticationWithToken = new AuthenticationWithToken
-                    (user,null, AuthorityUtils.commaSeparatedStringToAuthorityList(permissionAccssList));
-            authenticationWithToken.setToken(newToken);
-            tokenService.store(newToken,authenticationWithToken);
-            SecurityContextHolder.getContext().setAuthentication(authenticationWithToken);
-            userService.updateLogin(user.getId());
-            return ResponseEntity.ok().body(accessTokenWithUserDetails);
+
+        List<AdminPermission> adminPermissionList = accessTokenWithUserDetails.getPermissions(); // Here is an admin permissions
+        AuthenticationWithToken authenticationWithToken = new AuthenticationWithToken
+                (user,null, AuthorityUtils.commaSeparatedStringToAuthorityList(adminPermissionList.stream().toString()));
+        authenticationWithToken.setToken(newToken);
+        tokenService.store(newToken,authenticationWithToken);
+        SecurityContextHolder.getContext().setAuthentication(authenticationWithToken);
+        userService.updateLogin(user.getId());
+        return ResponseEntity.ok().body(accessTokenWithUserDetails);
         //}
     }
 
