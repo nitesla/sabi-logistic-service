@@ -230,11 +230,11 @@ public class PartnerUserService {
         return mapper.map(partnerUser, PartnerUserResponseDto.class);
     }
 
-    public Page<User> findByClientId(String firstName, String phone, String email, String username,
-                                                   Long roleId,Boolean isActive, String lastName, PageRequest pageRequest ){
+    public Page<User> findByClientId(String firstName, String phone, String email, String username,String role,
+                                                   Long roleId,Boolean isActive,LocalDateTime startDate, LocalDateTime endDate, String lastName, PageRequest pageRequest ){
         User userCurrent = TokenService.getCurrentUserFromSecurityContext();
         PartnerUser partner = partnerUserRepository.findByUserId(userCurrent.getId());
-        Page<User> users = userRepository.findByClientId(firstName,phone,email,username,roleId,partner.getPartnerId(),isActive,lastName,pageRequest);
+        Page<User> users = userRepository.findByClientId(firstName,phone,email,username,role,roleId,partner.getPartnerId(),isActive,startDate,endDate,lastName,pageRequest);
         if(users == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
@@ -242,8 +242,8 @@ public class PartnerUserService {
             User user = userRepository.getOne(partnerUsers.getId());
             PartnerUser partnerUser = partnerUserRepository.findByUserId(partnerUsers.getId());
             if(user.getRoleId() !=null){
-                Role role = roleRepository.getOne(user.getRoleId());
-                partnerUsers.setRoleName(role.getName());
+                Role roles = roleRepository.getOne(user.getRoleId());
+                partnerUsers.setRoleName(roles.getName());
             }
             partnerUsers.setUserType(partnerUser.getUserType());
         });
