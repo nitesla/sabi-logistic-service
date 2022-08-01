@@ -176,6 +176,12 @@ public class InvoiceService {
         if(invoices == null){
             throw new NotFoundException(CustomResponseCode.NOT_FOUND_EXCEPTION, " No record found !");
         }
+
+        for (Invoice invoice : invoices) {
+            invoice.setInvoiceItems(getAllInvoiceItems(invoice.getId()));
+
+        }
+
         return invoices;
 
     }
